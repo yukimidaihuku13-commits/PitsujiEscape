@@ -16,3 +16,12 @@ export function resolveActions(spot, state, ctx) {
   }
   return [{ type: "message", text: spot.defaultMessage || DEFAULT_FALLBACK_MESSAGE }];
 }
+
+/**
+ * このspotが「今の状態でタップして意味のある反応をするか」を返す。
+ * どのルールにもマッチしない（＝既定のフォールバックしか出ない）場合はfalse。
+ * Renderer側でクリックポイントの表示/非表示を切り替えるために使う。
+ */
+export function hasMatchingRule(spot, state, ctx) {
+  return spot.rules.some((rule) => evaluate(rule.when, state, ctx));
+}

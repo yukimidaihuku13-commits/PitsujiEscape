@@ -30,6 +30,7 @@ export class MessageQueue {
   advance() {
     if (this.queue.length === 0) {
       this.current = null;
+      this.renderFn(null); // 表示を明示的にクリアする（前のメッセージが残り続けるバグの修正）
       if (this.onEmpty) this.onEmpty();
       return;
     }

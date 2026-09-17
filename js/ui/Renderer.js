@@ -4,6 +4,7 @@
 // ラベルテキスト＋プレースホルダー矩形で表現する。
 
 import { getArrowsForView } from "../nav/Navigator.js";
+import { hasMatchingRule } from "../engine/RuleResolver.js";
 
 const ARROW_SYMBOL = { up: "▲", down: "▼", left: "◀", right: "▶" };
 
@@ -57,9 +58,18 @@ export function renderPlay(root, opts) {
 
   const main = document.createElement("div");
   main.className = "scene-main";
+  if (view && view.background) {
+    main.style.backgroundImage = `url("${view.background}")`;
+    main.style.backgroundSize = "cover";
+    main.style.backgroundPosition = "center";
+    main.style.backgroundColor = "transparent";
+  } else {
+    main.style.backgroundImage = "none";
+    main.style.backgroundColor = "";
+  }
   const sceneLabel = document.createElement("div");
   sceneLabel.className = "scene-label";
-  sceneLabel.textContent = view ? `[${view.label}]（背景仮）` : "";
+  sceneLabel.textContent = view ? `[${view.label}]${view.background ? "" : "（背景仮）"}` : "";
   main.appendChild(sceneLabel);
 
   const spotList = document.createElement("div");
@@ -67,6 +77,8 @@ export function renderPlay(root, opts) {
   (view ? view.spots : []).forEach((spotId) => {
     const spot = data.spotsById[spotId];
     if (!spot) return;
+    // 今の状態でどのルールにもマッチしない（＝何も起きない）spotは選択肢として出さない
+    if (!hasMatchingRule(spot, state, ctx)) return;
     const btn = document.createElement("button");
     btn.className = "spot-btn";
     btn.textContent = spot.label;
@@ -115,16 +127,31 @@ export function renderStory(root, line) {
 
   const main = document.createElement("div");
   main.className = "scene-main story-main";
+  if (line && line.bgImage) {
+    main.style.backgroundImage = `url("${line.bgImage}")`;
+    main.style.backgroundSize = "cover";
+    main.style.backgroundPosition = "center";
+  } else {
+    main.style.backgroundImage = "none";
+  }
   const bgLabel = document.createElement("div");
   bgLabel.className = "scene-label";
-  bgLabel.textContent = line && line.bg ? `[BG]（背景仮）${line.bg}` : "";
+  bgLabel.textContent = line && line.bg ? `[BG]${line.bgImage ? "" : "（背景仮）"}${line.bg}` : "";
   main.appendChild(bgLabel);
 
   if (line && line.speaker) {
-    const portrait = document.createElement("div");
-    portrait.className = "portrait-box";
-    portrait.textContent = `${line.speaker}\n(立ち絵仮)`;
-    main.appendChild(portrait);
+    if (line.portraitImage) {
+      const img = document.createElement("img");
+      img.className = "portrait-img";
+      img.src = line.portraitImage;
+      img.alt = line.speaker;
+      main.appendChild(img);
+    } else {
+      const portrait = document.createElement("div");
+      portrait.className = "portrait-box";
+      portrait.textContent = `${line.speaker}\n(立ち絵仮)`;
+      main.appendChild(portrait);
+    }
   }
   root.appendChild(main);
 

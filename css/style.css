@@ -105,10 +105,15 @@ html, body {
   position: relative;
 }
 .scene-label {
-  font-size: 0.9rem;
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  background: rgba(255, 255, 255, 0.85);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
   color: #333;
-  margin-bottom: 10px;
-  text-align: center;
+  z-index: 2;
 }
 .spot-list {
   display: flex;
@@ -116,6 +121,7 @@ html, body {
   gap: 8px;
   width: 100%;
   max-width: 320px;
+  margin-top: 30px;
 }
 .spot-btn {
   padding: 12px;
@@ -145,6 +151,12 @@ html, body {
   white-space: pre-wrap;
   text-align: center;
   color: #eceff1;
+}
+.portrait-img {
+  max-width: 60%;
+  max-height: 50%;
+  margin-top: 14px;
+  object-fit: contain;
 }
 
 /* --- 矢印 --- */

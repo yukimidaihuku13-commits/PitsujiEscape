@@ -71,7 +71,7 @@ async function main() {
   const msgQueue = new MessageQueue(
     (item) => {
       const el = document.getElementById("footer-message");
-      if (el) el.textContent = item.text;
+      if (el) el.textContent = item ? item.text : "";
     },
     () => {}
   );
@@ -296,11 +296,18 @@ async function main() {
   }
 
   // 想定外の連打・多重タップ対策:
-  // メッセージ/ストーリーが表示待ちの間は、他の操作より先にメッセージ送りを優先する
+  // メッセージ/ストーリーが表示待ちの間は、他の操作より先にメッセージ送りを優先する。
+  // ただし別のクリックポイント(spot)をタップした場合は例外で、そのタップで
+  // 前のメッセージを消すと同時に、新しいspotの処理も同じタップ内で実行する。
   root.addEventListener(
     "click",
     (e) => {
       if (state.phase === "play" && msgQueue.isBusy()) {
+        const spotBtn = e.target.closest && e.target.closest(".spot-btn");
+        if (spotBtn) {
+          msgQueue.clear();
+          return; // 伝播を止めず、spot-btn側のクリック処理へそのまま進める
+        }
         msgQueue.advance();
         e.stopPropagation();
       } else if (state.phase === "story" && storyQueue.isBusy()) {

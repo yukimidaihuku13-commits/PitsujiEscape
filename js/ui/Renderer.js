@@ -8,6 +8,10 @@ import { hasMatchingRule } from "../engine/RuleResolver.js";
 
 const ARROW_SYMBOL = { up: "▲", down: "▼", left: "◀", right: "▶" };
 
+// position指定ホットスポットの座標合わせデバッグ表示（枠線＋ラベル文字）。
+// リリース前にfalseにする（or この分岐ごと削除する）とデバッグ表示だけ消える。
+const DEBUG_SHOW_HOTSPOT_LABELS = true;
+
 export function renderStart(root, onStart) {
   root.innerHTML = "";
   const wrap = document.createElement("div");
@@ -72,6 +76,9 @@ export function renderPlay(root, opts) {
   sceneLabel.textContent = view ? `[${view.label}]${view.background ? "" : "（背景仮）"}` : "";
   main.appendChild(sceneLabel);
 
+  // 座標(position)が指定されているspotは画像上にホットスポットとして配置し、
+  // 指定が無いspotはこれまで通り下に縦一覧で表示する（両方混在してもよい＝
+  // 一部のspotだけ先に座標合わせをする、という進め方が可能）。
   const spotList = document.createElement("div");
   spotList.className = "spot-list";
   (view ? view.spots : []).forEach((spotId) => {
@@ -79,14 +86,36 @@ export function renderPlay(root, opts) {
     if (!spot) return;
     // 今の状態でどのルールにもマッチしない（＝何も起きない）spotは選択肢として出さない
     if (!hasMatchingRule(spot, state, ctx)) return;
+
     const btn = document.createElement("button");
-    btn.className = "spot-btn";
-    btn.textContent = spot.label;
     btn.addEventListener("click", () => onSpotTap(spotId));
-    spotList.appendChild(btn);
+
+    if (spot.position) {
+      btn.className = "spot-hotspot" + (DEBUG_SHOW_HOTSPOT_LABELS ? " spot-hotspot--debug" : "");
+      btn.style.left = `${spot.position.x}%`;
+      btn.style.top = `${spot.position.y}%`;
+      btn.style.width = `${spot.position.width}%`;
+      btn.style.height = `${spot.position.height}%`;
+      if (DEBUG_SHOW_HOTSPOT_LABELS) btn.textContent = spot.label;
+      main.appendChild(btn);
+    } else {
+      btn.className = "spot-btn";
+      btn.textContent = spot.label;
+      spotList.appendChild(btn);
+    }
   });
   main.appendChild(spotList);
   root.appendChild(main);
+
+  // 座標合わせ用の補助機能: 背景の上をタップした場所の%座標をコンソールに出す。
+  // spots.json の position を決めるときの参考値として使う（本番機能ではない）。
+  main.addEventListener("click", (e) => {
+    if (e.target !== main && e.target !== sceneLabel) return;
+    const rect = main.getBoundingClientRect();
+    const xPct = (((e.clientX - rect.left) / rect.width) * 100).toFixed(1);
+    const yPct = (((e.clientY - rect.top) / rect.height) * 100).toFixed(1);
+    console.log(`[座標メモ] x: ${xPct}%, y: ${yPct}%`);
+  });
 
   const arrowsRow = document.createElement("div");
   arrowsRow.className = "arrows-row";

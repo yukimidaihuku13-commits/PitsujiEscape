@@ -303,7 +303,7 @@ async function main() {
     "click",
     (e) => {
       if (state.phase === "play" && msgQueue.isBusy()) {
-        const spotBtn = e.target.closest && e.target.closest(".spot-btn");
+        const spotBtn = e.target.closest && e.target.closest(".spot-btn, .spot-hotspot");
         if (spotBtn) {
           msgQueue.clear();
           return; // 伝播を止めず、spot-btn側のクリック処理へそのまま進める

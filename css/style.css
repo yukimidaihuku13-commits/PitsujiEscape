@@ -134,6 +134,36 @@ html, body {
   background: #e0e0e0;
 }
 
+/* 画像上の座標に配置するホットスポット（position指定時）。
+   本番では見た目なしの透明な当たり判定として振る舞う。 */
+.spot-hotspot {
+  position: absolute;
+  border: none;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  z-index: 3;
+}
+
+/* 座標合わせ用のデバッグ表示（枠線＋ラベル）。Renderer.jsのDEBUG_SHOW_HOTSPOT_LABELSで
+   このクラス自体の付与をオフにできる。 */
+.spot-hotspot--debug {
+  border: 2px dashed rgba(255, 87, 34, 0.85);
+  background: rgba(255, 87, 34, 0.15);
+  border-radius: 6px;
+  color: #d84315;
+  font-size: 0.7rem;
+  font-weight: bold;
+  padding: 2px;
+}
+.spot-hotspot--debug:active {
+  background: rgba(255, 87, 34, 0.35);
+}
+
 .story-main {
   background: #263238;
   color: #fff;

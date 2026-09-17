@@ -3,6 +3,7 @@
     "id": "spotDesk",
     "viewId": "roomPiguma",
     "label": "机",
+    "position": { "x": 55.1, "y": 39.3, "width": 33.2, "height": 19.5 },
     "rules": [
       { "when": {}, "actions": [{ "type": "moveTo", "target": "viewDesk", "transition": "zoom" }] }
     ]
@@ -11,6 +12,7 @@
     "id": "spotBookshelf",
     "viewId": "roomPiguma",
     "label": "本棚",
+    "position": { "x": 3.6, "y": 33.6, "width": 25.1, "height": 14.1 },
     "rules": [
       { "when": {}, "actions": [{ "type": "message", "text": "最近のお気に入りはホームズの踊る人形だ" }] }
     ]
@@ -19,6 +21,7 @@
     "id": "spotBed",
     "viewId": "roomPiguma",
     "label": "ベッド",
+    "position": { "x": 4.3, "y": 52.1, "width": 50.8, "height": 22.9 },
     "rules": [
       { "when": { "playPart": { "gt": 1 } }, "actions": [{ "type": "moveTo", "target": "viewBed", "transition": "zoom" }] }
     ]
@@ -27,6 +30,7 @@
     "id": "spotGame",
     "viewId": "viewDesk",
     "label": "ゲーム機",
+    "position": { "x": 12.1, "y": 28.3, "width": 30.0, "height": 14.9 },
     "rules": [
       { "when": {}, "actions": [{ "type": "message", "text": "今はゲームの気分じゃない" }] }
     ]
@@ -35,6 +39,7 @@
     "id": "spotPcStream",
     "viewId": "viewDesk",
     "label": "配信用カメラ",
+    "position": { "x": 52.8, "y": 25.3, "width": 33.0, "height": 22.9 },
     "rules": [
       { "when": {}, "actions": [{ "type": "attemptPartClear" }] }
     ]
@@ -43,6 +48,7 @@
     "id": "spotNotebook",
     "viewId": "viewDesk",
     "label": "調査ノート",
+    "position": { "x": 10.7, "y": 44.7, "width": 30.1, "height": 14.9 },
     "rules": [
       { "when": {}, "actions": [{ "type": "moveTo", "target": "viewNote1", "transition": "zoom" }] }
     ]
@@ -51,6 +57,7 @@
     "id": "spotNote1left",
     "viewId": "viewNote1",
     "label": "調査ノート1(左)",
+    "position": { "x": 11.8, "y": 40.5, "width": 37.0, "height": 23.4 },
     "rules": [
       { "when": {}, "actions": [{ "type": "message", "text": "ぴつじはチョコレートが好きと･･･" }] }
     ]
@@ -59,6 +66,7 @@
     "id": "spotNote1right",
     "viewId": "viewNote1",
     "label": "調査ノート1(右)",
+    "position": { "x": 51.1, "y": 41.0, "width": 37.1, "height": 23.3 },
     "rules": [
       { "when": {}, "actions": [{ "type": "message", "text": "ぴつじはふかふかなものが好きと･･･" }] }
     ]
@@ -67,6 +75,7 @@
     "id": "spotNote2left",
     "viewId": "viewNote2",
     "label": "調査ノート2(左)",
+    "position": { "x": 11.8, "y": 40.5, "width": 37.0, "height": 23.4 },
     "rules": [
       { "when": {}, "actions": [{ "type": "message", "text": "ぴつじの友達だ" }] }
     ]
@@ -75,6 +84,7 @@
     "id": "spotNote2right",
     "viewId": "viewNote2",
     "label": "調査ノート2(右)",
+    "position": { "x": 51.1, "y": 41.0, "width": 37.1, "height": 23.3 },
     "rules": [
       { "when": {}, "actions": [{ "type": "message", "text": "ぴつじの友達の写真だ" }] }
     ]
@@ -83,6 +93,7 @@
     "id": "spotBedmat",
     "viewId": "viewBed",
     "label": "ベッドマット",
+    "position": { "x": 25.7, "y": 62.4, "width": 21.8, "height": 11.6 },
     "rules": [
       { "when": {}, "actions": [{ "type": "message", "text": "このタオルケットの生地の触り心地は最高だ" }] }
     ]
@@ -91,6 +102,7 @@
     "id": "spotUnderBed",
     "viewId": "viewBed",
     "label": "ベッド下",
+    "position": { "x": 44.3, "y": 49.8, "width": 43.4, "height": 8.3 },
     "rules": [
       { "when": {}, "actions": [{ "type": "message", "text": "何かありそうだな……まあいいか" }] }
     ]
@@ -99,6 +111,7 @@
     "id": "spotDoorB",
     "viewId": "roomA1",
     "label": "ドアB",
+    "position": { "x": 24.1, "y": 25.8, "width": 19.4, "height": 10.7 },
     "rules": [
       { "when": { "playPart": 3, "flag": { "doorBUnlocked": true } }, "actions": [{ "type": "message", "text": "これでぴつじも脱出したくなるはず！" }] },
       { "when": { "playPart": 3 }, "actions": [{ "type": "message", "text": "ロックを解除しないと開かないな" }] },
@@ -109,6 +122,7 @@
     "id": "spotLockDoorB",
     "viewId": "roomA1",
     "label": "ドアBの電子錠",
+    "position": { "x": 5.1, "y": 29.2, "width": 18.5, "height": 10.4 },
     "rules": [
       { "when": { "flag": { "doorBUnlocked": true } }, "actions": [{ "type": "message", "text": "ロックは解除されている" }] },
       { "when": { "playPart": 3 }, "actions": [
@@ -122,6 +136,7 @@
     "id": "spotDoorKitchen",
     "viewId": "roomA1",
     "label": "台所入口",
+    "position": { "x": 65.7, "y": 39.4, "width": 19.2, "height": 11.1 },
     "rules": [
       { "when": {}, "actions": [{ "type": "moveTo", "target": "roomKitchen", "transition": "door" }] }
     ]
@@ -130,6 +145,7 @@
     "id": "spotTable",
     "viewId": "roomA1",
     "label": "テーブル",
+    "position": { "x": 35.9, "y": 53.2, "width": 19.2, "height": 11.1 },
     "rules": [
       { "when": {}, "actions": [{ "type": "moveTo", "target": "viewTable", "transition": "zoom" }] }
     ]
@@ -138,6 +154,7 @@
     "id": "spotDoorPiguma",
     "viewId": "roomA2",
     "label": "黒ぴぐま部屋のドア",
+    "position": { "x": 51.5, "y": 29.2, "width": 19.1, "height": 11.1 },
     "rules": [
       { "when": {}, "actions": [{ "type": "moveTo", "target": "roomPiguma", "transition": "door" }] }
     ]
@@ -146,6 +163,7 @@
     "id": "spotShelf",
     "viewId": "roomA2",
     "label": "棚",
+    "position": { "x": 2.0, "y": 35.5, "width": 19.2, "height": 11.1 },
     "rules": [
       { "when": {}, "actions": [{ "type": "moveTo", "target": "viewShelf", "transition": "zoom" }] }
     ]
@@ -154,6 +172,7 @@
     "id": "spotPitsujiDoor",
     "viewId": "roomA2",
     "label": "ぴつじ部屋のドア",
+    "position": { "x": 22.0, "y": 28.4, "width": 19.2, "height": 11.1 },
     "rules": [
       { "when": {}, "actions": [{ "type": "moveTo", "target": "viewPitsujiDoor", "transition": "zoom" }] }
     ]
@@ -162,6 +181,7 @@
     "id": "spotCardboardBox",
     "viewId": "roomA2",
     "label": "段ボール箱",
+    "position": { "x": 63.0, "y": 42.6, "width": 34.4, "height": 27.0 },
     "rules": [
       { "when": {}, "actions": [{ "type": "message", "text": "脱出に必要なものを色々買った時のダンボールだ" }] }
     ]
@@ -170,6 +190,7 @@
     "id": "spotRefrigerator",
     "viewId": "roomKitchen",
     "label": "冷蔵庫",
+    "position": { "x": 72.6, "y": 44.5, "width": 19.2, "height": 11.1 },
     "rules": [
       { "when": { "everObtained": "itemChocolate" }, "actions": [{ "type": "message", "text": "つい開けてしまうが何も入っていない" }] },
       { "when": { "playPart": 2 }, "actions": [
@@ -183,6 +204,7 @@
     "id": "spotFreezer",
     "viewId": "roomKitchen",
     "label": "冷凍庫",
+    "position": { "x": 74.3, "y": 29.2, "width": 19.2, "height": 11.1 },
     "rules": [
       { "when": { "everObtained": "itemFrozenBluePaper" }, "actions": [{ "type": "message", "text": "アイスでも入れておけばよかった" }] },
       { "when": { "playPart": 3, "selectedItem": "itemBluePaper" }, "actions": [
@@ -197,6 +219,7 @@
     "id": "spotFire",
     "viewId": "roomKitchen",
     "label": "コンロ",
+    "position": { "x": 26.5, "y": 34.7, "width": 19.2, "height": 11.1 },
     "rules": [
       { "when": { "everObtained": "itemToastedBread" }, "actions": [{ "type": "message", "text": "まだフライパンが熱い" }] },
       { "when": { "playPart": 3, "selectedItem": "itemBread" }, "actions": [
@@ -211,6 +234,7 @@
     "id": "spotPitsujiDoorKnob",
     "viewId": "viewPitsujiDoor",
     "label": "ドアノブ",
+    "position": { "x": 60.6, "y": 45.8, "width": 20.8, "height": 10.9 },
     "rules": [
       { "when": {}, "actions": [{ "type": "message", "text": "よし！絶対ぴつじを脱出させてやる！" }] }
     ]
@@ -219,6 +243,7 @@
     "id": "spotPitsujiWindow",
     "viewId": "viewPitsujiDoor",
     "label": "ドア小窓",
+    "position": { "x": 49.1, "y": 31.8, "width": 27.3, "height": 14.1 },
     "rules": [
       { "when": { "playPart": { "lt": 5 } }, "actions": [{ "type": "message", "text": "がたついている曇りガラス窓だ" }] }
     ]
@@ -227,6 +252,7 @@
     "id": "spotPitsujiDoorGap",
     "viewId": "viewPitsujiDoor",
     "label": "ドア下隙間",
+    "position": { "x": 40.8, "y": 71.1, "width": 44.6, "height": 3.3 },
     "rules": [
       { "when": { "playPart": { "gt": 2 } }, "actions": [{ "type": "message", "text": "隙間があるけど...下から中の様子は見えないな" }] },
       { "when": { "playPart": 2, "selectedItem": "itemChocolate" }, "actions": [
@@ -240,6 +266,7 @@
     "id": "spotDrawer",
     "viewId": "viewShelf",
     "label": "引き出し",
+    "position": { "x": 14.4, "y": 49.8, "width": 45.1, "height": 19.7 },
     "rules": [
       { "when": { "everObtained": "itemBluePaper" }, "actions": [{ "type": "message", "text": "もうここには何もなさそうだ" }] },
       { "when": { "playPart": { "gt": 3 } }, "actions": [{ "type": "message", "text": "この紙は脱出ゲーム用に用意したんだったな" }] },
@@ -254,6 +281,7 @@
     "id": "spotToolbox",
     "viewId": "viewShelf",
     "label": "工具箱",
+    "position": { "x": 28.9, "y": 18.3, "width": 44.9, "height": 19.7 },
     "rules": [
       { "when": { "playPart": { "lt": 5 } }, "actions": [{ "type": "message", "text": "ここには脱出の準備で使った工具が色々と入れてある" }] }
     ]
@@ -262,6 +290,7 @@
     "id": "spotOnTable",
     "viewId": "viewTable",
     "label": "テーブルの上",
+    "position": { "x": 40.4, "y": 42.1, "width": 19.2, "height": 11.1 },
     "rules": [
       { "when": { "everObtained": "itemBread" }, "actions": [{ "type": "message", "text": "少しお腹がすいてきたな" }] },
       { "when": { "playPart": 3 }, "actions": [
@@ -275,6 +304,7 @@
     "id": "spotChair",
     "viewId": "viewTable",
     "label": "椅子",
+    "position": { "x": 14.4, "y": 43.9, "width": 19.2, "height": 11.1 },
     "rules": [
       { "when": { "playPart": { "lt": 5 } }, "actions": [{ "type": "message", "text": "ふかふかのクッションが背中を守ってくれる" }] }
     ]

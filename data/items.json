@@ -1,0 +1,37 @@
+[
+  {
+    "id": "itemChocolate",
+    "name": "チョコレート",
+    "persistence": "consumed",
+    "transformsTo": null,
+    "usableOn": ["spotPitsujiDoorGap"]
+  },
+  {
+    "id": "itemBluePaper",
+    "name": "青い紙",
+    "persistence": "transform",
+    "transformsTo": "itemFrozenBluePaper",
+    "usableOn": ["spotFreezer"]
+  },
+  {
+    "id": "itemFrozenBluePaper",
+    "name": "冷凍後の青い紙",
+    "persistence": "remainInPart",
+    "transformsTo": null,
+    "usableOn": []
+  },
+  {
+    "id": "itemBread",
+    "name": "食パン",
+    "persistence": "transform",
+    "transformsTo": "itemToastedBread",
+    "usableOn": ["spotFire"]
+  },
+  {
+    "id": "itemToastedBread",
+    "name": "焼かれた食パン",
+    "persistence": "remainInPart",
+    "transformsTo": null,
+    "usableOn": []
+  }
+]

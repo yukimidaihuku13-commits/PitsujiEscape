@@ -1,0 +1,15 @@
+[
+  { "view": "roomPiguma", "direction": "down", "target": "roomA2", "condition": { "playPart": { "gte": 2 } } },
+  { "view": "roomA1", "direction": "right", "target": "roomA2" },
+  { "view": "roomA2", "direction": "left", "target": "roomA1" },
+  { "view": "roomKitchen", "direction": "down", "target": "roomA1" },
+  { "view": "viewDesk", "direction": "down", "target": "roomPiguma" },
+  { "view": "viewNote1", "direction": "right", "target": "viewNote2" },
+  { "view": "viewNote1", "direction": "down", "target": "viewDesk" },
+  { "view": "viewNote2", "direction": "left", "target": "viewNote1" },
+  { "view": "viewNote2", "direction": "down", "target": "viewDesk" },
+  { "view": "viewBed", "direction": "down", "target": "roomPiguma" },
+  { "view": "viewTable", "direction": "down", "target": "roomA1" },
+  { "view": "viewPitsujiDoor", "direction": "down", "target": "roomA2" },
+  { "view": "viewShelf", "direction": "down", "target": "roomA2" }
+]

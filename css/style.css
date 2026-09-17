@@ -1,0 +1,304 @@
+/* 第一試作段階のスタイル。背景・アイテム画像等のアセットは未確定のため
+   プレースホルダー（グレー矩形＋ラベルテキスト）で表現している。
+   デザイナーとのすり合わせ後にブラッシュアップする前提。 */
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  background: #000;
+  font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior: none;
+}
+
+#game-frame {
+  max-width: 480px;
+  margin: 0 auto;
+  height: 100dvh;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+#app {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* --- 開始画面 --- */
+.start-screen {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  white-space: pre-wrap;
+  font-size: 1.2rem;
+  padding: 16px;
+}
+
+/* --- ヘッダー --- */
+.header-icons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 8px 10px;
+  border-bottom: 1px solid #ccc;
+  flex-shrink: 0;
+}
+.icon-btn {
+  font-size: 0.8rem;
+  padding: 6px 10px;
+  border: 1px solid #999;
+  border-radius: 6px;
+  background: #f5f5f5;
+}
+
+/* --- 所持品バー --- */
+.inventory-bar {
+  display: flex;
+  gap: 6px;
+  padding: 8px 10px;
+  overflow-x: auto;
+  border-bottom: 1px solid #ccc;
+  flex-shrink: 0;
+  min-height: 40px;
+  align-items: center;
+}
+.inventory-item {
+  white-space: nowrap;
+  padding: 6px 10px;
+  border: 1px solid #888;
+  border-radius: 6px;
+  background: #fff;
+  font-size: 0.85rem;
+}
+.inventory-item.selected {
+  background: #ffe08a;
+  border-color: #d4a017;
+}
+.inventory-empty {
+  color: #999;
+  font-size: 0.8rem;
+}
+
+/* --- メイン画面 --- */
+.scene-main {
+  flex: 1;
+  min-height: 0;
+  background: #cfd8dc;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  overflow-y: auto;
+  padding: 10px;
+  position: relative;
+}
+.scene-label {
+  font-size: 0.9rem;
+  color: #333;
+  margin-bottom: 10px;
+  text-align: center;
+}
+.spot-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  max-width: 320px;
+}
+.spot-btn {
+  padding: 12px;
+  font-size: 0.95rem;
+  border: 1px solid #607d8b;
+  border-radius: 8px;
+  background: #ffffffcc;
+}
+.spot-btn:active {
+  background: #e0e0e0;
+}
+
+.story-main {
+  background: #263238;
+  color: #fff;
+  justify-content: center;
+  align-items: center;
+}
+.story-main .scene-label {
+  color: #cfd8dc;
+}
+.portrait-box {
+  margin-top: 14px;
+  padding: 20px;
+  border: 1px dashed #90a4ae;
+  border-radius: 8px;
+  white-space: pre-wrap;
+  text-align: center;
+  color: #eceff1;
+}
+
+/* --- 矢印 --- */
+.arrows-row {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  padding: 6px;
+  border-top: 1px solid #ccc;
+  flex-shrink: 0;
+  min-height: 32px;
+}
+.arrow-btn {
+  font-size: 1.1rem;
+  padding: 4px 14px;
+  border-radius: 6px;
+  border: 1px solid #607d8b;
+  background: #eceff1;
+}
+
+/* --- フッター(メッセージ) --- */
+.footer-row {
+  display: flex;
+  border-top: 1px solid #ccc;
+  flex-shrink: 0;
+  min-height: 72px;
+}
+.face-box {
+  width: 72px;
+  flex-shrink: 0;
+  border-right: 1px solid #ccc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  white-space: pre-wrap;
+  text-align: center;
+  color: #999;
+}
+.footer-message {
+  flex: 1;
+  padding: 10px 12px;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  display: flex;
+  align-items: center;
+}
+.story-footer {
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  min-height: 72px;
+  width: 100%;
+}
+.speaker-name {
+  font-weight: bold;
+  font-size: 0.85rem;
+  margin-bottom: 4px;
+  color: #37474f;
+}
+
+/* --- モーダル(ギミック/ログ/ヒント/設定) --- */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 16px;
+}
+.modal-box {
+  background: #fff;
+  border-radius: 10px;
+  padding: 20px;
+  width: 100%;
+  max-width: 360px;
+  max-height: 80vh;
+  overflow-y: auto;
+  position: relative;
+}
+.modal-title {
+  font-weight: bold;
+  font-size: 1rem;
+  margin-bottom: 10px;
+}
+.modal-close-btn {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  border: none;
+  background: none;
+  font-size: 1.3rem;
+  line-height: 1;
+  color: #666;
+}
+.log-line, .hint-line {
+  font-size: 0.9rem;
+  padding: 4px 0;
+  border-bottom: 1px solid #eee;
+}
+.danger-btn {
+  margin-top: 16px;
+  padding: 10px;
+  width: 100%;
+  border: 1px solid #c62828;
+  color: #c62828;
+  background: #fff5f5;
+  border-radius: 6px;
+}
+
+/* --- 数字コードギミック --- */
+.gimmick-title {
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+.gimmick-status {
+  min-height: 1.2em;
+  color: #c62828;
+  font-size: 0.9rem;
+  margin-bottom: 6px;
+}
+.gimmick-display {
+  font-size: 1.6rem;
+  letter-spacing: 4px;
+  text-align: center;
+  margin-bottom: 14px;
+  font-family: monospace;
+}
+.gimmick-numpad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.gimmick-key {
+  padding: 14px 0;
+  font-size: 1.1rem;
+  border: 1px solid #999;
+  border-radius: 8px;
+  background: #f5f5f5;
+}
+.gimmick-controls {
+  display: flex;
+  gap: 10px;
+}
+.gimmick-controls button {
+  flex: 1;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #607d8b;
+  background: #eceff1;
+}
+.gimmick-controls button:disabled {
+  opacity: 0.4;
+}

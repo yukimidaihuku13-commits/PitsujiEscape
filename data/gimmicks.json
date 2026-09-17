@@ -1,0 +1,16 @@
+[
+  {
+    "id": "gimmickLockDoorB",
+    "label": "ドアBの電子錠",
+    "type": "numericCode",
+    "digits": 4,
+    "answer": "3952",
+    "onSuccess": [
+      { "type": "setFlag", "flag": "doorBUnlocked", "value": true },
+      { "type": "message", "text": "カチッと音がして鍵が開いた" }
+    ],
+    "onFail": [
+      { "type": "message", "text": "違うようだ……" }
+    ]
+  }
+]

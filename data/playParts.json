@@ -1,0 +1,29 @@
+[
+  {
+    "id": 1,
+    "startMessages": ["さて･･･始めるか"],
+    "clearCondition": {},
+    "notYetMessage": null,
+    "nextStoryPart": 1
+  },
+  {
+    "id": 2,
+    "startMessages": [
+      "そうだ、確か調査ノートにぴつじの好きな食べ物が書いてあったな",
+      "それで手懐けてみたらどうだ？"
+    ],
+    "clearCondition": { "usedOn": { "item": "itemChocolate", "spot": "spotPitsujiDoorGap" } },
+    "notYetMessage": "ぴつじは何をしたらテンション上がるかな",
+    "nextStoryPart": 2
+  },
+  {
+    "id": 3,
+    "startMessages": [
+      "そこのドアを空けておくか",
+      "確かそこに暗証番号を入れればいいんだったな･･････あれ、何番にしたっけ"
+    ],
+    "clearCondition": { "flag": { "doorBUnlocked": true } },
+    "notYetMessage": "ちょっと解いてくるか。何がそんなに嫌なんだ？",
+    "nextStoryPart": 3
+  }
+]

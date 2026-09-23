@@ -1,0 +1,118 @@
+アイテム一覧
+#使用後の状態について
+消失：使用後にアイテム一覧から消す。
+残存：使用後アイテム一覧に残る(同一操作パートのみ)。操作パート切り替わり時に、残存アイテムはアイテム一覧から全て消す。
+
+/* チョコレート */
+タグ：itemChocolate
+入手場所：spotFridgeCompartment // 冷蔵庫の冷蔵部分
+入手可能パート：PlayPart == 2
+使用対象：spotPitsujiDoorGap // ぴつじ部屋のドア下隙間 (ぴつじに渡す)
+使用後：消失
+
+/* 青い紙 */
+タグ：itemBluePaper
+入手場所：spotDrawer　// 棚の引き出し
+入手可能パート：PlayPart == 3
+使用対象：spotFreezerCompartment //冷蔵庫の冷凍部分
+使用後：消失　→　itemFrozenBluePaper // 冷凍後の青い紙に変化
+
+/* 冷凍後の青い紙 */
+タグ：itemFrozenBluePaper
+入手場所：青い紙の変化
+入手可能パート：PlayPart == 3
+使用対象：NA　//特定の使用対象なし。アイテム自体を確認すると、紙には4桁の数字がかかれている
+使用後：NA
+
+/* 食パン */
+タグ：itemBread
+入手場所：spotOnTable　//テーブルの上
+入手可能パート：PlayPart == 3
+使用対象：spotToaster // トースター
+使用後：消失　→　itemToastedBread // 焼かれた食パンに変化
+
+/* 焼かれた食パン */
+タグ：itemToastedBread
+入手場所：食パンの変化(←itemBread)
+入手可能パート：PlayPart == 3
+使用対象：NA　//特定の使用対象なし。アイテム自体を確認すると、パンには記号（りんご）が書かれている
+使用後：残存
+
+/* ブラックライト */
+タグ：itemBlackLight
+入手場所：spotPhoneStandDrawer　//電話台引き出し
+入手可能パート：PlayPart == 4
+使用対象：spotPhone　// 電話. 部屋の電気の色が変わっている状態でアイテム自体を確認すると、PHONEが暗号文字で書かれている
+使用対象：spotSalt　// 塩. 部屋の電気の色が変わっている状態でアイテム自体を確認すると、SALTが暗号文字で書かれている
+使用後：残存
+
+/* 絵 */
+タグ：itemIllust
+入手場所：spotSofa　// 部屋Bのソファ(ソファの下から拾う)
+入手可能パート：PlayPart == 4
+使用対象：NA　//特定の使用対象なし。部屋の電気の色が変わっている状態でアイテム自体を確認すると、ESCAPEが暗号文字で書かれている
+使用後：残存
+
+/* プラスドライバー */
+タグ：itemScrewDriver
+入手場所：spotToolbox　// 工具箱
+入手可能パート：PlayPart == 5
+使用対象：spotPitsujiWindow // ぴつじ部屋のドアの小窓
+使用後：残存
+
+/* クッション */
+タグ：itemCushion
+入手場所：spotChair // 椅子
+入手可能パート：PlayPart == 5
+使用対象：spotPitsujiWindow // ぴつじ部屋のドア小窓 (ぴつじに渡す)
+使用後：消失
+
+/* タオルケット */
+タグ：itemLargeTowel
+入手場所：spotBedmat　// ベッドマット
+入手可能パート：PlayPart == 5
+使用対象：spotPitsujiWindow // ぴつじ部屋のドア小窓 (ぴつじに渡す)
+使用後：消失
+
+/* ぴさぎの名刺 */
+タグ：itemPisagiCard
+入手場所：spotBookshelf // 本棚
+入手可能パート：PlayPart == 6
+使用対象：spotPhone // 電話台の電話
+使用後：消失
+
+
+/* カメラ */
+タグ：itemCamera
+入手場所：spotUnderBed
+入手可能パート：PlayPart==6
+使用対象：spotPitsujiWindow // ぴつじの様子を写真にとる
+使用後：消失
+
+/* ぴつじの写真 */
+タグ：itemPhotoPitsuji
+入手場所：ぴつじ部屋小窓(spotPitsujiWindow)にカメラ(itemCamera)を使うと入手できる
+入手可能パート：PlayPart == 6
+使用対象：gimmickPcGame // ゲームに添付する
+使用後：消失
+
+/* 写真 */
+タグ：itemPhoto
+入手場所：調査ノート2右(spotNote2right)を調べると入手できる
+入手可能パート：PlayPart == 7
+使用対象：spotPisagi // ぴさぎに渡す
+使用後：消失
+
+/* マラカス */
+タグ：itemMaracas
+入手場所：gimmickPhotoをクリアすると入手できる
+入手可能パート：PlayPart == 7
+使用対象：spotPiguma // ぴぐまに渡す
+使用後：消失
+
+/* 音楽CD */
+タグ：itemCD
+入手場所：ぴぐま(spotPiguma)にマラカスを使用すると入手できる
+入手可能パート：PlayPart == 7
+使用対象：spotAudioPlayer　// オーディオにセットすると、選択できる曲が増える
+使用後：消失

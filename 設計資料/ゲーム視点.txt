@@ -1,0 +1,217 @@
+視点一覧
+・視点移動に関する情報
+・各視点に存在するクリックポイントの列挙
+  // 各クリックポイントの詳細は、クリックポイント.txt参照
+
+【部屋一覧】
+/* 黒ぴぐま部屋 */
+タグ：roomPiguma
+矢印移動：[下]roomA2 ##PlayPart2以降. それ以前移動不可
+// 存在するクリックポイント一覧
+・机　[spotDesk]　// タップで視点移動(拡大)
+移動先：viewDesk // 机拡大
+・本棚　[spotBookshelf]　// タップで本の画像表示とアイテム入手
+移動先：NA
+・ベッド　[spotBed] // タップで視点移動(拡大)
+移動先：viewBed　// ベッド拡大
+・ぴぐま　[spotPiguma] // #操作パート7のみ. マラカス使用でアイテムCD入手
+移動先：NA
+
+/* 部屋A 1*/
+タグ：roomA1
+矢印移動：[右]roomA2
+// 存在するクリックポイント一覧
+・ドアB　[spotDoorB]　// タップで部屋移動
+移動先：roomB1
+・ドアBの電子錠 [spotLockDoorB] // 電子錠タップでギミック起動
+移動先：gimmickLockDoorB
+・冷蔵庫　[spotRefrigerator]　// 冷蔵庫タップで視点移動
+移動先：viewRefrigerator 
+・トースター　[spotDoorKitchen]　// トースタータップで視点移動
+移動先：viewToaster
+・テーブル　[spotTable]　// テーブルタップで視点移動
+移動先：viewTable // テーブル拡大
+
+/* 部屋A 2*/
+タグ：roomA2
+矢印移動：[左]roomA1
+// 存在するクリックポイント一覧
+・黒ぴぐま部屋のドア[spotDoorPiguma] // ドアタップで部屋移動
+移動先：roomPiguma
+・棚　[spotShelf]　// 棚タップで視点移動
+移動先：viewShelf
+・ぴつじ部屋のドア　[spotPitsujiDoor]　// ドアタップで視点移動(拡大)
+移動先：viewPitsujiDoor
+・段ボール箱 [spotCardboardBox]　// 箱タップで画像表示
+移動先：NA
+
+/* 部屋B 1 */
+#操作パート4以降移動可
+タグ：roomB1
+矢印移動：[右]roomB2
+// 存在するクリックポイント一覧
+・ドアA[spotDoorA] // ドアタップで部屋移動
+移動先：roomA1
+・電話台　[spotPhoneStand] // 電話台タップで視点移動
+移動先：viewPhoneStand //
+・玄関ドアの電子錠 [spotLockEntrance] // 電子錠タップでギミック起動 // #操作パート7ではタップ不可
+移動先：gimmickLockEntrance
+・玄関ドア　[spotDoorEntrance]　// ドアタップ。メッセージのみ。
+移動先：NA
+・ぴさぎ　[spotPisagi] // #操作パート7のみ
+移動先：NA 
+
+/* 部屋B 2 */
+#操作パート4以降移動可
+タグ：roomB2
+矢印移動：[左]roomB1
+// 存在するクリックポイント一覧
+・オーディオ　[spotAudioPlayer] // タップでBGM変更処理
+移動先：NA
+・ローテーブル　[spotLowTable]　// ローテーブルタップで視点移動
+移動先：viewLowTable
+・ソファ　[spotSofa] // タップでソファが少しずれて絵を入手する
+移動先：NA
+・電気スイッチ　[spotSwitch] // タップで部屋の電気の色が変わる
+移動先：NA
+
+/* ぴつじ部屋 */
+タグ：roomPitsuji
+矢印移動：NA
+// 存在するクリックポイント一覧
+・ぴつじ部屋の出口　[spotPitsujiExitDoor]　// タップでドアの障害物の画像表示　ドアの鍵が開く
+移動先：NA // ストーリーに移行するため移動しない
+
+-- 視点一覧 ------------------
+#黒ぴぐま部屋
+/* 机拡大 */
+タグ：viewDesk
+矢印移動：[下]roomPiguma
+// 存在するクリックポイント一覧
+・ゲーム機　[spotGame] // タップでギミック起動
+移動先：gimmickPcGame
+・調査ノート　[spotNotebook] // タップで視点移動(拡大)
+移動先：viewNote1
+・配信用カメラ　[spotPcStream]　// タップで処理更新
+ 移動先：NA
+
+/* 調査ノート1 */
+タグ：viewNote1
+矢印移動：[右]viewNote2
+矢印移動：[下]viewDesk
+// 存在するクリックポイント一覧
+・調査ノート1左[spotNote1left]
+移動先：NA
+・調査ノート1右[spotNote1right]
+移動先：NA
+
+/* 調査ノート2 */
+タグ：viewNote2
+矢印移動：[左]viewNote1
+矢印移動：[下]viewDesk
+// 存在するクリックポイント一覧
+・調査ノート2左[spotNote2left]
+移動先：NA
+・調査ノート2右[spotNote2right]
+
+/* ベッド拡大 */
+タグ：viewBed
+矢印移動：[下]roomPiguma
+・ベッドマット [spotBedmat] // タオルケット入手場所
+移動先：NA
+・ベッド下 [spotUnderBed] // カメラ入手場所
+移動先：NA
+
+#部屋A1
+/* テーブル拡大 */
+タグ：viewTable
+矢印移動：[下]roomA1
+// 存在するクリックポイント一覧
+・テーブルの上　[spotOnTable]　// 食パン入手場所
+移動先：NA
+・椅子 [spotChair] // クッション入手場所
+
+/* 冷蔵庫 */
+タグ：viewRefrigerator
+矢印移動：[下] roomA1
+// 存在するクリックポイント一覧
+・冷蔵庫[spotFridgeCompartment]　// チョコレート入手
+　移動先：NA
+・冷凍庫[spotFreezerCompartment]　//　青い紙使用時、冷凍後の青い紙入手
+　移動先：NA
+
+/* トースター */
+タグ：viewToaster
+矢印移動：[下] roomA1
+// 存在するクリックポイント一覧
+・トースター[spotToaster] // 食パン使用時、焼かれた食パン入手
+ 移動先：NA
+
+#部屋A2
+/* ぴつじ部屋のドア */
+タグ：viewPitsujiDoor
+矢印移動：[下]roomA2
+// 存在するクリックポイント一覧
+・ぴつじ部屋ドアノブ　[spotPitsujiDoorKnob] // 2回タップで処理更新
+移動先：NA
+・ぴつじ部屋ドア小窓　[spotPitsujiWindow]　// クッション・タオルケット使用
+移動先：NA
+・ぴつじ部屋ドア下隙間[spotPitsujiDoorGap] // チョコレート使用
+移動先：NA
+
+/* 棚 */
+タグ：viewShelf
+矢印移動：[下] roomA2
+// 存在するクリックポイント一覧
+・引き出し [spotDrawer] // 青い紙入手
+移動先：NA
+・工具箱　[spotToolbox] // プラスドライバー入手
+移動先：NA
+
+#部屋B1
+/* 電話台拡大 */
+タグ：viewPhoneStand
+矢印移動：[下]roomB1
+// 存在するクリックポイント一覧
+・電話　[spotPhone] // ブラックライト使用
+移動先：NA
+・電話台引き出し　[spotPhoneStandDrawer] // ブラックライト入手
+移動先：NA
+
+#部屋B2
+/* ローテーブル拡大 */
+タグ：viewLowTable
+矢印移動：[下]roomB2
+// 存在するクリックポイント一覧
+・テーブルの上の塩[spotSalt] // ブラックライト使用で画像表示
+移動先：NA
+
+┈┈┈┈┈ ギミック視点 ┈┈┈┈┈┈┈
+Gimmick.csv参照
+
+/* ドアBギミック */
+タグ：gimmickLockDoorB
+矢印移動：[下]roomA1
+// 4桁の数字を入力する
+// 数字のみのテンキーパッドを表示。タップによる入力。キーボード入力は使用しない。
+・3952(半角)
+
+/* 玄関ドアギミック */
+タグ：gimmickLockEntrance
+矢印移動：[下]roomB1
+// 6桁の英字. ボタンを押して選択.
+// キーボード入力は使用しない。
+・ESCAPE(半角)
+
+/* チャット画面(ギミック) */
+タグ：gimmickPcGame
+矢印移動：[下]viewDesk
+// 存在するクリックポイント一覧
+// 穴埋めの数字を入力する。
+// 数字のみのテンキーパッドを表示。タップによる入力し。キーボード入力は使用しない。
+・2, 51, 131(半角)
+
+/* 写真ギミック */
+タグ：gimmickPhoto
+矢印移動：[下]roomB1
+// 画像からマラカス・タンバリンの位置をそれぞれタップする

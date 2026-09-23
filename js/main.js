@@ -4,7 +4,7 @@
 
 import { createInitialState } from "./state/GameState.js";
 import { Engine } from "./engine/ActionExec.js";
-import { resolveActions } from "./engine/RuleResolver.js";
+import { resolveActions, resolveMessage } from "./engine/RuleResolver.js";
 import * as Navigator from "./nav/Navigator.js";
 import * as Inventory from "./inventory/Inventory.js";
 import * as SaveManager from "./save/SaveManager.js";
@@ -86,7 +86,18 @@ async function main() {
 
   function queueMessage(text) {
     if (text == null) return;
-    messageLog.push(text);
+    // 万が一メッセージ定義の解決に失敗して文字列以外(オブジェクト等)が渡ってきた場合、
+    // textContentへの代入で "[object Object]" のような表示になり原因が分かりにくい。
+    // ここで弾いてコンソールに実値を残す（再現待ちのデバッグ用）。
+    if (typeof text !== "string") {
+      console.error("[main] queueMessageに文字列以外が渡されました:", text);
+      return;
+    }
+    // ログが際限なく伸びるのを防ぐため、直前と全く同じ文言が連続する場合は
+    // ログには積まない（同じスポットの連打対策）。表示自体は毎回きちんと行う。
+    if (messageLog[messageLog.length - 1] !== text) {
+      messageLog.push(text);
+    }
     if (currentModalStatusEl) {
       currentModalStatusEl.textContent = text;
       return;
@@ -105,7 +116,8 @@ async function main() {
       onSpotTap,
       onArrowTap,
       onItemTap,
-      onIconTap
+      onIconTap,
+      onFaceTap
     });
   }
 
@@ -155,12 +167,26 @@ async function main() {
     else if (key === "settings") showSettingsModal();
   }
 
+  // ゲーム概要.txt「キャラ顔画像：タップすると次やる事のメッセージ(台詞)が表示される」対応。
+  // 現在のPlayPartの「まだやることが残っている」メッセージを、配信用カメラをタップした
+  // 時と同じ文言で表示する（新しい文言を別途持たない＝表記ゆれの発生源を増やさない）。
+  function onFaceTap() {
+    if (msgQueue.isBusy()) return;
+    const part = data.playPartsById[state.playPart];
+    const msg = part && resolveMessage(part.notYetMessage, state, ctx);
+    queueMessage(msg || "特に伝えることはないようだ");
+  }
+
   function openGimmick(gimmickId) {
     const gimmick = data.gimmicksById[gimmickId];
     if (!gimmick) {
       console.error(`[main] 存在しないgimmick: ${gimmickId}`);
       return;
     }
+    // ギミックを開く直前まで表示待ちだったメッセージは、モーダルに隠れて
+    // 実質読めないまま取り残される。閉じた後に亡霊のように再表示されないよう、
+    // ここで表示中キューを空にしておく（7-8対応）。
+    msgQueue.clear();
     const { overlay, box } = Renderer.renderModalWrap(modalRoot);
     currentModalOverlay = overlay;
 
@@ -218,26 +244,56 @@ async function main() {
     addModalCloseButton(box, overlay);
   }
 
+  // ヒントの行を隠すためのマスク文字。「タップ毎に捲れていく」(ゲーム概要.txt)対応。
+  const HINT_MASK = "??????";
+
   function showHintModal() {
     const { overlay, box } = Renderer.renderModalWrap(modalRoot);
     const title = document.createElement("div");
     title.className = "modal-title";
     title.textContent = `ヒント（Part${state.playPart}）`;
     box.appendChild(title);
-    const hint = data.hintsById[state.playPart];
+
+    const note = document.createElement("div");
+    note.className = "hint-note";
+    note.textContent = "タップでヒントが表示されます";
+    box.appendChild(note);
+
     const list = document.createElement("div");
     list.className = "hint-list";
-    if (!hint || hint.steps.length === 0) {
-      list.textContent = "（このパートのヒントは未設定です）";
-    } else {
-      hint.steps.forEach((step) => {
+    box.appendChild(list);
+
+    function drawList() {
+      list.innerHTML = "";
+      const hint = data.hintsById[state.playPart];
+      if (!hint || hint.steps.length === 0) {
+        list.textContent = "（このパートのヒントは未設定です）";
+        return;
+      }
+      const revealed = state.hintRevealCounts[state.playPart] || 0;
+      hint.steps.forEach((step, i) => {
         const line = document.createElement("div");
-        line.className = "hint-line";
-        line.textContent = `・${step}`;
+        if (i < revealed) {
+          line.className = "hint-line";
+          line.textContent = `・${step}`;
+        } else {
+          line.className = "hint-line hint-line--masked";
+          line.textContent = `・${HINT_MASK}`;
+          line.addEventListener("click", () => {
+            // 常に「今表示されている中で一番上の隠れている行」を開放する＝1行ずつ順番に捲れる
+            const current = state.hintRevealCounts[state.playPart] || 0;
+            if (current < hint.steps.length) {
+              state.hintRevealCounts[state.playPart] = current + 1;
+              SaveManager.save(state);
+              drawList();
+            }
+          });
+        }
         list.appendChild(line);
       });
     }
-    box.appendChild(list);
+
+    drawList();
     addModalCloseButton(box, overlay);
   }
 
@@ -283,16 +339,66 @@ async function main() {
   }
 
   function enterPlayPart(part) {
+    // ログが操作パートをまたいで際限なく伸びないよう、パート開始時にリセットする。
+    messageLog.length = 0;
     drawPlay();
     part.startMessages.forEach((t) => queueMessage(t));
   }
 
   function startGame() {
+    const part = data.playPartsById[1];
     state.phase = "play";
     state.playPart = 1;
-    state.currentView = "roomPiguma";
+    state.currentView = part.startView;
     SaveManager.save(state);
-    enterPlayPart(data.playPartsById[1]);
+    enterPlayPart(part);
+  }
+
+  // デバッグ用: スタート画面から任意のPlayPart/StoryPartへ直接ジャンプする。
+  // 通常プレイの状態(所持品・フラグ・選択中アイテム・表示待ちメッセージ等)を
+  // 引きずらないよう、毎回まっさらな状態から対象のパートへ入り直す
+  // (=そのパート単体のテストがしやすいようにする)。
+  function jumpToPlayPart(playPartId) {
+    const part = data.playPartsById[playPartId];
+    if (!part) {
+      console.error(`[main] 存在しないPlayPart: ${playPartId}`);
+      return;
+    }
+    Object.assign(state, createInitialState());
+    ctx.selectedItemId = null;
+    msgQueue.clear();
+    storyQueue.clear();
+    state.phase = "play";
+    state.playPart = playPartId;
+    state.currentView = part.startView;
+    SaveManager.save(state);
+    enterPlayPart(part);
+  }
+
+  function jumpToStoryPart(storyPartId) {
+    const story = data.storyPartsById[storyPartId];
+    if (!story) {
+      console.error(`[main] 存在しないStoryPart: ${storyPartId}`);
+      return;
+    }
+    Object.assign(state, createInitialState());
+    ctx.selectedItemId = null;
+    msgQueue.clear();
+    storyQueue.clear();
+    state.phase = "story";
+    state.storyPart = storyPartId;
+    SaveManager.save(state);
+    enterStoryPart(storyPartId);
+  }
+
+  function renderStartScreen() {
+    Renderer.renderStart(root, {
+      onStart: startGame,
+      onJumpToPlayPart: jumpToPlayPart,
+      onJumpToStoryPart: jumpToStoryPart,
+      playPartIds: Object.keys(data.playPartsById).map(Number),
+      storyPartIds: Object.keys(data.storyPartsById).map(Number)
+    });
   }
 
   // 想定外の連打・多重タップ対策:
@@ -320,13 +426,13 @@ async function main() {
 
   // 初期表示
   if (state.phase === "start") {
-    Renderer.renderStart(root, () => startGame());
+    renderStartScreen();
   } else if (state.phase === "story") {
     enterStoryPart(state.storyPart);
   } else if (state.phase === "play") {
     drawPlay();
   } else {
-    Renderer.renderStart(root, () => startGame());
+    renderStartScreen();
   }
 }
 

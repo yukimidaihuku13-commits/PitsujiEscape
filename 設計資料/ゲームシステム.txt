@@ -9,7 +9,10 @@ PlayPart[1]
 // 開始時メッセージ
 "さて……"
 
-// 初期状態は黒ぴぐま部屋からスタート
+// 初期状態は机拡大(viewDesk)からスタート
+// この時点ではゲーム機(spotGame)・調査ノート(spotNotebook)は非表示。
+// 黒ぴぐま部屋(roomPiguma)へ戻る下矢印も非表示で、机拡大から移動不可。
+// 操作パート2から、ゲーム機・調査ノートおよび下矢印が表示される。
 #必須項目は下記1項目. 1→ クリア
 1.配信用カメラ(spotPcStream)をタップする // 必須.
 操作パート1クリア
@@ -46,10 +49,10 @@ StoryPart[2]
 /* 操作パート 3 */
 PlayPart[3]
 //開始時メッセージ
-"確かそこに暗証番号を入力すれば……"
+"隣の部屋のドアのロックを解除するっぴ！"
 
 #下記は暗証番号割り出しのための補助。必須ではない。
-・棚の引き出し(spotDrawer)から青い紙(itemBluePaper)を入手 
+・部屋A-2の壁の貼り紙(spotWallPaper)から青い紙(itemBluePaper)を入手
 ・冷凍庫(spotFreezerCompartment)に青い紙を使い、冷凍後の青い紙(itemFrozenBluePaper)を入手
 ・テーブルの上(spotOnTable)から食パン(itemBread)を入手
 ・トースター(spotToaster)で食パンを焼き、焼かれた食パン(itemToastedBread)を入手

@@ -3,6 +3,7 @@
 // UIそのものは持たず、`ui` に渡されたコールバック経由でのみ画面に触れる。
 
 import { evaluate } from "./ConditionEval.js";
+import { resolveMessage } from "./RuleResolver.js";
 import * as Inventory from "../inventory/Inventory.js";
 import * as Navigator from "../nav/Navigator.js";
 import * as SaveManager from "../save/SaveManager.js";
@@ -52,6 +53,11 @@ export class Engine {
         this.state.clickCounts[key] = (this.state.clickCounts[key] || 0) + 1;
         break;
       }
+      case "resetClickCount": {
+        const key = action.spot || currentSpotId;
+        this.state.clickCounts[key] = 0;
+        break;
+      }
       case "moveTo":
         Navigator.moveToView(this.state, this.data.viewsById, action.target);
         break;
@@ -76,8 +82,9 @@ export class Engine {
     if (ok) {
       this.ui.playSE("click");
       this.clearCurrentPart(part);
-    } else if (part.notYetMessage) {
-      this.ui.queueMessage(part.notYetMessage);
+    } else {
+      const msg = resolveMessage(part.notYetMessage, this.state, this.ctx);
+      if (msg) this.ui.queueMessage(msg);
     }
   }
 
@@ -99,19 +106,35 @@ export class Engine {
     this.state.phase = "play";
     this.state.playPart = playPartId;
     this.state.storyPart = null;
-    SaveManager.save(this.state);
     const part = this.data.playPartsById[playPartId];
     if (!part) {
       console.warn(`[Engine] PlayPart${playPartId} は未実装です（試作範囲外）`);
+      SaveManager.save(this.state);
       return;
     }
+    // currentViewは各PlayPartのstartView(playParts.json)で毎回明示的に設定する。
+    // 前のパートの位置を引き継ぐ実装だと、ストーリーパートを経由した通常の進行以外
+    // (デバッグジャンプ等)でcurrentViewが未設定のままになり、背景/クリックポイントが
+    // 何も表示されなくなる（8-1で発覚した不具合）。
+    if (part.startView) {
+      this.state.currentView = part.startView;
+    } else {
+      console.warn(`[Engine] PlayPart${playPartId} にstartViewが設定されていません`);
+    }
+    SaveManager.save(this.state);
     this.ui.enterPlayPart(part);
   }
 
   resolveGimmickResult(gimmickId, isCorrect) {
     const gimmick = this.data.gimmicksById[gimmickId];
-    const actions = isCorrect ? gimmick.onSuccess : gimmick.onFail;
-    this.runActions(actions, gimmickId);
-    if (isCorrect) this.ui.closeGimmick();
+    if (isCorrect) {
+      // 先にギミックを閉じてから成功メッセージを流す。閉じる前に流すと、モーダル用の
+      // 即時表示(currentModalStatusEl)を素通りしてしまい、後続のメッセージで
+      // 直前のメッセージが一瞬で上書きされ続けて実質読めなくなる（7-8対応）。
+      this.ui.closeGimmick();
+      this.runActions(gimmick.onSuccess, gimmickId);
+    } else {
+      this.runActions(gimmick.onFail, gimmickId);
+    }
   }
 }

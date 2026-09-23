@@ -8,21 +8,83 @@ import { hasMatchingRule } from "../engine/RuleResolver.js";
 
 const ARROW_SYMBOL = { up: "▲", down: "▼", left: "◀", right: "▶" };
 
+// 背景/立ち絵の実ファイルが用意できていない、またはパス指定ミスで読み込みに
+// 失敗した場合に、無言で真っ白/真っ黒になるのを防ぐための共通ヘルパー。
+// 画像パスが無ければそもそも呼ばず、呼び出し側でプレースホルダーテキストを出す。
+function createImageLayer(className, path, onError) {
+  const img = document.createElement("img");
+  img.className = className;
+  img.src = path;
+  img.alt = "";
+  img.addEventListener("error", () => {
+    img.classList.add(className + "--error");
+    if (onError) onError();
+  });
+  return img;
+}
+
+function createPortraitPlaceholder(speaker) {
+  const portrait = document.createElement("div");
+  portrait.className = "portrait-box";
+  portrait.textContent = `${speaker}\n(立ち絵仮)`;
+  return portrait;
+}
+
 // position指定ホットスポットの座標合わせデバッグ表示（枠線＋ラベル文字）。
 // リリース前にfalseにする（or この分岐ごと削除する）とデバッグ表示だけ消える。
 const DEBUG_SHOW_HOTSPOT_LABELS = true;
 
-export function renderStart(root, onStart) {
+// スタート画面の、各パートへ直接ジャンプできるデバッグボタン群。
+// リリース前にfalseにする（or この分岐ごと削除する）と非表示にできる。
+const DEBUG_SHOW_JUMP_BUTTONS = true;
+
+export function renderStart(root, opts) {
+  const { onStart, onJumpToPlayPart, onJumpToStoryPart, playPartIds, storyPartIds } = opts;
   root.innerHTML = "";
+
   const wrap = document.createElement("div");
   wrap.className = "start-screen";
-  wrap.textContent = "ぴつじ脱出ゲーム\n（タップしてスタート）";
-  wrap.addEventListener("click", onStart);
+
+  const title = document.createElement("div");
+  title.className = "start-title";
+  title.textContent = "ぴつじ脱出ゲーム\n（タップしてスタート）";
+  title.addEventListener("click", onStart);
+  wrap.appendChild(title);
+
+  if (DEBUG_SHOW_JUMP_BUTTONS) {
+    const panel = document.createElement("div");
+    panel.className = "start-debug-panel";
+
+    const label = document.createElement("div");
+    label.className = "start-debug-label";
+    label.textContent = "デバッグ: 直接ジャンプ（セーブ内容は上書きされます）";
+    panel.appendChild(label);
+
+    panel.appendChild(createJumpRow("PlayPart", playPartIds, onJumpToPlayPart));
+    panel.appendChild(createJumpRow("StoryPart", storyPartIds, onJumpToStoryPart));
+
+    wrap.appendChild(panel);
+  }
+
   root.appendChild(wrap);
 }
 
+function createJumpRow(prefix, ids, onJump) {
+  const row = document.createElement("div");
+  row.className = "start-debug-row";
+  [...ids].sort((a, b) => a - b).forEach((id) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "start-debug-btn";
+    btn.textContent = `${prefix}${id}`;
+    btn.addEventListener("click", () => onJump(id));
+    row.appendChild(btn);
+  });
+  return row;
+}
+
 export function renderPlay(root, opts) {
-  const { state, ctx, data, currentMessage, onSpotTap, onArrowTap, onItemTap, onIconTap } = opts;
+  const { state, ctx, data, currentMessage, onSpotTap, onArrowTap, onItemTap, onIconTap, onFaceTap } = opts;
   root.innerHTML = "";
 
   const view = data.viewsById[state.currentView];
@@ -42,6 +104,10 @@ export function renderPlay(root, opts) {
   });
   root.appendChild(header);
 
+  const main = document.createElement("div");
+  main.className = "scene-main";
+
+  // 所持品バーも矢印と同じく、背景画像の上に重ねる透明なオーバーレイにする。
   const inv = document.createElement("div");
   inv.className = "inventory-bar";
   if (state.inventory.length === 0) {
@@ -58,22 +124,18 @@ export function renderPlay(root, opts) {
     btn.addEventListener("click", () => onItemTap(itemId));
     inv.appendChild(btn);
   });
-  root.appendChild(inv);
+  main.appendChild(inv);
 
-  const main = document.createElement("div");
-  main.className = "scene-main";
-  if (view && view.background) {
-    main.style.backgroundImage = `url("${view.background}")`;
-    main.style.backgroundSize = "cover";
-    main.style.backgroundPosition = "center";
-    main.style.backgroundColor = "transparent";
-  } else {
-    main.style.backgroundImage = "none";
-    main.style.backgroundColor = "";
-  }
   const sceneLabel = document.createElement("div");
   sceneLabel.className = "scene-label";
   sceneLabel.textContent = view ? `[${view.label}]${view.background ? "" : "（背景仮）"}` : "";
+
+  if (view && view.background) {
+    const bgImg = createImageLayer("scene-bg-img", view.background, () => {
+      sceneLabel.textContent = `[${view.label}]（背景画像の読み込みに失敗しました）`;
+    });
+    main.appendChild(bgImg);
+  }
   main.appendChild(sceneLabel);
 
   // 座標(position)が指定されているspotは画像上にホットスポットとして配置し、
@@ -104,6 +166,22 @@ export function renderPlay(root, opts) {
       spotList.appendChild(btn);
     }
   });
+  // 矢印は背景画像の上に重ねる透明ボタンとして配置する（scene-mainの子＝画像が
+  // 透けて見える）。scene-main配下に置くので、座標メモ用リスナーより後で追加する
+  // 必要はないが、判定対象から除外されるよう先にsceneLabel/mainのみを見ている
+  // 座標メモ用リスナー（下記）はe.targetで絞り込んでいるため影響しない。
+  const arrowsRow = document.createElement("div");
+  arrowsRow.className = "arrows-row";
+  const arrows = getArrowsForView(data.transitions, data.viewsById, state.currentView, state);
+  arrows.forEach((t) => {
+    const btn = document.createElement("button");
+    btn.className = "arrow-btn";
+    btn.textContent = ARROW_SYMBOL[t.direction] || t.direction;
+    btn.addEventListener("click", () => onArrowTap(t.target));
+    arrowsRow.appendChild(btn);
+  });
+  main.appendChild(arrowsRow);
+
   main.appendChild(spotList);
   root.appendChild(main);
 
@@ -117,23 +195,12 @@ export function renderPlay(root, opts) {
     console.log(`[座標メモ] x: ${xPct}%, y: ${yPct}%`);
   });
 
-  const arrowsRow = document.createElement("div");
-  arrowsRow.className = "arrows-row";
-  const arrows = getArrowsForView(data.transitions, data.viewsById, state.currentView, state);
-  arrows.forEach((t) => {
-    const btn = document.createElement("button");
-    btn.className = "arrow-btn";
-    btn.textContent = ARROW_SYMBOL[t.direction] || t.direction;
-    btn.addEventListener("click", () => onArrowTap(t.target));
-    arrowsRow.appendChild(btn);
-  });
-  root.appendChild(arrowsRow);
-
   const footer = document.createElement("div");
   footer.className = "footer-row";
-  const face = document.createElement("div");
+  const face = document.createElement("button");
   face.className = "face-box";
   face.textContent = "表情\n(TBD)";
+  face.addEventListener("click", () => onFaceTap && onFaceTap());
   footer.appendChild(face);
   const msg = document.createElement("div");
   msg.className = "footer-message";
@@ -156,30 +223,28 @@ export function renderStory(root, line) {
 
   const main = document.createElement("div");
   main.className = "scene-main story-main";
-  if (line && line.bgImage) {
-    main.style.backgroundImage = `url("${line.bgImage}")`;
-    main.style.backgroundSize = "cover";
-    main.style.backgroundPosition = "center";
-  } else {
-    main.style.backgroundImage = "none";
-  }
+
   const bgLabel = document.createElement("div");
   bgLabel.className = "scene-label";
   bgLabel.textContent = line && line.bg ? `[BG]${line.bgImage ? "" : "（背景仮）"}${line.bg}` : "";
+
+  if (line && line.bgImage) {
+    const bgImg = createImageLayer("scene-bg-img", line.bgImage, () => {
+      bgLabel.textContent = `[BG]（背景画像の読み込みに失敗しました）${line.bg || ""}`;
+    });
+    main.appendChild(bgImg);
+  }
   main.appendChild(bgLabel);
 
   if (line && line.speaker) {
     if (line.portraitImage) {
-      const img = document.createElement("img");
-      img.className = "portrait-img";
-      img.src = line.portraitImage;
+      const img = createImageLayer("portrait-img", line.portraitImage, () => {
+        img.replaceWith(createPortraitPlaceholder(line.speaker));
+      });
       img.alt = line.speaker;
       main.appendChild(img);
     } else {
-      const portrait = document.createElement("div");
-      portrait.className = "portrait-box";
-      portrait.textContent = `${line.speaker}\n(立ち絵仮)`;
-      main.appendChild(portrait);
+      main.appendChild(createPortraitPlaceholder(line.speaker));
     }
   }
   root.appendChild(main);

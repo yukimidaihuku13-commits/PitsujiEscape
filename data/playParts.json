@@ -1,27 +1,31 @@
 [
   {
     "id": 1,
-    "startMessages": ["さて･･･始めるか"],
+    "startView": "viewDesk",
+    "startMessages": ["さて……"],
     "clearCondition": {},
     "notYetMessage": null,
     "nextStoryPart": 1
   },
   {
     "id": 2,
+    "startView": "viewDesk",
     "startMessages": [
-      "そうだ、確か調査ノートにぴつじの好きな食べ物が書いてあったな",
-      "それで手懐けてみたらどうだ？"
+      "確か調査ノートにぴつじの好きな食べ物が書いてあったはず！",
+      "それでぴつじのやる気を出そう！"
     ],
     "clearCondition": { "usedOn": { "item": "itemChocolate", "spot": "spotPitsujiDoorGap" } },
-    "notYetMessage": "ぴつじは何をしたらテンション上がるかな",
+    "notYetMessage": [
+      { "when": { "usedOn": { "item": "itemChocolate", "spot": "spotPitsujiDoorGap" } }, "text": "早くぴつじに呼びかけるっぴ！" },
+      { "when": { "everObtained": "itemChocolate" }, "text": "チョコレートでテンションアップっぴ！" },
+      { "when": {}, "text": "ぴつじのテンションを上げるっぴ！" }
+    ],
     "nextStoryPart": 2
   },
   {
     "id": 3,
-    "startMessages": [
-      "そこのドアを空けておくか",
-      "確かそこに暗証番号を入れればいいんだったな･･････あれ、何番にしたっけ"
-    ],
+    "startView": "viewDesk",
+    "startMessages": ["隣の部屋のドアのロックを解除するっぴ！"],
     "clearCondition": { "flag": { "doorBUnlocked": true } },
     "notYetMessage": "ちょっと解いてくるか。何がそんなに嫌なんだ？",
     "nextStoryPart": 3

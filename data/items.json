@@ -11,7 +11,7 @@
     "name": "青い紙",
     "persistence": "transform",
     "transformsTo": "itemFrozenBluePaper",
-    "usableOn": ["spotFreezer"]
+    "usableOn": ["spotFreezerCompartment"]
   },
   {
     "id": "itemFrozenBluePaper",
@@ -25,7 +25,7 @@
     "name": "食パン",
     "persistence": "transform",
     "transformsTo": "itemToastedBread",
-    "usableOn": ["spotFire"]
+    "usableOn": ["spotToaster"]
   },
   {
     "id": "itemToastedBread",

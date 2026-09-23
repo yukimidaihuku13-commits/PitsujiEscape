@@ -4,78 +4,82 @@
     "label": "黒ぴぐま部屋",
     "layoutType": "play",
     "spots": ["spotDesk", "spotBookshelf", "spotBed"],
-	"background":"assets/backgrounds/bg_tmp_roomPiguma.webp"
+    "background": "assets/backgrounds/bg_roomPiguma.webp"
   },
   {
     "id": "viewDesk",
     "label": "机拡大",
     "layoutType": "play",
     "spots": ["spotGame", "spotPcStream", "spotNotebook"],
-	"background":"assets/backgrounds/bg_tmp_viewDesk.webp"
+    "background": "assets/backgrounds/bg_viewDesk.webp"
   },
   {
     "id": "viewNote1",
     "label": "調査ノート1",
     "layoutType": "play",
-    "spots": ["spotNote1left", "spotNote1right"],
-	"background":"assets/backgrounds/bg_tmp_viewNote1.webp"
+    "spots": ["spotNote1left", "spotNote1right"]
   },
   {
     "id": "viewNote2",
     "label": "調査ノート2",
     "layoutType": "play",
-    "spots": ["spotNote2left", "spotNote2right"],
-	"background":"assets/backgrounds/bg_tmp_viewNote2.webp"
+    "spots": ["spotNote2left", "spotNote2right"]
   },
   {
     "id": "viewBed",
     "label": "ベッド拡大",
     "layoutType": "play",
     "spots": ["spotBedmat", "spotUnderBed"],
-	"background":"assets/backgrounds/bg_tmp_viewBed.webp"
+    "background": "assets/backgrounds/bg_viewBed.webp"
   },
   {
     "id": "roomA1",
     "label": "部屋A-1",
     "layoutType": "play",
-    "spots": ["spotDoorB", "spotLockDoorB", "spotDoorKitchen", "spotTable"],
+    "spots": ["spotDoorB", "spotLockDoorB", "spotRefrigerator", "spotDoorKitchen", "spotTable"],
     "accessCondition": { "playPart": { "gte": 2 } },
-	"background":"assets/backgrounds/bg_tmp_roomA1.webp"
+    "background": "assets/backgrounds/bg_roomA1.webp"
   },
   {
     "id": "roomA2",
     "label": "部屋A-2",
     "layoutType": "play",
-    "spots": ["spotDoorPiguma", "spotShelf", "spotPitsujiDoor", "spotCardboardBox"],
+    "spots": ["spotDoorPiguma", "spotShelf", "spotPitsujiDoor", "spotCardboardBox", "spotWallPaper"],
     "accessCondition": { "playPart": { "gte": 2 } },
-	"background":"assets/backgrounds/bg_tmp_roomA2.webp"
+    "background": "assets/backgrounds/bg_roomA2.webp"
   },
   {
-    "id": "roomKitchen",
-    "label": "台所",
+    "id": "viewRefrigerator",
+    "label": "冷蔵庫拡大",
     "layoutType": "play",
-    "spots": ["spotRefrigerator", "spotFreezer", "spotFire"],
-	"background":"assets/backgrounds/bg_tmp_roomKitchen.webp"
+    "spots": ["spotFridgeCompartment", "spotFreezerCompartment"],
+    "background": "assets/backgrounds/bg_viewRefrigerator.webp"
+  },
+  {
+    "id": "viewToaster",
+    "label": "トースター",
+    "layoutType": "play",
+    "spots": ["spotToaster"],
+    "background": "assets/backgrounds/bg_viewToaster.webp"
   },
   {
     "id": "viewPitsujiDoor",
     "label": "ぴつじ部屋のドア",
     "layoutType": "play",
     "spots": ["spotPitsujiDoorKnob", "spotPitsujiWindow", "spotPitsujiDoorGap"],
-	"background":"assets/backgrounds/bg_tmp_PitsujiDoor.webp"
+    "background": "assets/backgrounds/bg_tmp_PitsujiDoor.webp"
   },
   {
     "id": "viewShelf",
     "label": "棚",
     "layoutType": "play",
-    "spots": ["spotDrawer", "spotToolbox"],
-	"background":"assets/backgrounds/bg_tmp_viewShelf.webp"
+    "spots": ["spotDrawer", "spotToolbox"]
   },
   {
     "id": "viewTable",
     "label": "テーブル拡大",
     "layoutType": "play",
     "spots": ["spotOnTable", "spotChair"],
-	"background":"assets/backgrounds/bg_tmp_viewTable.webp"
+    "background": "assets/backgrounds/bg_tmp_viewTable.webp"
   }
 ]

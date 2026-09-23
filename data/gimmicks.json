@@ -5,12 +5,26 @@
     "type": "numericCode",
     "digits": 4,
     "answer": "3952",
+    "image": "assets/gimmick/gimmick_DoorA.webp",
+    "keypad": [
+      { "digit": "1", "position": { "x": 37.5, "y": 26.0, "width": 14.0, "height": 8.0 } },
+      { "digit": "2", "position": { "x": 55.5, "y": 26.0, "width": 14.0, "height": 8.0 } },
+      { "digit": "3", "position": { "x": 73.5, "y": 26.0, "width": 14.0, "height": 8.0 } },
+      { "digit": "4", "position": { "x": 37.5, "y": 36.0, "width": 14.0, "height": 8.0 } },
+      { "digit": "5", "position": { "x": 55.5, "y": 36.0, "width": 14.0, "height": 8.0 } },
+      { "digit": "6", "position": { "x": 73.5, "y": 36.0, "width": 14.0, "height": 8.0 } },
+      { "digit": "7", "position": { "x": 37.5, "y": 46.0, "width": 14.0, "height": 8.0 } },
+      { "digit": "8", "position": { "x": 55.5, "y": 46.0, "width": 14.0, "height": 8.0 } },
+      { "digit": "9", "position": { "x": 73.5, "y": 46.0, "width": 14.0, "height": 8.0 } }
+    ],
     "onSuccess": [
       { "type": "setFlag", "flag": "doorBUnlocked", "value": true },
-      { "type": "message", "text": "カチッと音がして鍵が開いた" }
+      { "type": "message", "text": "カチッと音がして鍵が開いた" },
+      { "type": "message", "text": "ロックが解除されたっぴ！" },
+      { "type": "message", "text": "ぴつじを脱出させるっぴ！" }
     ],
     "onFail": [
-      { "type": "message", "text": "違うようだ……" }
+      { "type": "message", "text": "違ったッピ……" }
     ]
   }
 ]

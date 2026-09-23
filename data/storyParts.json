@@ -22,9 +22,9 @@
       { "speaker": "ぴつじ", "text": "･･････。", "bg": "部屋の角に座り込むぴつじ" , "portraitImage":"assets/characters/eto_hitsuji_sleep.webp"},
       { "speaker": "黒ぴぐま", "text": "･･････。", "bg": "部屋の角に座り込むぴつじ" },
       { "speaker": null, "text": null, "se": "モニターが切れる音" },
-      { "speaker": "黒ぴぐま", "text": "え･･････？！", "bg": "黒画面" , "portraitImage":"assets/characters/animal_bear_namakeguma.webp"},
-      { "speaker": "黒ぴぐま", "text": "脱出ゲームって、始まったら皆脱出してくれるんじゃないの？！", "bg": "パソコンの前から立ち上がる黒ぴぐま", "portraitImage":"assets/characters/animal_bear_namakeguma.webp" },
-      { "speaker": "黒ぴぐま", "text": "こうなったら、どうにかしてぴつじを脱出させてやる！！", "bg": "パソコンの前から立ち上がる黒ぴぐま", "portraitImage":"assets/characters/animal_bear_namakeguma.webp" }
+      { "speaker": "黒ぴぐま", "text": "え･･････？！", "bg": "黒画面" , "portraitImage":"assets/characters/char_kuropiguma1.webp"},
+      { "speaker": "黒ぴぐま", "text": "脱出ゲームって、始まったら皆脱出してくれるんじゃないの？！", "bg": "パソコンの前から立ち上がる黒ぴぐま", "portraitImage":"assets/characters/char_kuropiguma1.webp" },
+      { "speaker": "黒ぴぐま", "text": "こうなったら、どうにかしてぴつじを脱出させてやる！！", "bg": "パソコンの前から立ち上がる黒ぴぐま", "portraitImage":"assets/characters/char_kuropiguma1.webp" }
     ]
   },
   {
@@ -43,10 +43,10 @@
       { "speaker": "黒ぴぐま", "text": "･･････。", "bg": "部屋の角に座り込むぴつじ" },
       { "speaker": "黒ぴぐま", "text": "･･････。", "bg": "部屋の角に座り込むぴつじ" },
       { "speaker": null, "text": null, "se": "モニターが切れる音" },
-      { "speaker": "黒ぴぐま", "text": "まだ駄目か･･････", "bg": "黒画面" , "portraitImage":"assets/characters/animal_bear_namakeguma.webp"},
-      { "speaker": "黒ぴぐま", "text": "うーん、よし！ちょっと、謎、減らそう！", "bg": "パソコンの前から立ち上がる黒ぴぐま" , "portraitImage":"assets/characters/animal_bear_namakeguma.webp"},
-      { "speaker": "黒ぴぐま", "text": "最後の謎だけにしたら、さすがにやる気出るだろう！", "bg": "パソコンの前から立ち上がる黒ぴぐま" , "portraitImage":"assets/characters/animal_bear_namakeguma.webp"},
-      { "speaker": "黒ぴぐま", "text": "やる気出てきたぞー！！", "bg": "パソコンの前から立ち上がる黒ぴぐま" , "portraitImage":"assets/characters/animal_bear_namakeguma.webp"}
+      { "speaker": "黒ぴぐま", "text": "まだ駄目か･･････", "bg": "黒画面" , "portraitImage":"assets/characters/char_kuropiguma1.webp"},
+      { "speaker": "黒ぴぐま", "text": "うーん、よし！ちょっと、謎、減らそう！", "bg": "パソコンの前から立ち上がる黒ぴぐま" , "portraitImage":"assets/characters/char_kuropiguma1.webp"},
+      { "speaker": "黒ぴぐま", "text": "最後の謎だけにしたら、さすがにやる気出るだろう！", "bg": "パソコンの前から立ち上がる黒ぴぐま" , "portraitImage":"assets/characters/char_kuropiguma1.webp"},
+      { "speaker": "黒ぴぐま", "text": "やる気出てきたぞー！！", "bg": "パソコンの前から立ち上がる黒ぴぐま" , "portraitImage":"assets/characters/char_kuropiguma1.webp"}
     ]
   },
   {
@@ -55,7 +55,7 @@
     "lines": [
       { "speaker": null, "text": null, "bg": "黒背景" },
       { "speaker": null, "text": null, "se": "モニターが映る音" },
-      { "speaker": "黒ぴぐま", "text": "ご機嫌はどうかな、ぴつじくん", "bg": "壁掛けモニターに黒ぴぐまが映った姿" , "portraitImage":"assets/characters/eto_remake_hitsuji.webp"},
+      { "speaker": "黒ぴぐま", "text": "ご機嫌はどうかな、ぴつじくん", "bg": "壁掛けモニターに黒ぴぐまが映った姿" },
       { "speaker": "ぴつじ", "text": "･･････。", "bg": "壁掛けモニターに黒ぴぐまが映った姿" , "portraitImage":"assets/characters/eto_hitsuji_sleep.webp"},
       { "speaker": "黒ぴぐま", "text": "なんと今なら！とても 簡単に脱出出来るキャンペーン！！", "bg": "壁掛けモニターに黒ぴぐまが映った姿" },
       { "speaker": null, "text": null, "se": "パフパフわーわー" },
@@ -66,9 +66,9 @@
       { "speaker": "ぴつじ", "text": "･･････脱出しないっぴ。", "bg": "壁掛けモニターに黒ぴぐまが映った姿" , "portraitImage":"assets/characters/eto_hitsuji_sleep.webp"},
       { "speaker": "黒ぴぐま", "text": "･･････。", "bg": "壁掛けモニターに黒ぴぐまが映った姿" },
       { "speaker": null, "text": null, "se": "モニターが切れる音" },
-      { "speaker": "黒ぴぐま", "text": "こうなったら意地だ！", "bg": "黒画面" , "portraitImage":"assets/characters/animal_bear_namakeguma.webp"},
-      { "speaker": "黒ぴぐま", "text": "絶対にぴつじを部屋から出してやる！！", "bg": "パソコンの前から立ち上がる黒ぴぐま", "portraitImage":"assets/characters/animal_bear_namakeguma.webp" },
-      { "speaker": "黒ぴぐま", "text": "ぴつじとの根比べだー！！", "bg": "パソコンの前から立ち上がる黒ぴぐま", "portraitImage":"assets/characters/animal_bear_namakeguma.webp" }
+      { "speaker": "黒ぴぐま", "text": "こうなったら意地だ！", "bg": "黒画面" , "portraitImage":"assets/characters/char_kuropiguma1.webp"},
+      { "speaker": "黒ぴぐま", "text": "絶対にぴつじを部屋から出してやる！！", "bg": "パソコンの前から立ち上がる黒ぴぐま", "portraitImage":"assets/characters/char_kuropiguma1.webp" },
+      { "speaker": "黒ぴぐま", "text": "ぴつじとの根比べだー！！", "bg": "パソコンの前から立ち上がる黒ぴぐま", "portraitImage":"assets/characters/char_kuropiguma1.webp" }
     ]
   }
 ]

@@ -14,6 +14,27 @@
     "label": "本棚",
     "position": { "x": 3.6, "y": 33.6, "width": 25.1, "height": 14.1 },
     "rules": [
+      { "when": { "playPart": 3, "clickCount": { "spot": "spotBookshelf", "gte": 4 } }, "actions": [
+        { "type": "resetClickCount" },
+        { "type": "clickCountIncrement" },
+        { "type": "message", "text": "インクについて、という本がある" }
+      ] },
+      { "when": { "playPart": 3, "clickCount": { "spot": "spotBookshelf", "gte": 3 } }, "actions": [
+        { "type": "clickCountIncrement" },
+        { "type": "message", "text": "と書いてある" }
+      ] },
+      { "when": { "playPart": 3, "clickCount": { "spot": "spotBookshelf", "gte": 2 } }, "actions": [
+        { "type": "clickCountIncrement" },
+        { "type": "message", "text": "冷やすと文字が消える" }
+      ] },
+      { "when": { "playPart": 3, "clickCount": { "spot": "spotBookshelf", "gte": 1 } }, "actions": [
+        { "type": "clickCountIncrement" },
+        { "type": "message", "text": "温めると文字が消える" }
+      ] },
+      { "when": { "playPart": 3 }, "actions": [
+        { "type": "clickCountIncrement" },
+        { "type": "message", "text": "インクについて、という本がある" }
+      ] },
       { "when": {}, "actions": [{ "type": "message", "text": "最近のお気に入りはホームズの踊る人形だ" }] }
     ]
   },
@@ -21,7 +42,7 @@
     "id": "spotBed",
     "viewId": "roomPiguma",
     "label": "ベッド",
-    "position": { "x": 4.3, "y": 52.1, "width": 50.8, "height": 22.9 },
+    "position": { "x": 0.0, "y": 63.0, "width": 78.0, "height": 37.0 },
     "rules": [
       { "when": { "playPart": { "gt": 1 } }, "actions": [{ "type": "moveTo", "target": "viewBed", "transition": "zoom" }] }
     ]
@@ -32,7 +53,7 @@
     "label": "ゲーム機",
     "position": { "x": 12.1, "y": 28.3, "width": 30.0, "height": 14.9 },
     "rules": [
-      { "when": {}, "actions": [{ "type": "message", "text": "今はゲームの気分じゃない" }] }
+      { "when": { "playPart": { "gte": 2 } }, "actions": [{ "type": "message", "text": "今はゲームの気分じゃない" }] }
     ]
   },
   {
@@ -50,7 +71,7 @@
     "label": "調査ノート",
     "position": { "x": 10.7, "y": 44.7, "width": 30.1, "height": 14.9 },
     "rules": [
-      { "when": {}, "actions": [{ "type": "moveTo", "target": "viewNote1", "transition": "zoom" }] }
+      { "when": { "playPart": { "gte": 2 } }, "actions": [{ "type": "moveTo", "target": "viewNote1", "transition": "zoom" }] }
     ]
   },
   {
@@ -93,7 +114,7 @@
     "id": "spotBedmat",
     "viewId": "viewBed",
     "label": "ベッドマット",
-    "position": { "x": 25.7, "y": 62.4, "width": 21.8, "height": 11.6 },
+    "position": { "x": 10.0, "y": 40.0, "width": 82.0, "height": 13.0 },
     "rules": [
       { "when": {}, "actions": [{ "type": "message", "text": "このタオルケットの生地の触り心地は最高だ" }] }
     ]
@@ -102,7 +123,7 @@
     "id": "spotUnderBed",
     "viewId": "viewBed",
     "label": "ベッド下",
-    "position": { "x": 44.3, "y": 49.8, "width": 43.4, "height": 8.3 },
+    "position": { "x": 20.0, "y": 53.0, "width": 70.0, "height": 9.0 },
     "rules": [
       { "when": {}, "actions": [{ "type": "message", "text": "何かありそうだな……まあいいか" }] }
     ]
@@ -111,10 +132,10 @@
     "id": "spotDoorB",
     "viewId": "roomA1",
     "label": "ドアB",
-    "position": { "x": 24.1, "y": 25.8, "width": 19.4, "height": 10.7 },
+    "position": { "x": 17.0, "y": 35.0, "width": 21.0, "height": 23.0 },
     "rules": [
       { "when": { "playPart": 3, "flag": { "doorBUnlocked": true } }, "actions": [{ "type": "message", "text": "これでぴつじも脱出したくなるはず！" }] },
-      { "when": { "playPart": 3 }, "actions": [{ "type": "message", "text": "ロックを解除しないと開かないな" }] },
+      { "when": { "playPart": 3 }, "actions": [{ "type": "message", "text": "ロックを解除しないと開かない仕組みにしてある" }] },
       { "when": {}, "actions": [{ "type": "message", "text": "隣の部屋に続くドアだ" }] }
     ]
   },
@@ -122,7 +143,7 @@
     "id": "spotLockDoorB",
     "viewId": "roomA1",
     "label": "ドアBの電子錠",
-    "position": { "x": 5.1, "y": 29.2, "width": 18.5, "height": 10.4 },
+    "position": { "x": 7.0, "y": 47.0, "width": 11.0, "height": 6.5 },
     "rules": [
       { "when": { "flag": { "doorBUnlocked": true } }, "actions": [{ "type": "message", "text": "ロックは解除されている" }] },
       { "when": { "playPart": 3 }, "actions": [
@@ -133,19 +154,28 @@
     ]
   },
   {
+    "id": "spotRefrigerator",
+    "viewId": "roomA1",
+    "label": "冷蔵庫",
+    "position": { "x": 78.0, "y": 44.0, "width": 21.0, "height": 24.0 },
+    "rules": [
+      { "when": {}, "actions": [{ "type": "moveTo", "target": "viewRefrigerator", "transition": "zoom" }] }
+    ]
+  },
+  {
     "id": "spotDoorKitchen",
     "viewId": "roomA1",
-    "label": "台所入口",
-    "position": { "x": 65.7, "y": 39.4, "width": 19.2, "height": 11.1 },
+    "label": "トースター",
+    "position": { "x": 43.0, "y": 49.0, "width": 15.0, "height": 9.0 },
     "rules": [
-      { "when": {}, "actions": [{ "type": "moveTo", "target": "roomKitchen", "transition": "door" }] }
+      { "when": {}, "actions": [{ "type": "moveTo", "target": "viewToaster", "transition": "zoom" }] }
     ]
   },
   {
     "id": "spotTable",
     "viewId": "roomA1",
     "label": "テーブル",
-    "position": { "x": 35.9, "y": 53.2, "width": 19.2, "height": 11.1 },
+    "position": { "x": 5.0, "y": 62.0, "width": 34.0, "height": 32.0 },
     "rules": [
       { "when": {}, "actions": [{ "type": "moveTo", "target": "viewTable", "transition": "zoom" }] }
     ]
@@ -154,7 +184,7 @@
     "id": "spotDoorPiguma",
     "viewId": "roomA2",
     "label": "黒ぴぐま部屋のドア",
-    "position": { "x": 51.5, "y": 29.2, "width": 19.1, "height": 11.1 },
+    "position": { "x": 74.0, "y": 40.0, "width": 20.0, "height": 23.0 },
     "rules": [
       { "when": {}, "actions": [{ "type": "moveTo", "target": "roomPiguma", "transition": "door" }] }
     ]
@@ -163,7 +193,7 @@
     "id": "spotShelf",
     "viewId": "roomA2",
     "label": "棚",
-    "position": { "x": 2.0, "y": 35.5, "width": 19.2, "height": 11.1 },
+    "position": { "x": 44.0, "y": 44.0, "width": 23.0, "height": 14.0 },
     "rules": [
       { "when": {}, "actions": [{ "type": "moveTo", "target": "viewShelf", "transition": "zoom" }] }
     ]
@@ -172,7 +202,7 @@
     "id": "spotPitsujiDoor",
     "viewId": "roomA2",
     "label": "ぴつじ部屋のドア",
-    "position": { "x": 22.0, "y": 28.4, "width": 19.2, "height": 11.1 },
+    "position": { "x": 19.0, "y": 36.0, "width": 19.0, "height": 22.0 },
     "rules": [
       { "when": {}, "actions": [{ "type": "moveTo", "target": "viewPitsujiDoor", "transition": "zoom" }] }
     ]
@@ -181,53 +211,69 @@
     "id": "spotCardboardBox",
     "viewId": "roomA2",
     "label": "段ボール箱",
-    "position": { "x": 63.0, "y": 42.6, "width": 34.4, "height": 27.0 },
+    "position": { "x": 58.0, "y": 71.0, "width": 23.0, "height": 19.0 },
     "rules": [
       { "when": {}, "actions": [{ "type": "message", "text": "脱出に必要なものを色々買った時のダンボールだ" }] }
     ]
   },
   {
-    "id": "spotRefrigerator",
-    "viewId": "roomKitchen",
-    "label": "冷蔵庫",
-    "position": { "x": 72.6, "y": 44.5, "width": 19.2, "height": 11.1 },
+    "id": "spotWallPaper",
+    "viewId": "roomA2",
+    "label": "壁の貼り紙",
+    "position": { "x": 53.0, "y": 35.0, "width": 16.0, "height": 9.0 },
     "rules": [
-      { "when": { "everObtained": "itemChocolate" }, "actions": [{ "type": "message", "text": "つい開けてしまうが何も入っていない" }] },
+      { "when": { "everObtained": "itemBluePaper" }, "actions": [{ "type": "message", "text": "もうここには何もなさそうだ" }] },
+      { "when": { "playPart": { "gt": 3 } }, "actions": [{ "type": "message", "text": "この紙は脱出ゲーム用に用意したんだったな" }] },
+      { "when": { "playPart": 3 }, "actions": [
+        { "type": "giveItem", "item": "itemBluePaper" },
+        { "type": "message", "text": "青い紙を取得した" }
+      ] },
+      { "when": {}, "actions": [{ "type": "message", "text": "壁に何か貼ってある" }] }
+    ]
+  },
+  {
+    "id": "spotFridgeCompartment",
+    "viewId": "viewRefrigerator",
+    "label": "冷蔵庫",
+    "position": { "x": 29.0, "y": 31.0, "width": 42.0, "height": 23.0 },
+    "rules": [
+      { "when": { "everObtained": "itemChocolate" }, "actions": [{ "type": "message", "text": "つい開けてしまうけど……何もないッピ" }] },
       { "when": { "playPart": 2 }, "actions": [
         { "type": "giveItem", "item": "itemChocolate" },
-        { "type": "message", "text": "チョコレートを手に入れた" }
+        { "type": "message", "text": "ぴつじの好きなチョコレートっぴ！" },
+        { "type": "message", "text": "これをぴつじに渡すっぴ！" }
       ] },
       { "when": {}, "actions": [{ "type": "message", "text": "いざという時に食べたいチョコレートが入れてある" }] }
     ]
   },
   {
-    "id": "spotFreezer",
-    "viewId": "roomKitchen",
+    "id": "spotFreezerCompartment",
+    "viewId": "viewRefrigerator",
     "label": "冷凍庫",
-    "position": { "x": 74.3, "y": 29.2, "width": 19.2, "height": 11.1 },
+    "position": { "x": 29.0, "y": 54.0, "width": 42.0, "height": 20.0 },
     "rules": [
       { "when": { "everObtained": "itemFrozenBluePaper" }, "actions": [{ "type": "message", "text": "アイスでも入れておけばよかった" }] },
       { "when": { "playPart": 3, "selectedItem": "itemBluePaper" }, "actions": [
         { "type": "consumeSelectedItem" },
-        { "type": "message", "text": "冷やすと文字が出てくる仕組みだ" }
+        { "type": "message", "text": "この紙は冷やすと文字が出てくるっぴ！" }
       ] },
-      { "when": { "playPart": 3 }, "actions": [{ "type": "message", "text": "確かここにあれをあれするんだ" }] },
+      { "when": { "playPart": 3 }, "actions": [{ "type": "message", "text": "ここにあれを入れればいいっぴね～" }] },
       { "when": {}, "actions": [{ "type": "message", "text": "開けるとひんやりする" }] }
     ]
   },
   {
-    "id": "spotFire",
-    "viewId": "roomKitchen",
-    "label": "コンロ",
-    "position": { "x": 26.5, "y": 34.7, "width": 19.2, "height": 11.1 },
+    "id": "spotToaster",
+    "viewId": "viewToaster",
+    "label": "トースター",
+    "position": { "x": 14.0, "y": 39.0, "width": 75.0, "height": 33.0 },
     "rules": [
-      { "when": { "everObtained": "itemToastedBread" }, "actions": [{ "type": "message", "text": "まだフライパンが熱い" }] },
+      { "when": { "everObtained": "itemToastedBread" }, "actions": [{ "type": "message", "text": "まだトースターが温かい" }] },
       { "when": { "playPart": 3, "selectedItem": "itemBread" }, "actions": [
         { "type": "consumeSelectedItem" },
-        { "type": "message", "text": "焼くと記号が出るように細工してある" }
+        { "type": "message", "text": "後でトースト食べるっぴ～！" }
       ] },
-      { "when": { "playPart": 3 }, "actions": [{ "type": "message", "text": "フライパンと言えばそうあれだ" }] },
-      { "when": {}, "actions": [{ "type": "message", "text": "あれをあれするためにコンロにフライパンを置いてある" }] }
+      { "when": { "playPart": 3 }, "actions": [{ "type": "message", "text": "このトースターは美味しく焼けるっぴ！" }] },
+      { "when": {}, "actions": [{ "type": "message", "text": "美味しいパンが焼けるっぴ" }] }
     ]
   },
   {
@@ -257,9 +303,10 @@
       { "when": { "playPart": { "gt": 2 } }, "actions": [{ "type": "message", "text": "隙間があるけど...下から中の様子は見えないな" }] },
       { "when": { "playPart": 2, "selectedItem": "itemChocolate" }, "actions": [
         { "type": "consumeSelectedItem" },
-        { "type": "message", "text": "チョコレートに釣られてドアの近くに来た気配がする" }
+        { "type": "message", "text": "チョコレートに釣られてドアの近くに来た気配がする" },
+        { "type": "message", "text": "部屋に戻ってぴつじに脱出を呼びかけるっぴ！" }
       ] },
-      { "when": { "playPart": 2 }, "actions": [{ "type": "message", "text": "この下から......" }] }
+      { "when": { "playPart": 2 }, "actions": [{ "type": "message", "text": "ここから渡せそうっぴ" }] }
     ]
   },
   {
@@ -268,13 +315,8 @@
     "label": "引き出し",
     "position": { "x": 14.4, "y": 49.8, "width": 45.1, "height": 19.7 },
     "rules": [
-      { "when": { "everObtained": "itemBluePaper" }, "actions": [{ "type": "message", "text": "もうここには何もなさそうだ" }] },
-      { "when": { "playPart": { "gt": 3 } }, "actions": [{ "type": "message", "text": "この紙は脱出ゲーム用に用意したんだったな" }] },
-      { "when": { "playPart": 3 }, "actions": [
-        { "type": "giveItem", "item": "itemBluePaper" },
-        { "type": "message", "text": "青い紙を取得した" }
-      ] },
-      { "when": {}, "actions": [{ "type": "message", "text": "早くぴつじを脱出させないと……" }] }
+      { "when": { "playPart": 3 }, "actions": [{ "type": "message", "text": "何も入ってないっぴ" }] },
+      { "when": {}, "actions": [{ "type": "message", "text": "ぴつじを脱出させるっぴ！！" }] }
     ]
   },
   {
@@ -297,7 +339,7 @@
         { "type": "giveItem", "item": "itemBread" },
         { "type": "message", "text": "食パンを手に入れた" }
       ] },
-      { "when": {}, "actions": [{ "type": "message", "text": "朝食は食パン派だ" }] }
+      { "when": {}, "actions": [{ "type": "message", "text": "朝は断然食パンっぴ！" }] }
     ]
   },
   {

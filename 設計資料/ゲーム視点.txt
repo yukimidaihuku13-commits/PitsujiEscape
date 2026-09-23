@@ -44,6 +44,8 @@
 移動先：viewPitsujiDoor
 ・段ボール箱 [spotCardboardBox]　// 箱タップで画像表示
 移動先：NA
+・壁の貼り紙 [spotWallPaper] // 棚の上、白い紙が2枚くっついたような貼り紙。タップで青い紙入手
+移動先：NA
 
 /* 部屋B 1 */
 #操作パート4以降移動可
@@ -86,11 +88,12 @@
 #黒ぴぐま部屋
 /* 机拡大 */
 タグ：viewDesk
-矢印移動：[下]roomPiguma
+矢印移動：[下]roomPiguma ##PlayPart2以降. それ以前移動不可
 // 存在するクリックポイント一覧
-・ゲーム機　[spotGame] // タップでギミック起動
+// PlayPart1開始時はここからスタートする。この時点ではゲーム機・調査ノートは非表示。
+・ゲーム機　[spotGame] // タップでギミック起動 ##PlayPart2以降表示
 移動先：gimmickPcGame
-・調査ノート　[spotNotebook] // タップで視点移動(拡大)
+・調査ノート　[spotNotebook] // タップで視点移動(拡大) ##PlayPart2以降表示
 移動先：viewNote1
 ・配信用カメラ　[spotPcStream]　// タップで処理更新
  移動先：NA
@@ -163,7 +166,7 @@
 タグ：viewShelf
 矢印移動：[下] roomA2
 // 存在するクリックポイント一覧
-・引き出し [spotDrawer] // 青い紙入手
+・引き出し [spotDrawer] // 空。ハズレ(青い紙はここでは入手できない)
 移動先：NA
 ・工具箱　[spotToolbox] // プラスドライバー入手
 移動先：NA

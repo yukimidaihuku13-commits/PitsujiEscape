@@ -6,7 +6,7 @@
 
 import { evaluate } from "./ConditionEval.js";
 
-export const DEFAULT_FALLBACK_MESSAGE = "今は何も起きないx";
+export const DEFAULT_FALLBACK_MESSAGE = "今は何も起きない";
 
 export function resolveActions(spot, state, ctx) {
   for (const rule of spot.rules) {
@@ -24,4 +24,25 @@ export function resolveActions(spot, state, ctx) {
  */
 export function hasMatchingRule(spot, state, ctx) {
   return spot.rules.some((rule) => evaluate(rule.when, state, ctx));
+}
+
+/**
+ * playParts.json の notYetMessage を解決する。
+ * 単純な文字列（固定文言）と、[{ when, text }, ...]（状態に応じて変わる文言。
+ * spot.rulesと同じ書式で先頭から評価し最初に一致したものを使う）の両方を許容する。
+ * @returns {string|null}
+ */
+export function resolveMessage(messageDef, state, ctx) {
+  if (messageDef == null) return null;
+  if (typeof messageDef === "string") return messageDef;
+  for (const entry of messageDef) {
+    if (evaluate(entry.when, state, ctx)) {
+      if (typeof entry.text !== "string") {
+        console.error("[resolveMessage] textが文字列ではありません:", entry);
+        return null;
+      }
+      return entry.text;
+    }
+  }
+  return null;
 }

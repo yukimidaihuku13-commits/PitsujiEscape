@@ -12,7 +12,7 @@
 
 /* 青い紙 */
 タグ：itemBluePaper
-入手場所：spotDrawer　// 棚の引き出し
+入手場所：spotWallPaper　// 部屋A-2の壁の貼り紙
 入手可能パート：PlayPart == 3
 使用対象：spotFreezerCompartment //冷蔵庫の冷凍部分
 使用後：消失　→　itemFrozenBluePaper // 冷凍後の青い紙に変化

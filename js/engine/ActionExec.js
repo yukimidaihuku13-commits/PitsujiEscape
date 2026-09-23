@@ -34,7 +34,14 @@ export class Engine {
   runAction(action, currentSpotId) {
     switch (action.type) {
       case "message":
-        this.ui.queueMessage(action.text);
+        // textsが指定されている場合は、その中からランダムに1つ選んで表示する
+        // （例: 本棚のホームズ談義、ランダムに1つ）。
+        if (action.texts) {
+          const pick = action.texts[Math.floor(Math.random() * action.texts.length)];
+          this.ui.queueMessage(pick);
+        } else {
+          this.ui.queueMessage(action.text);
+        }
         break;
       case "se":
         this.ui.playSE(action.id || "");
@@ -67,6 +74,22 @@ export class Engine {
       case "attemptPartClear":
         this.attemptPartClear();
         break;
+      case "showImageModal":
+        // 表示: アイテム画像等を見せるアクション。実画像が無い間はcaptionをそのまま
+        // プレースホルダーとして見せる（image未指定でも成立する）。
+        this.ui.showImageModal({ image: action.image || null, caption: action.caption || "" });
+        break;
+      case "unlockBgmTrack": {
+        const tracks = this.state.bgmState.unlockedTracks;
+        if (!tracks.includes(action.track)) tracks.push(action.track);
+        break;
+      }
+      case "setBgmTrack":
+        this.state.bgmState.currentTrack = action.track;
+        break;
+      case "openBgmMenu":
+        this.ui.openBgmMenu();
+        break;
       default:
         console.warn("[Engine] 未知のアクションtype:", action.type, action);
     }
@@ -83,8 +106,8 @@ export class Engine {
       this.ui.playSE("click");
       this.clearCurrentPart(part);
     } else {
-      const msg = resolveMessage(part.notYetMessage, this.state, this.ctx);
-      if (msg) this.ui.queueMessage(msg);
+      const msgs = resolveMessage(part.notYetMessage, this.state, this.ctx);
+      if (msgs) msgs.forEach((m) => this.ui.queueMessage(m));
     }
   }
 

@@ -4,7 +4,7 @@
 // ラベルテキスト＋プレースホルダー矩形で表現する。
 
 import { getArrowsForView } from "../nav/Navigator.js";
-import { hasMatchingRule } from "../engine/RuleResolver.js";
+import { hasMatchingRule, resolveBackground } from "../engine/RuleResolver.js";
 
 const ARROW_SYMBOL = { up: "▲", down: "▼", left: "◀", right: "▶" };
 
@@ -126,17 +126,27 @@ export function renderPlay(root, opts) {
   });
   main.appendChild(inv);
 
+  const background = resolveBackground(view, state, ctx);
+
   const sceneLabel = document.createElement("div");
   sceneLabel.className = "scene-label";
-  sceneLabel.textContent = view ? `[${view.label}]${view.background ? "" : "（背景仮）"}` : "";
+  sceneLabel.textContent = view ? `[${view.label}]${background ? "" : "（背景仮）"}` : "";
 
-  if (view && view.background) {
-    const bgImg = createImageLayer("scene-bg-img", view.background, () => {
+  if (background) {
+    const bgImg = createImageLayer("scene-bg-img", background, () => {
       sceneLabel.textContent = `[${view.label}]（背景画像の読み込みに失敗しました）`;
     });
     main.appendChild(bgImg);
   }
   main.appendChild(sceneLabel);
+
+  // 電気スイッチ等、部屋の色を変えるフラグが立っている場合の色オーバーレイ。
+  // 対応する差分画像を用意していないビュー向けの、画像に頼らない表現方法。
+  if (view && view.tintFlag && state.flags[view.tintFlag]) {
+    const tint = document.createElement("div");
+    tint.className = "scene-tint scene-tint--red";
+    main.appendChild(tint);
+  }
 
   // 座標(position)が指定されているspotは画像上にホットスポットとして配置し、
   // 指定が無いspotはこれまで通り下に縦一覧で表示する（両方混在してもよい＝

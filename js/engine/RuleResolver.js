@@ -27,22 +27,40 @@ export function hasMatchingRule(spot, state, ctx) {
 }
 
 /**
- * playParts.json の notYetMessage を解決する。
- * 単純な文字列（固定文言）と、[{ when, text }, ...]（状態に応じて変わる文言。
- * spot.rulesと同じ書式で先頭から評価し最初に一致したものを使う）の両方を許容する。
- * @returns {string|null}
+ * playParts.json の notYetMessage を解決する。3つの書式を許容する。
+ *   1. "文言"                              固定・1行
+ *   2. ["文言1", "文言2"]                  固定・複数行（順に表示）
+ *   3. [{ when, text }, { when, texts }]   状態に応じて変わる文言。spot.rulesと同じ書式で
+ *                                          先頭から評価し最初に一致したものを使う
+ * @returns {string[]|null} 表示すべき行の配列（無ければnull）。呼び出し側は順にqueueMessageする。
  */
 export function resolveMessage(messageDef, state, ctx) {
   if (messageDef == null) return null;
-  if (typeof messageDef === "string") return messageDef;
+  if (typeof messageDef === "string") return [messageDef];
+  if (Array.isArray(messageDef) && typeof messageDef[0] === "string") return messageDef;
   for (const entry of messageDef) {
     if (evaluate(entry.when, state, ctx)) {
-      if (typeof entry.text !== "string") {
-        console.error("[resolveMessage] textが文字列ではありません:", entry);
-        return null;
-      }
-      return entry.text;
+      if (Array.isArray(entry.texts)) return entry.texts;
+      if (typeof entry.text === "string") return [entry.text];
+      console.error("[resolveMessage] text(s)が不正です:", entry);
+      return null;
     }
   }
   return null;
+}
+
+/**
+ * views.json の背景を解決する。view.backgroundVariants（[{when, background}, ...]、
+ * 先頭から評価し最初に一致したもの）があればそれを優先し、無ければview.backgroundを使う
+ * （タオルケット除去後のベッド等、状態によって背景が変わるケース用）。
+ * @returns {string|undefined}
+ */
+export function resolveBackground(view, state, ctx) {
+  if (!view) return undefined;
+  if (view.backgroundVariants) {
+    for (const variant of view.backgroundVariants) {
+      if (evaluate(variant.when, state, ctx)) return variant.background;
+    }
+  }
+  return view.background;
 }

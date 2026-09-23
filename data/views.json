@@ -3,7 +3,7 @@
     "id": "roomPiguma",
     "label": "黒ぴぐま部屋",
     "layoutType": "play",
-    "spots": ["spotDesk", "spotBookshelf", "spotBed"],
+    "spots": ["spotDesk", "spotBookshelf", "spotBed", "spotPiguma"],
     "background": "assets/backgrounds/bg_roomPiguma.webp"
   },
   {
@@ -17,20 +17,25 @@
     "id": "viewNote1",
     "label": "調査ノート1",
     "layoutType": "play",
-    "spots": ["spotNote1left", "spotNote1right"]
+    "spots": ["spotNote1left", "spotNote1right"],
+    "background": "assets/backgrounds/bg_tmp_viewNote1.webp"
   },
   {
     "id": "viewNote2",
     "label": "調査ノート2",
     "layoutType": "play",
-    "spots": ["spotNote2left", "spotNote2right"]
+    "spots": ["spotNote2left", "spotNote2right"],
+    "background": "assets/backgrounds/bg_tmp_viewNote2.webp"
   },
   {
     "id": "viewBed",
     "label": "ベッド拡大",
     "layoutType": "play",
     "spots": ["spotBedmat", "spotUnderBed"],
-    "background": "assets/backgrounds/bg_viewBed.webp"
+    "background": "assets/backgrounds/bg_viewBed.webp",
+    "backgroundVariants": [
+      { "when": { "everObtained": "itemLargeTowel" }, "background": "assets/backgrounds/bg_viewBedDiff.webp" }
+    ]
   },
   {
     "id": "roomA1",
@@ -73,7 +78,8 @@
     "id": "viewShelf",
     "label": "棚",
     "layoutType": "play",
-    "spots": ["spotDrawer", "spotToolbox"]
+    "spots": ["spotDrawer", "spotToolbox"],
+    "background": "assets/backgrounds/bg_tmp_viewShelf.webp"
   },
   {
     "id": "viewTable",
@@ -81,5 +87,43 @@
     "layoutType": "play",
     "spots": ["spotOnTable", "spotChair"],
     "background": "assets/backgrounds/bg_tmp_viewTable.webp"
+  },
+  {
+    "id": "roomB1",
+    "label": "部屋B-1",
+    "layoutType": "play",
+    "spots": ["spotDoorA", "spotPhoneStand", "spotLockEntrance", "spotDoorEntrance", "spotPisagi"],
+    "accessCondition": { "playPart": { "gte": 4 } },
+    "background": "assets/backgrounds/bg_roomB1.webp"
+  },
+  {
+    "id": "roomB2",
+    "label": "部屋B-2",
+    "layoutType": "play",
+    "spots": ["spotAudioPlayer", "spotLowTable", "spotSofa", "spotSwitch"],
+    "accessCondition": { "playPart": { "gte": 4 } },
+    "background": "assets/backgrounds/bg_roomB2.webp",
+    "tintFlag": "roomLightRed"
+  },
+  {
+    "id": "viewPhoneStand",
+    "label": "電話台拡大",
+    "layoutType": "play",
+    "spots": ["spotPhone", "spotPhoneStandDrawer"],
+    "background": "assets/backgrounds/bg_viewPhoneStand.webp"
+  },
+  {
+    "id": "viewLowTable",
+    "label": "ローテーブル拡大",
+    "layoutType": "play",
+    "spots": ["spotSalt"],
+    "background": "assets/backgrounds/bg_tmp_viewLowTable.webp"
+  },
+  {
+    "id": "roomPitsuji",
+    "label": "ぴつじ部屋",
+    "layoutType": "play",
+    "spots": ["spotPitsujiExitDoor"],
+    "accessCondition": { "playPart": { "gte": 8 } }
   }
 ]

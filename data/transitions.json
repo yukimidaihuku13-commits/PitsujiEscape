@@ -12,5 +12,9 @@
   { "view": "viewBed", "direction": "down", "target": "roomPiguma" },
   { "view": "viewTable", "direction": "down", "target": "roomA1" },
   { "view": "viewPitsujiDoor", "direction": "down", "target": "roomA2" },
-  { "view": "viewShelf", "direction": "down", "target": "roomA2" }
+  { "view": "viewShelf", "direction": "down", "target": "roomA2" },
+  { "view": "roomB1", "direction": "right", "target": "roomB2" },
+  { "view": "roomB2", "direction": "left", "target": "roomB1" },
+  { "view": "viewPhoneStand", "direction": "down", "target": "roomB1" },
+  { "view": "viewLowTable", "direction": "down", "target": "roomB2" }
 ]

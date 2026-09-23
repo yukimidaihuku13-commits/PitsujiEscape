@@ -29,5 +29,63 @@
     "clearCondition": { "flag": { "doorBUnlocked": true } },
     "notYetMessage": "ちょっと解いてくるか。何がそんなに嫌なんだ？",
     "nextStoryPart": 3
+  },
+  {
+    "id": 4,
+    "startView": "viewDesk",
+    "startMessages": [
+      "よし！玄関のドアを開けるぞ！",
+      "確かドアに描いてある3つを使って……",
+      "あ！チョコレートはさっきぴつじに渡しちゃったッピ……"
+    ],
+    "clearCondition": { "flag": { "doorEntranceUnlocked": true } },
+    "notYetMessage": ["これはぴつじとの勝負！", "ぴつじを部屋から脱出させてみせる！"],
+    "nextStoryPart": 4
+  },
+  {
+    "id": 5,
+    "startView": "viewDesk",
+    "startMessages": ["他にぴつじが好きそうなものはなんだっけなあ"],
+    "clearCondition": {
+      "allOf": [
+        { "usedOn": { "item": "itemCushion", "spot": "spotPitsujiWindow" } },
+        { "usedOn": { "item": "itemLargeTowel", "spot": "spotPitsujiWindow" } }
+      ]
+    },
+    "notYetMessage": ["これはぴつじとの勝負だ！", "何をしたら部屋から出てくるんだ？！"],
+    "nextStoryPart": 5
+  },
+  {
+    "id": 6,
+    "startView": "viewDesk",
+    "startMessages": [
+      "こうなったらぴつじに詳しい人を呼ぶしかない！",
+      "1人は名刺を持ってたはず･･････",
+      "もう1人は･･･確かゲームが好きだったような･･･！"
+    ],
+    "clearCondition": {
+      "allOf": [
+        { "usedOn": { "item": "itemPisagiCard", "spot": "spotPhone" } },
+        { "flag": { "chatGimmickCleared": true } }
+      ]
+    },
+    "notYetMessage": "今はその時じゃない...か......",
+    "nextStoryPart": 6
+  },
+  {
+    "id": 7,
+    "startView": "viewDesk",
+    "startMessages": [],
+    "clearCondition": { "bgmTrack": "happy" },
+    "notYetMessage": "これで決める！",
+    "nextStoryPart": 7
+  },
+  {
+    "id": 8,
+    "startView": "roomPitsuji",
+    "startMessages": [],
+    "clearCondition": {},
+    "notYetMessage": null,
+    "nextStoryPart": 8
   }
 ]

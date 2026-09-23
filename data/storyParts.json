@@ -70,5 +70,105 @@
       { "speaker": "黒ぴぐま", "text": "絶対にぴつじを部屋から出してやる！！", "bg": "パソコンの前から立ち上がる黒ぴぐま", "portraitImage":"assets/characters/char_kuropiguma1.webp" },
       { "speaker": "黒ぴぐま", "text": "ぴつじとの根比べだー！！", "bg": "パソコンの前から立ち上がる黒ぴぐま", "portraitImage":"assets/characters/char_kuropiguma1.webp" }
     ]
+  },
+  {
+    "id": 4,
+    "nextPlayPart": 5,
+    "lines": [
+      { "speaker": null, "text": null, "bg": "黒背景" },
+      { "speaker": null, "text": null, "se": "モニターが映る音" },
+      { "speaker": "黒ぴぐま", "text": "脱出ゲーム", "bg": "壁掛けモニターに黒ぴぐまが映った姿" },
+      { "speaker": "ぴつじ", "text": "しないっぴ･･････。", "bg": "壁掛けモニターに黒ぴぐまが映った姿", "portraitImage": "assets/characters/eto_hitsuji_sleep.webp" },
+      { "speaker": "黒ぴぐま", "text": "もう！！何も謎はない！！", "bg": "壁掛けモニターに黒ぴぐまが映った姿" },
+      { "speaker": "黒ぴぐま", "text": "あとは部屋から君が出るだけだ！！", "bg": "壁掛けモニターに黒ぴぐまが映った姿" },
+      { "speaker": "ぴつじ", "text": "･･････。", "bg": "壁掛けモニターに黒ぴぐまが映った姿", "portraitImage": "assets/characters/eto_hitsuji_sleep.webp" },
+      { "speaker": "黒ぴぐま", "text": "さあ！その部屋から脱出すれば終わりだ！", "bg": "壁掛けモニターに黒ぴぐまが映った姿" },
+      { "speaker": "ぴつじ", "text": "･･････。", "bg": "壁掛けモニターに黒ぴぐまが映った姿", "portraitImage": "assets/characters/eto_hitsuji_sleep.webp" },
+      { "speaker": "黒ぴぐま", "text": "さあ！！", "bg": "壁掛けモニターに黒ぴぐまが映った姿" },
+      { "speaker": "ぴつじ", "text": "元気、出ないッピ･･････。", "bg": "壁掛けモニターに黒ぴぐまが映った姿", "portraitImage": "assets/characters/eto_hitsuji_sleep.webp" },
+      { "speaker": "黒ぴぐま", "text": "･･････。", "bg": "壁掛けモニターに黒ぴぐまが映った姿" },
+      { "speaker": "ぴつじ", "text": "･･････。", "bg": "壁掛けモニターに黒ぴぐまが映った姿", "portraitImage": "assets/characters/eto_hitsuji_sleep.webp" },
+      { "speaker": null, "text": null, "se": "モニターが切れる音" },
+      { "speaker": "黒ぴぐま", "text": "元気出せばいいんだな！！！", "bg": "黒画面", "portraitImage": "assets/characters/char_kuropiguma1.webp" },
+      { "speaker": "黒ぴぐま", "text": "やってやる！！ぴつじには負けないぞ！！", "bg": "パソコンの前から立ち上がる黒ぴぐま", "portraitImage": "assets/characters/char_kuropiguma1.webp" }
+    ]
+  },
+  {
+    "id": 5,
+    "nextPlayPart": 6,
+    "lines": [
+      { "speaker": null, "text": null, "bg": "黒背景" },
+      { "speaker": null, "text": null, "se": "モニターが映る音" },
+      { "speaker": "黒ぴぐま", "text": "ふふふ、さあ脱出ゲームの時間だ", "bg": "壁掛けモニターに黒ぴぐまが映った姿" },
+      { "speaker": "黒ぴぐま", "text": "これで元気も出ただろう！", "bg": "壁掛けモニターに黒ぴぐまが映った姿" },
+      { "speaker": "ぴつじ", "text": "･･････。", "bg": "壁掛けモニターに黒ぴぐまが映った姿", "portraitImage": "assets/characters/eto_hitsuji_sleep.webp" },
+      { "speaker": "黒ぴぐま", "text": "寝ている･･････。", "bg": "壁掛けモニターに黒ぴぐまが映った姿" },
+      { "speaker": "ぴつじ", "text": "･･････。", "bg": "壁掛けモニターに黒ぴぐまが映った姿", "portraitImage": "assets/characters/eto_hitsuji_sleep.webp" },
+      { "speaker": "黒ぴぐま", "text": "寝ているな･･････。", "bg": "壁掛けモニターに黒ぴぐまが映った姿" },
+      { "speaker": "黒ぴぐま", "text": "おーい", "bg": "壁掛けモニターに黒ぴぐまが映った姿" },
+      { "speaker": "黒ぴぐま", "text": "おーーいー･･････", "bg": "壁掛けモニターに黒ぴぐまが映った姿" },
+      { "speaker": null, "text": null, "se": "カチッ" },
+      { "speaker": null, "text": null, "se": "どんどんパフパフわーわー" },
+      { "speaker": "黒ぴぐま", "text": "起きないな･･････", "bg": "壁掛けモニターに黒ぴぐまが映った姿" },
+      { "speaker": null, "text": null, "se": "モニターが切れる音" },
+      { "speaker": "黒ぴぐま", "text": "何をしても全然起きないぞ･･････", "bg": "黒画面", "portraitImage": "assets/characters/char_kuropiguma1.webp" },
+      { "speaker": "黒ぴぐま", "text": "どうする･･････", "bg": "パソコンの前から立ち上がる黒ぴぐま", "portraitImage": "assets/characters/char_kuropiguma1.webp" },
+      { "speaker": "黒ぴぐま", "text": "部屋から出せれば勝ちなのに･･････！", "bg": "パソコンの前から立ち上がる黒ぴぐま", "portraitImage": "assets/characters/char_kuropiguma1.webp" }
+    ]
+  },
+  {
+    "id": 6,
+    "nextPlayPart": 7,
+    "lines": [
+      { "speaker": null, "text": null, "bg": "部屋で話している3人" },
+      { "speaker": "黒ぴぐま", "text": "という訳でぴつじを起こして部屋から出したい！", "bg": "部屋で話している3人", "portraitImage": "assets/characters/char_kuropiguma1.webp" },
+      { "speaker": "ぴさぎ", "text": "ぴつじちゃんはちょっとの事じゃ起きないっぴ", "bg": "部屋で話している3人" },
+      { "speaker": "ぴぐま", "text": "ぴつじちゃんはゲーム嫌いっぴょー", "bg": "部屋で話している3人" },
+      { "speaker": "黒ぴぐま", "text": "ゲームが嫌い？！こんなに楽しいのに！", "bg": "部屋で話している3人", "portraitImage": "assets/characters/char_kuropiguma1.webp" },
+      { "speaker": "ぴさぎ", "text": "サプライズも嫌いッピ", "bg": "部屋で話している3人" },
+      { "speaker": "黒ぴぐま", "text": "え、楽しくないの？！", "bg": "部屋で話している3人", "portraitImage": "assets/characters/char_kuropiguma1.webp" },
+      { "speaker": "ぴぐま", "text": "そうっぴ", "bg": "部屋で話している3人" },
+      { "speaker": null, "text": null, "se": "どんっ" },
+      { "speaker": "ぴさぎ", "text": "むしろぴつじちゃんは今悲しみのどん底にいるッピ", "bg": "どん底にいるぴつじ" },
+      { "speaker": "黒ぴぐま", "text": "悲しみのドン底に･･････？", "bg": "どん底にいるぴつじ", "portraitImage": "assets/characters/char_kuropiguma1.webp" },
+      { "speaker": "ぴぐま", "text": "いちどどん底に落ちるともう動き出さないっぴ･････", "bg": "どん底にいるぴつじ" },
+      { "speaker": "黒ぴぐま", "text": "じゃあ、もう一生出てこないッピ･･････？", "bg": "部屋で話している3人", "portraitImage": "assets/characters/char_kuropiguma1.webp" },
+      { "speaker": "ぴさぎ", "text": "大丈夫っぴ！", "bg": "部屋で話している3人" },
+      { "speaker": "ぴぐま", "text": "もっと楽しいことをすればいいっぴ！", "bg": "部屋で話している3人" },
+      { "speaker": "ぴさぎ", "text": "任せるっぴっ！", "bg": "やる気を出す3人" },
+      { "speaker": "ぴぐま", "text": "やるっぴ！", "bg": "やる気を出す3人" },
+      { "speaker": "黒ぴぐま", "text": "やるっぴ！！", "bg": "やる気を出す3人", "portraitImage": "assets/characters/char_kuropiguma2.webp" }
+    ]
+  },
+  {
+    "id": 7,
+    "nextPlayPart": 8,
+    "lines": [
+      { "speaker": null, "text": null, "bg": "黒背景" },
+      { "speaker": null, "text": null, "se": "モニターが映る音" },
+      { "speaker": "黒ぴぐま", "text": "さあ！脱出ゲームの時間だ！！", "bg": "壁掛けモニターに黒ぴぐまが映った姿" },
+      { "speaker": null, "text": null, "se": "ハッピーな音楽" },
+      { "speaker": "ぴつじ", "text": "･･････。", "bg": "目を覚ますぴつじ", "portraitImage": "assets/characters/eto_remake_hitsuji.webp" },
+      { "speaker": "黒ぴぐま", "text": "･･････。", "bg": "目を覚ますぴつじ" },
+      { "speaker": "ぴつじ", "text": "･･････。", "bg": "目を覚ますぴつじ", "portraitImage": "assets/characters/eto_remake_hitsuji.webp" },
+      { "speaker": "ぴつじ", "text": "･･････楽しそうな音が聞こえるっぴ！", "bg": "目を覚ますぴつじ", "portraitImage": "assets/characters/eto_hitsuji_dance.webp" },
+      { "speaker": "ぴつじ", "text": "リズムに乗るっぴ！！", "bg": "立ち上がるぴつじ", "portraitImage": "assets/characters/eto_hitsuji_dance.webp" }
+    ]
+  },
+  {
+    "id": 8,
+    "nextPlayPart": 9,
+    "lines": [
+      { "speaker": null, "text": null, "se": "ドアを開ける音" },
+      { "speaker": "ぴつじ", "text": "パーティーだ･･･", "bg": "部屋から顔を出すぴつじ", "portraitImage": "assets/characters/eto_hitsuji_dance.webp" },
+      { "speaker": "ぴぐま", "text": "いっぇええぇぇぇい！", "bg": "部屋から顔を出すぴつじ" },
+      { "speaker": "ぴさぎ", "text": "やっぴー！！！", "bg": "部屋から顔を出すぴつじ" },
+      { "speaker": "ぴつじ", "text": "はっぴー！！！！", "bg": "ノリノリで踊り出すぴつじとぴぐまとぴさぎ", "portraitImage": "assets/characters/eto_hitsuji_dance.webp" },
+      { "speaker": "黒ぴぐま", "text": "やったー！", "bg": "部屋から喜んで出てくる黒ぴぐま", "portraitImage": "assets/characters/char_kuropiguma2.webp" },
+      { "speaker": "ぴさぎ", "text": "やったー！", "bg": "部屋から喜んで出てくる黒ぴぐま" },
+      { "speaker": "ぴぐま", "text": "やったー！！", "bg": "部屋から喜んで出てくる黒ぴぐま" },
+      { "speaker": "ぴつじ", "text": "いえーい楽しー！！", "bg": "部屋から喜んで出てくる黒ぴぐま", "portraitImage": "assets/characters/eto_hitsuji_dance.webp" },
+      { "speaker": null, "text": null, "bg": "ノリノリで踊り出すぴつじとぴぐまとぴさぎと黒ぴぐま" }
+    ]
   }
 ]

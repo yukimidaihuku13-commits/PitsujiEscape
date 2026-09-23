@@ -11,6 +11,9 @@ import * as SaveManager from "./save/SaveManager.js";
 import * as Renderer from "./ui/Renderer.js";
 import { MessageQueue } from "./ui/DialogueBox.js";
 import { renderNumericCodeGimmick } from "./gimmick/NumericCodeGimmick.js";
+import { renderLetterSelectGimmick } from "./gimmick/LetterSelectGimmick.js";
+import { renderTapRegionsGimmick } from "./gimmick/TapRegionsGimmick.js";
+import { renderChatFormGimmick } from "./gimmick/ChatFormGimmick.js";
 
 const DATA_FILES = {
   itemsById: "data/items.json",
@@ -19,7 +22,8 @@ const DATA_FILES = {
   playPartsById: "data/playParts.json",
   storyPartsById: "data/storyParts.json",
   gimmicksById: "data/gimmicks.json",
-  hintsById: "data/hints.json"
+  hintsById: "data/hints.json",
+  bgmById: "data/bgm.json"
 };
 
 async function loadAllData() {
@@ -128,6 +132,8 @@ async function main() {
     closeGimmick: () => closeGimmick(),
     enterStoryPart: (storyPartId) => enterStoryPart(storyPartId),
     enterPlayPart: (part) => enterPlayPart(part),
+    showImageModal: (opts) => showImageModal(opts),
+    openBgmMenu: () => openBgmMenu(),
     requestRender: () => {
       if (state.phase === "play") drawPlay();
     }
@@ -157,7 +163,15 @@ async function main() {
 
   function onItemTap(itemId) {
     if (msgQueue.isBusy()) return;
+    const wasSelected = ctx.selectedItemId === itemId;
     Inventory.toggleSelectItem(ctx, itemId);
+    // アイテムを選択した瞬間(=手に取ってよく見た瞬間)だけ、アイテムに書かれている
+    // 内容(itemsById[].inspectMessage)を表示する。選択解除時には出さない。
+    if (!wasSelected && ctx.selectedItemId === itemId) {
+      const item = data.itemsById[itemId];
+      const msgs = item && resolveMessage(item.inspectMessage, state, ctx);
+      if (msgs) msgs.forEach((m) => queueMessage(m));
+    }
     drawPlay();
   }
 
@@ -173,8 +187,9 @@ async function main() {
   function onFaceTap() {
     if (msgQueue.isBusy()) return;
     const part = data.playPartsById[state.playPart];
-    const msg = part && resolveMessage(part.notYetMessage, state, ctx);
-    queueMessage(msg || "特に伝えることはないようだ");
+    const msgs = part && resolveMessage(part.notYetMessage, state, ctx);
+    if (msgs) msgs.forEach((m) => queueMessage(m));
+    else queueMessage("特に伝えることはないようだ");
   }
 
   function openGimmick(gimmickId) {
@@ -204,10 +219,15 @@ async function main() {
     const gimmickContainer = document.createElement("div");
     box.appendChild(gimmickContainer);
 
+    const onResult = (correct) => engine.resolveGimmickResult(gimmickId, correct);
     if (gimmick.type === "numericCode") {
-      renderNumericCodeGimmick(gimmickContainer, gimmick, (correct) => {
-        engine.resolveGimmickResult(gimmickId, correct);
-      });
+      renderNumericCodeGimmick(gimmickContainer, gimmick, onResult);
+    } else if (gimmick.type === "letterSelect") {
+      renderLetterSelectGimmick(gimmickContainer, gimmick, onResult);
+    } else if (gimmick.type === "tapRegions") {
+      renderTapRegionsGimmick(gimmickContainer, gimmick, onResult);
+    } else if (gimmick.type === "chatForm") {
+      renderChatFormGimmick(gimmickContainer, gimmick, { inventory: state.inventory, itemsById: data.itemsById }, onResult);
     } else {
       gimmickContainer.textContent = `未実装のギミックtype: ${gimmick.type}`;
     }
@@ -220,6 +240,60 @@ async function main() {
     }
     currentModalStatusEl = null;
     if (state.phase === "play") drawPlay();
+  }
+
+  // 表示アクション用モーダル。実画像がまだ無い間はcaptionをそのままプレースホルダーとして
+  // 見せる（未準備の画像は適当な文字等で表示、の方針）。閉じるのは×ボタンから。
+  function showImageModal(opts) {
+    const { overlay, box } = Renderer.renderModalWrap(modalRoot);
+    if (opts.image) {
+      const img = document.createElement("img");
+      img.className = "modal-image";
+      img.src = opts.image;
+      img.alt = opts.caption || "";
+      img.addEventListener("error", () => {
+        img.replaceWith(createModalImagePlaceholder(opts.caption));
+      });
+      box.appendChild(img);
+    } else {
+      box.appendChild(createModalImagePlaceholder(opts.caption));
+    }
+    addModalCloseButton(box, overlay);
+  }
+
+  function createModalImagePlaceholder(caption) {
+    const placeholder = document.createElement("div");
+    placeholder.className = "gimmick-image-placeholder modal-image-placeholder";
+    placeholder.textContent = caption || "（画像 仮）";
+    return placeholder;
+  }
+
+  function openBgmMenu() {
+    const { overlay, box } = Renderer.renderModalWrap(modalRoot);
+    const title = document.createElement("div");
+    title.className = "modal-title";
+    title.textContent = "BGMを選ぶ";
+    box.appendChild(title);
+
+    const list = document.createElement("div");
+    list.className = "bgm-list";
+    Object.values(data.bgmById).forEach((track) => {
+      const unlocked = state.bgmState.unlockedTracks.includes(track.id);
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "bgm-track-btn" + (state.bgmState.currentTrack === track.id ? " selected" : "");
+      btn.textContent = unlocked ? track.label : `${track.label}（未入手）`;
+      btn.disabled = !unlocked;
+      btn.addEventListener("click", () => {
+        state.bgmState.currentTrack = track.id;
+        SaveManager.save(state);
+        overlay.remove();
+        drawPlay();
+      });
+      list.appendChild(btn);
+    });
+    box.appendChild(list);
+    addModalCloseButton(box, overlay);
   }
 
   function showLogModal() {
@@ -403,16 +477,18 @@ async function main() {
 
   // 想定外の連打・多重タップ対策:
   // メッセージ/ストーリーが表示待ちの間は、他の操作より先にメッセージ送りを優先する。
-  // ただし別のクリックポイント(spot)をタップした場合は例外で、そのタップで
-  // 前のメッセージを消すと同時に、新しいspotの処理も同じタップ内で実行する。
+  // ただし別のクリックポイント(spot)・矢印・所持品アイテムをタップした場合は例外で、
+  // そのタップで前のメッセージを消すと同時に、新しい操作も同じタップ内で実行する
+  // （矢印/所持品だけ対象外だと、スポットは1タップで進むのに矢印は2タップ必要になる
+  // という不整合になっていたため、実機確認の上で揃えた）。
   root.addEventListener(
     "click",
     (e) => {
       if (state.phase === "play" && msgQueue.isBusy()) {
-        const spotBtn = e.target.closest && e.target.closest(".spot-btn, .spot-hotspot");
-        if (spotBtn) {
+        const actionable = e.target.closest && e.target.closest(".spot-btn, .spot-hotspot, .arrow-btn, .inventory-item");
+        if (actionable) {
           msgQueue.clear();
-          return; // 伝播を止めず、spot-btn側のクリック処理へそのまま進める
+          return; // 伝播を止めず、各要素側のクリック処理へそのまま進める
         }
         msgQueue.advance();
         e.stopPropagation();

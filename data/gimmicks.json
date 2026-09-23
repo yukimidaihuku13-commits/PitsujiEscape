@@ -26,5 +26,113 @@
     "onFail": [
       { "type": "message", "text": "違ったッピ……" }
     ]
+  },
+  {
+    "id": "gimmickLockEntrance",
+    "label": "玄関ドアの電子錠",
+    "type": "letterSelect",
+    "answer": "ESCAPE",
+    "image": "assets/gimmick/gimmick_DoorEntrance.webp",
+    "rows": [
+      {
+        "letters": [
+          { "char": "R", "position": { "x": 10, "y": 24, "width": 9, "height": 6 } },
+          { "char": "I", "position": { "x": 20, "y": 24, "width": 9, "height": 6 } },
+          { "char": "C", "position": { "x": 30, "y": 24, "width": 9, "height": 6 } },
+          { "char": "E", "position": { "x": 40, "y": 24, "width": 9, "height": 6 } }
+        ],
+        "resultPosition": { "x": 80, "y": 24, "width": 13, "height": 6 }
+      },
+      {
+        "letters": [
+          { "char": "P", "position": { "x": 10, "y": 31, "width": 9, "height": 6 } },
+          { "char": "A", "position": { "x": 20, "y": 31, "width": 9, "height": 6 } },
+          { "char": "S", "position": { "x": 30, "y": 31, "width": 9, "height": 6 } },
+          { "char": "T", "position": { "x": 40, "y": 31, "width": 9, "height": 6 } },
+          { "char": "A", "position": { "x": 50, "y": 31, "width": 9, "height": 6 } }
+        ],
+        "resultPosition": { "x": 80, "y": 31, "width": 13, "height": 6 }
+      },
+      {
+        "letters": [
+          { "char": "C", "position": { "x": 10, "y": 39, "width": 9, "height": 6 } },
+          { "char": "A", "position": { "x": 20, "y": 39, "width": 9, "height": 6 } },
+          { "char": "K", "position": { "x": 30, "y": 39, "width": 9, "height": 6 } },
+          { "char": "E", "position": { "x": 40, "y": 39, "width": 9, "height": 6 } }
+        ],
+        "resultPosition": { "x": 80, "y": 39, "width": 13, "height": 6 }
+      },
+      {
+        "letters": [
+          { "char": "T", "position": { "x": 10, "y": 47, "width": 9, "height": 6 } },
+          { "char": "O", "position": { "x": 20, "y": 47, "width": 9, "height": 6 } },
+          { "char": "A", "position": { "x": 30, "y": 47, "width": 9, "height": 6 } },
+          { "char": "S", "position": { "x": 40, "y": 47, "width": 9, "height": 6 } },
+          { "char": "T", "position": { "x": 50, "y": 47, "width": 9, "height": 6 } }
+        ],
+        "resultPosition": { "x": 80, "y": 47, "width": 13, "height": 6 }
+      },
+      {
+        "letters": [
+          { "char": "P", "position": { "x": 10, "y": 54, "width": 9, "height": 6 } },
+          { "char": "I", "position": { "x": 20, "y": 54, "width": 9, "height": 6 } },
+          { "char": "Z", "position": { "x": 30, "y": 54, "width": 9, "height": 6 } },
+          { "char": "Z", "position": { "x": 40, "y": 54, "width": 9, "height": 6 } },
+          { "char": "A", "position": { "x": 50, "y": 54, "width": 9, "height": 6 } }
+        ],
+        "resultPosition": { "x": 80, "y": 54, "width": 13, "height": 6 }
+      },
+      {
+        "letters": [
+          { "char": "S", "position": { "x": 10, "y": 62, "width": 9, "height": 6 } },
+          { "char": "C", "position": { "x": 20, "y": 62, "width": 9, "height": 6 } },
+          { "char": "O", "position": { "x": 30, "y": 62, "width": 9, "height": 6 } },
+          { "char": "N", "position": { "x": 40, "y": 62, "width": 9, "height": 6 } },
+          { "char": "E", "position": { "x": 50, "y": 62, "width": 9, "height": 6 } }
+        ],
+        "resultPosition": { "x": 80, "y": 62, "width": 13, "height": 6 }
+      }
+    ],
+    "onSuccess": [
+      { "type": "setFlag", "flag": "doorEntranceUnlocked", "value": true },
+      { "type": "message", "text": "カチッと音がして鍵が開いた" },
+      { "type": "message", "text": "玄関のロックが解除されたっぴ！" }
+    ],
+    "onFail": [
+      { "type": "message", "text": "違ったッピ……" }
+    ]
+  },
+  {
+    "id": "gimmickPhoto",
+    "label": "写真ギミック",
+    "type": "tapRegions",
+    "image": null,
+    "regions": [
+      { "key": "maracas", "label": "マラカス", "position": { "x": 10, "y": 35, "width": 35, "height": 25 } },
+      { "key": "tambourine", "label": "タンバリン", "position": { "x": 55, "y": 35, "width": 35, "height": 25 } }
+    ],
+    "onSuccess": [
+      { "type": "setFlag", "flag": "gimmickPhotoCleared", "value": true },
+      { "type": "message", "text": "マラカスとタンバリンを見つけたっぴ！" }
+    ],
+    "onFail": []
+  },
+  {
+    "id": "gimmickPcGame",
+    "label": "チャット画面",
+    "type": "chatForm",
+    "numberFields": [
+      { "label": "番地1", "digits": 1, "answer": "2" },
+      { "label": "番地2", "digits": 2, "answer": "51" },
+      { "label": "番地3", "digits": 3, "answer": "131" }
+    ],
+    "requiredItem": "itemPhotoPitsuji",
+    "wrongNumberMessage": "住所が間違えているみたいだ",
+    "wrongItemMessage": "添付するアイテムが間違えているみたいだ",
+    "onSuccess": [
+      { "type": "setFlag", "flag": "chatGimmickCleared", "value": true },
+      { "type": "message", "text": "送信したっぴ！" }
+    ],
+    "onFail": []
   }
 ]

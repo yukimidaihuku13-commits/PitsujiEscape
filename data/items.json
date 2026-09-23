@@ -18,7 +18,8 @@
     "name": "冷凍後の青い紙",
     "persistence": "remainInPart",
     "transformsTo": null,
-    "usableOn": []
+    "usableOn": [],
+    "inspectMessage": "紙に4桁の数字が書かれている「3952」"
   },
   {
     "id": "itemBread",
@@ -32,6 +33,88 @@
     "name": "焼かれた食パン",
     "persistence": "remainInPart",
     "transformsTo": null,
+    "usableOn": [],
+    "inspectMessage": "パンにりんごの記号が焼き付いている"
+  },
+  {
+    "id": "itemBlackLight",
+    "name": "ブラックライト",
+    "persistence": "remainInPart",
+    "transformsTo": null,
+    "usableOn": ["spotPhone", "spotSalt"]
+  },
+  {
+    "id": "itemIllust",
+    "name": "絵",
+    "persistence": "remainInPart",
+    "transformsTo": null,
+    "usableOn": [],
+    "inspectMessage": [
+      { "when": { "flag": { "roomLightRed": true } }, "text": "暗号文字で「ESCAPE」と浮かび上がっている（踊る人形文字・画像仮）" },
+      { "when": {}, "text": "何の変哲もない絵に見える" }
+    ]
+  },
+  {
+    "id": "itemScrewDriver",
+    "name": "プラスドライバー",
+    "persistence": "remainInPart",
+    "transformsTo": null,
+    "usableOn": ["spotPitsujiWindow"]
+  },
+  {
+    "id": "itemCushion",
+    "name": "クッション",
+    "persistence": "consumed",
+    "transformsTo": null,
+    "usableOn": ["spotPitsujiWindow"]
+  },
+  {
+    "id": "itemLargeTowel",
+    "name": "タオルケット",
+    "persistence": "consumed",
+    "transformsTo": null,
+    "usableOn": ["spotPitsujiWindow"]
+  },
+  {
+    "id": "itemPisagiCard",
+    "name": "ぴさぎの名刺",
+    "persistence": "consumed",
+    "transformsTo": null,
+    "usableOn": ["spotPhone"]
+  },
+  {
+    "id": "itemCamera",
+    "name": "カメラ",
+    "persistence": "consumed",
+    "transformsTo": null,
+    "usableOn": ["spotPitsujiWindow"]
+  },
+  {
+    "id": "itemPhotoPitsuji",
+    "name": "ぴつじの写真",
+    "persistence": "consumed",
+    "transformsTo": null,
     "usableOn": []
+  },
+  {
+    "id": "itemPhoto",
+    "name": "写真",
+    "persistence": "consumed",
+    "transformsTo": null,
+    "usableOn": ["spotPisagi"]
+  },
+  {
+    "id": "itemMaracas",
+    "name": "マラカス",
+    "persistence": "consumed",
+    "transformsTo": null,
+    "usableOn": ["spotPiguma"]
+  },
+  {
+    "id": "itemCD",
+    "name": "音楽CD",
+    "persistence": "consumed",
+    "transformsTo": null,
+    "usableOn": ["spotAudioPlayer"]
   }
 ]

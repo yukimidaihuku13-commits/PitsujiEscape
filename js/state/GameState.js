@@ -2,7 +2,7 @@
 // ゲームの「唯一の真実の状態」を作るモジュール。
 // ここに定義されていない状態はどこにも保持しないことをルールとする。
 
-export const SAVE_VERSION = 2;
+export const SAVE_VERSION = 3;
 
 export function createInitialState() {
   return {
@@ -27,8 +27,8 @@ export function createInitialState() {
     // 段ボール箱などクリック回数を数える箇所
     clickCounts: {},
 
-    // BGM状態（将来のPart7以降で使用）
-    bgmState: { unlockedTracks: [], currentTrack: null },
+    // BGM状態。"default"は最初から選べる。"happy"は音楽CD(itemCD)使用で解禁される(PlayPart7)。
+    bgmState: { unlockedTracks: ["default"], currentTrack: "default" },
 
     // ヒントの開封状況。 { playPart: 表示済み行数 } タップ毎に1行ずつ開放していく。
     hintRevealCounts: {}

@@ -36,10 +36,19 @@ export function evaluate(cond, state, ctx) {
     if (!log.includes(cond.usedOn.spot)) return false;
   }
 
+  // "usedOn"は特定spotへの使用だが、こちらはスポットを問わず一度でも使用したか
+  // （＝itemUsageLogに何らかの記録があるか）を見る。
+  if ("everUsed" in cond) {
+    const log = state.itemUsageLog[cond.everUsed] || [];
+    if (log.length === 0) return false;
+  }
+
   if ("clickCount" in cond) {
     const count = state.clickCounts[cond.clickCount.spot] || 0;
     if (!(count >= cond.clickCount.gte)) return false;
   }
+
+  if ("bgmTrack" in cond && state.bgmState.currentTrack !== cond.bgmTrack) return false;
 
   return true;
 }

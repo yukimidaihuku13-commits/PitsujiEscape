@@ -38,6 +38,17 @@ export function consumeSelectedItem(state, ctx, itemsById, currentSpotId) {
 }
 
 /**
+ * 選択操作を介さずに、指定アイテムを指定spot(またはギミック)で使用済みにして所持品から消す。
+ * チャット画面ギミックへの写真添付のように、ギミック内でアイテムを使うケース用。
+ */
+export function consumeItem(state, ctx, itemId, spotId) {
+  if (!state.itemUsageLog[itemId]) state.itemUsageLog[itemId] = [];
+  if (!state.itemUsageLog[itemId].includes(spotId)) state.itemUsageLog[itemId].push(spotId);
+  removeItem(state, itemId);
+  if (ctx.selectedItemId === itemId) ctx.selectedItemId = null;
+}
+
+/**
  * PlayPart切替時に、残存(remainInPart)アイテムを全て所持品から取り除く。
  * ゲームアイテム.txt の「操作パート切り替わり時に残存アイテムは全て消す」に対応。
  */
@@ -46,8 +57,4 @@ export function discardRemainInPartItems(state, itemsById) {
     const item = itemsById[id];
     return !(item && item.persistence === "remainInPart");
   });
-}
-
-export function toggleSelectItem(ctx, itemId) {
-  ctx.selectedItemId = ctx.selectedItemId === itemId ? null : itemId;
 }

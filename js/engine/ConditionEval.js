@@ -50,6 +50,12 @@ export function evaluate(cond, state, ctx) {
 
   if ("bgmTrack" in cond && state.bgmState.currentTrack !== cond.bgmTrack) return false;
 
+  // 現在表示中の視点。文字列1つ、または配列(いずれかに一致)で指定する。
+  if ("currentView" in cond) {
+    const views = Array.isArray(cond.currentView) ? cond.currentView : [cond.currentView];
+    if (!views.includes(state.currentView)) return false;
+  }
+
   return true;
 }
 

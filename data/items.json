@@ -4,14 +4,16 @@
     "name": "チョコレート",
     "persistence": "consumed",
     "transformsTo": null,
-    "usableOn": ["spotPitsujiDoorGap"]
+    "usableOn": ["spotPitsujiDoorGap"],
+    "description": "ぴつじの大好きなチョコレートだっぴ"
   },
   {
     "id": "itemBluePaper",
     "name": "青い紙",
     "persistence": "transform",
     "transformsTo": "itemFrozenBluePaper",
-    "usableOn": ["spotFreezerCompartment"]
+    "usableOn": ["spotFreezerCompartment"],
+    "description": "青い紙。今は何も書かれていないように見える"
   },
   {
     "id": "itemFrozenBluePaper",
@@ -19,14 +21,15 @@
     "persistence": "remainInPart",
     "transformsTo": null,
     "usableOn": [],
-    "inspectMessage": "紙に4桁の数字が書かれている「3952」"
+    "description": "紙に4桁の数字が書かれている「3952」"
   },
   {
     "id": "itemBread",
     "name": "食パン",
     "persistence": "transform",
     "transformsTo": "itemToastedBread",
-    "usableOn": ["spotToaster"]
+    "usableOn": ["spotToaster"],
+    "description": "ふつうの食パン。まだ焼いていない"
   },
   {
     "id": "itemToastedBread",
@@ -34,14 +37,15 @@
     "persistence": "remainInPart",
     "transformsTo": null,
     "usableOn": [],
-    "inspectMessage": "パンにりんごの記号が焼き付いている"
+    "description": "パンにりんごの記号が焼き付いている"
   },
   {
     "id": "itemBlackLight",
     "name": "ブラックライト",
     "persistence": "remainInPart",
     "transformsTo": null,
-    "usableOn": ["spotPhone", "spotSalt"]
+    "usableOn": ["spotPhone", "spotSalt"],
+    "description": "ブラックライト。当てると見えない文字が浮かび上がる"
   },
   {
     "id": "itemIllust",
@@ -49,8 +53,8 @@
     "persistence": "remainInPart",
     "transformsTo": null,
     "usableOn": [],
-    "inspectMessage": [
-      { "when": { "flag": { "roomLightRed": true } }, "text": "暗号文字で「ESCAPE」と浮かび上がっている（踊る人形文字・画像仮）" },
+    "description": [
+      { "when": { "flag": { "roomLightRed": true }, "currentView": ["roomB1", "roomB2"] }, "text": "暗号文字で「ESCAPE」と浮かび上がっている（踊る人形文字・画像仮）" },
       { "when": {}, "text": "何の変哲もない絵に見える" }
     ]
   },
@@ -59,62 +63,71 @@
     "name": "プラスドライバー",
     "persistence": "remainInPart",
     "transformsTo": null,
-    "usableOn": ["spotPitsujiWindow"]
+    "usableOn": ["spotPitsujiWindow"],
+    "description": "プラスドライバー。ネジを外せそう"
   },
   {
     "id": "itemCushion",
     "name": "クッション",
     "persistence": "consumed",
     "transformsTo": null,
-    "usableOn": ["spotPitsujiWindow"]
+    "usableOn": ["spotPitsujiWindow"],
+    "description": "ふかふかのクッション"
   },
   {
     "id": "itemLargeTowel",
     "name": "タオルケット",
     "persistence": "consumed",
     "transformsTo": null,
-    "usableOn": ["spotPitsujiWindow"]
+    "usableOn": ["spotPitsujiWindow"],
+    "description": "ふわふわのタオルケット"
   },
   {
     "id": "itemPisagiCard",
     "name": "ぴさぎの名刺",
     "persistence": "consumed",
     "transformsTo": null,
-    "usableOn": ["spotPhone"]
+    "usableOn": ["spotPhone"],
+    "description": "ぴさぎの名刺。電話番号が書いてある"
   },
   {
     "id": "itemCamera",
     "name": "カメラ",
     "persistence": "consumed",
     "transformsTo": null,
-    "usableOn": ["spotPitsujiWindow"]
+    "usableOn": ["spotPitsujiWindow"],
+    "description": "カメラ。これで写真が撮れる"
   },
   {
     "id": "itemPhotoPitsuji",
     "name": "ぴつじの写真",
     "persistence": "consumed",
     "transformsTo": null,
-    "usableOn": []
+    "usableOn": [],
+    "description": "硬い床で熟睡しているぴつじの写真"
   },
   {
     "id": "itemPhoto",
     "name": "写真",
     "persistence": "consumed",
     "transformsTo": null,
-    "usableOn": ["spotPisagi"]
+    "usableOn": ["spotPisagi"],
+    "description": "ぴつじと仲間達が楽しそうにパーティーしてる写真"
   },
   {
     "id": "itemMaracas",
     "name": "マラカス",
     "persistence": "consumed",
     "transformsTo": null,
-    "usableOn": ["spotPiguma"]
+    "usableOn": ["spotPiguma"],
+    "description": "シャカシャカ鳴るマラカス"
   },
   {
     "id": "itemCD",
     "name": "音楽CD",
     "persistence": "consumed",
     "transformsTo": null,
-    "usableOn": ["spotAudioPlayer"]
+    "usableOn": ["spotAudioPlayer"],
+    "description": "ノリノリになれる音楽CD"
   }
 ]

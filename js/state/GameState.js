@@ -31,7 +31,10 @@ export function createInitialState() {
     bgmState: { unlockedTracks: ["default"], currentTrack: "default" },
 
     // ヒントの開封状況。 { playPart: 表示済み行数 } タップ毎に1行ずつ開放していく。
-    hintRevealCounts: {}
+    hintRevealCounts: {},
+
+    // 調査ノートの表示中ページ(views.json viewNote.pagesの添字)。ノートを開く度に0へ戻す。
+    notePage: 0
   };
 }
 

@@ -3,7 +3,7 @@
 // UIそのものは持たず、`ui` に渡されたコールバック経由でのみ画面に触れる。
 
 import { evaluate } from "./ConditionEval.js";
-import { resolveMessage } from "./RuleResolver.js";
+import { resolveActions, resolveMessage } from "./RuleResolver.js";
 import * as Inventory from "../inventory/Inventory.js";
 import * as Navigator from "../nav/Navigator.js";
 import * as SaveManager from "../save/SaveManager.js";
@@ -13,7 +13,7 @@ export class Engine {
    * @param {object} state GameState（可変オブジェクト）
    * @param {object} data { itemsById, viewsById, spotsById, playPartsById, storyPartsById, gimmicksById, transitions }
    * @param {object} ctx { selectedItemId }
-   * @param {object} ui  { queueMessage, playSE, openGimmick, closeGimmick, enterStoryPart, enterPlayPart, requestRender }
+   * @param {object} ui  { queueMessage, playSE, openGimmick, closeGimmick, enterStoryPart, enterPlayPart, requestRender, scheduleAutoClear, enterEnding }
    */
   constructor(state, data, ctx, ui) {
     this.state = state;
@@ -29,6 +29,7 @@ export class Engine {
     this.ui.requestRender();
     // C章の方針: 一連のアクションが完了したタイミングでのみ全体を保存する
     SaveManager.save(this.state);
+    this.checkAutoClear();
   }
 
   runAction(action, currentSpotId) {
@@ -54,6 +55,10 @@ export class Engine {
         break;
       case "consumeSelectedItem":
         Inventory.consumeSelectedItem(this.state, this.ctx, this.data.itemsById, currentSpotId);
+        break;
+      case "consumeItem":
+        // 選択操作を介さずに特定アイテムを使用済みにする（例: チャット画面ギミックに添付した写真）。
+        Inventory.consumeItem(this.state, this.ctx, action.item, action.spot || currentSpotId);
         break;
       case "clickCountIncrement": {
         const key = action.spot || currentSpotId;
@@ -90,9 +95,62 @@ export class Engine {
       case "openBgmMenu":
         this.ui.openBgmMenu();
         break;
+      case "openNote":
+        this.openNote();
+        break;
+      case "notePageNext":
+        this.showNotePage((this.state.notePage || 0) + 1);
+        break;
       default:
         console.warn("[Engine] 未知のアクションtype:", action.type, action);
     }
+  }
+
+  // 調査ノート(views.json の layoutType:"note")を開く。毎回1ページ目(ページ1左)から始める。
+  openNote() {
+    const noteView = this.getNoteView();
+    if (!noteView) {
+      console.error("[Engine] ノート視点(layoutType:note)が見つかりません");
+      return;
+    }
+    if (!Navigator.moveToView(this.state, this.data.viewsById, noteView.id)) return;
+    this.showNotePage(0);
+  }
+
+  // 指定ページを表示し、そのページのonShowアクションを実行する。
+  // 最後のページより先には進まない（範囲外の指定は無視する）。
+  showNotePage(index) {
+    const noteView = this.getNoteView();
+    if (!noteView || index < 0 || index >= noteView.pages.length) return;
+    const page = noteView.pages[index];
+    this.state.notePage = index;
+    // 「タップ回数は連続。他処理が入ったら再度数え直し」: ページを表示し直すたびに数え直す
+    this.state.clickCounts[page.id] = 0;
+    for (const action of resolveActions({ rules: page.onShow || [] }, this.state, this.ctx)) {
+      this.runAction(action, page.id);
+    }
+  }
+
+  getNoteView() {
+    return Object.values(this.data.viewsById).find((v) => v.layoutType === "note") || null;
+  }
+
+  // 配信用カメラを押さなくても、クリア条件を満たした時点で自動的にクリアするPlayPart
+  // (playParts.json の autoClear:true。現状は操作パート6のみ)。直前のメッセージを
+  // 読み終えてからストーリーに移れるよう、実際の遷移タイミングはUI側に委ねる。
+  checkAutoClear() {
+    if (this.state.phase !== "play") return;
+    const part = this.data.playPartsById[this.state.playPart];
+    if (!part || !part.autoClear) return;
+    if (evaluate(part.clearCondition, this.state, this.ctx)) this.ui.scheduleAutoClear();
+  }
+
+  // scheduleAutoClearを受けたUI側が、メッセージを読み終えたタイミングで呼ぶ。
+  runAutoClear() {
+    if (this.state.phase !== "play") return;
+    const part = this.data.playPartsById[this.state.playPart];
+    if (!part || !evaluate(part.clearCondition, this.state, this.ctx)) return;
+    this.clearCurrentPart(part);
   }
 
   attemptPartClear() {
@@ -114,6 +172,11 @@ export class Engine {
   clearCurrentPart(part) {
     Inventory.discardRemainInPartItems(this.state, this.data.itemsById);
     this.ctx.selectedItemId = null;
+    this.state.notePage = 0;
+    // 電気スイッチ等で変えた部屋の色(views.json の tintFlag)は、操作パートをまたがず元に戻す。
+    for (const view of Object.values(this.data.viewsById)) {
+      if (view.tintFlag) delete this.state.flags[view.tintFlag];
+    }
     SaveManager.save(this.state);
     this.goToStoryPart(part.nextStoryPart);
   }
@@ -126,6 +189,15 @@ export class Engine {
   }
 
   advanceToPlayPart(playPartId) {
+    // 最後のストーリー(nextPlayPart:null)の後はエンディング(phase:"end")で止める。
+    // 以前は存在しないPlayPart9へ進もうとして、真っ白な画面・壊れたセーブになっていた。
+    if (playPartId == null) {
+      this.state.phase = "end";
+      this.state.storyPart = null;
+      SaveManager.save(this.state);
+      this.ui.enterEnding();
+      return;
+    }
     this.state.phase = "play";
     this.state.playPart = playPartId;
     this.state.storyPart = null;

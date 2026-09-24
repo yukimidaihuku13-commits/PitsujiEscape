@@ -13,6 +13,9 @@ html, body {
   font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
   -webkit-tap-highlight-color: transparent;
   overscroll-behavior: none;
+  /* ダブルタップ拡大を無効化し、素早い連続タップでも画面が拡大されないようにする
+     （iOS Safariはviewportのuser-scalable=noを無視するため、こちらで抑止する） */
+  touch-action: manipulation;
 }
 
 #game-frame {
@@ -50,6 +53,18 @@ html, body {
 .start-title {
   white-space: pre-wrap;
   font-size: 1.2rem;
+}
+
+.end-back-btn {
+  padding: 10px 24px;
+  border: 1px solid #607d8b;
+  border-radius: 8px;
+  background: #eceff1;
+}
+.load-error {
+  white-space: pre-wrap;
+  padding: 16px;
+  font-size: 0.9rem;
 }
 
 /* --- デバッグ: パート直接ジャンプ --- */
@@ -95,6 +110,17 @@ html, body {
   padding: 8px 10px;
   border-bottom: 1px solid #ccc;
   flex-shrink: 0;
+}
+/* ヘッダー左側のゲームタイトル。幅が足りない端末では2行に折り返す */
+.header-title {
+  flex: 1;
+  min-width: 0;
+  align-self: center;
+  font-size: 0.7rem;
+  line-height: 1.25;
+  font-weight: bold;
+  color: #37474f;
+  overflow-wrap: anywhere;
 }
 .icon-btn {
   font-size: 0.8rem;
@@ -339,11 +365,30 @@ html, body {
   min-height: 72px;
   width: 100%;
 }
+.story-name-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 4px;
+}
 .speaker-name {
   font-weight: bold;
   font-size: 0.85rem;
-  margin-bottom: 4px;
   color: #37474f;
+}
+.ff-btn {
+  flex-shrink: 0;
+  font-size: 0.75rem;
+  padding: 4px 10px;
+  border: 1px solid #90a4ae;
+  border-radius: 6px;
+  background: #f5f5f5;
+  color: #37474f;
+}
+.ff-btn--on {
+  background: #ffe08a;
+  border-color: #d4a017;
 }
 
 /* --- モーダル(ギミック/ログ/ヒント/設定) --- */
@@ -399,6 +444,87 @@ html, body {
 }
 .hint-line--masked:active {
   color: #607d8b;
+}
+
+/* --- 調査ノート(views.json layoutType:"note") ---
+   所持品バー(オーバーレイ)の下にページ画像、その下に閉じるボタンを置く。 */
+.note-main {
+  justify-content: center;
+  gap: 10px;
+  padding-top: 56px;
+  padding-bottom: 12px;
+}
+.note-page {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  padding: 0;
+  border: 1px solid #b0bec5;
+  border-radius: 8px;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.note-page-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.note-page-placeholder {
+  white-space: pre-wrap;
+  color: #607d8b;
+  font-size: 1rem;
+  text-align: center;
+}
+.note-close-btn {
+  flex-shrink: 0;
+  padding: 10px 32px;
+  border: 1px solid #607d8b;
+  border-radius: 8px;
+  background: #eceff1;
+  font-size: 0.95rem;
+}
+
+/* --- アイテム拡大表示モーダル --- */
+.item-zoom-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+.item-zoom-name {
+  font-weight: bold;
+}
+.item-zoom-image {
+  display: block;
+  width: 100%;
+  max-height: 50vh;
+  object-fit: contain;
+  border-radius: 6px;
+}
+.item-zoom-message {
+  width: 100%;
+  min-height: 3em;
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+.item-zoom-close {
+  padding: 10px 32px;
+  border: 1px solid #607d8b;
+  border-radius: 8px;
+  background: #eceff1;
+  font-size: 0.95rem;
+}
+
+.save-warning {
+  margin-top: 10px;
+  font-size: 0.8rem;
+  color: #c62828;
 }
 
 /* --- 表示アクション用モーダル(showImageModal) --- */

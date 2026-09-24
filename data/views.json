@@ -14,18 +14,81 @@
     "background": "assets/backgrounds/bg_viewDesk.webp"
   },
   {
-    "id": "viewNote1",
-    "label": "調査ノート1",
-    "layoutType": "play",
-    "spots": ["spotNote1left", "spotNote1right"],
-    "background": "assets/backgrounds/bg_tmp_viewNote1.webp"
-  },
-  {
-    "id": "viewNote2",
-    "label": "調査ノート2",
-    "layoutType": "play",
-    "spots": ["spotNote2left", "spotNote2right"],
-    "background": "assets/backgrounds/bg_tmp_viewNote2.webp"
+    "id": "viewNote",
+    "label": "調査ノート",
+    "layoutType": "note",
+    "spots": [],
+    "returnView": "viewDesk",
+    "pages": [
+      {
+        "id": "note1left",
+        "label": "調査ノート 1ページ左",
+        "image": "assets/note/note_1left.webp",
+        "onShow": [
+          { "when": {}, "actions": [{ "type": "message", "text": "ぴつじはチョコレートが好きと……" }] }
+        ],
+        "onTap": [
+          { "when": {}, "actions": [{ "type": "notePageNext" }] }
+        ]
+      },
+      {
+        "id": "note1right",
+        "label": "調査ノート 1ページ右",
+        "image": "assets/note/note_1right.webp",
+        "onShow": [
+          { "when": {}, "actions": [{ "type": "message", "text": "ぴつじはふかふかなものが好きだったな……" }] }
+        ],
+        "onTap": [
+          { "when": {}, "actions": [{ "type": "notePageNext" }] }
+        ]
+      },
+      {
+        "id": "note2left",
+        "label": "調査ノート 2ページ左",
+        "image": "assets/note/note_2left.webp",
+        "onShow": [
+          { "when": {}, "actions": [{ "type": "message", "text": "ぴつじの友達を調べたページだっぴ" }] }
+        ],
+        "onTap": [
+          { "when": {}, "actions": [{ "type": "notePageNext" }] }
+        ]
+      },
+      {
+        "id": "note2right",
+        "label": "調査ノート 2ページ右",
+        "image": "assets/note/note_2right.webp",
+        "onShow": [
+          { "when": {}, "actions": [{ "type": "message", "text": "ぴつじの友達の調査もしたっぴ" }] }
+        ],
+        "onTap": [
+          { "when": { "playPart": 7, "everObtained": "itemPhoto" }, "actions": [{ "type": "notePageNext" }] },
+          { "when": { "playPart": 7, "clickCount": { "spot": "note2right", "gte": 2 } }, "actions": [
+            { "type": "message", "text": "次のページがめくれたっぴ！" },
+            { "type": "notePageNext" }
+          ] },
+          { "when": { "playPart": 7 }, "actions": [
+            { "type": "clickCountIncrement" },
+            { "type": "message", "text": "貼り付いてて次のページが中々めくれないッピ" }
+          ] },
+          { "when": {}, "actions": [{ "type": "message", "text": "ぴつじの友達の調査もしたっぴ" }] }
+        ]
+      },
+      {
+        "id": "note3left",
+        "label": "調査ノート 3ページ左",
+        "image": "assets/note/note_3left.webp",
+        "onShow": [
+          { "when": { "everObtained": "itemPhoto" }, "actions": [{ "type": "message", "text": "ぴぐまとぴさぎはパーティーで楽器担当だっぴ" }] },
+          { "when": {}, "actions": [
+            { "type": "giveItem", "item": "itemPhoto" },
+            { "type": "message", "text": "ぴつじと仲間達が楽しそうにパーティーしてる写真だっぴ" }
+          ] }
+        ],
+        "onTap": [
+          { "when": {}, "actions": [{ "type": "message", "text": "ぴぐまとぴさぎはパーティーで楽器担当だっぴ" }] }
+        ]
+      }
+    ]
   },
   {
     "id": "viewBed",
@@ -94,7 +157,8 @@
     "layoutType": "play",
     "spots": ["spotDoorA", "spotPhoneStand", "spotLockEntrance", "spotDoorEntrance", "spotPisagi"],
     "accessCondition": { "playPart": { "gte": 4 } },
-    "background": "assets/backgrounds/bg_roomB1.webp"
+    "background": "assets/backgrounds/bg_roomB1.webp",
+    "tintFlag": "roomLightRed"
   },
   {
     "id": "roomB2",

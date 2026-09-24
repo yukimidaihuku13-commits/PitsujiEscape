@@ -39,6 +39,25 @@ export function load() {
   }
 }
 
+// Cookie/サイトデータをブロックしている環境では、localStorageへのアクセス自体が
+// 例外(SecurityError)になる。clear()もload()のcatch内から呼ばれるため、ここで
+// 例外を握りつぶさないとゲーム全体の起動が止まってしまう。
 export function clear() {
-  localStorage.removeItem(SAVE_KEY);
+  try {
+    localStorage.removeItem(SAVE_KEY);
+  } catch (e) {
+    console.error("[SaveManager] セーブデータの削除に失敗しました", e);
+  }
+}
+
+/** この環境でセーブ(localStorage)が使えるかを返す。 */
+export function isAvailable() {
+  try {
+    const probe = "__pitsujiEscapeGame_probe";
+    localStorage.setItem(probe, "1");
+    localStorage.removeItem(probe);
+    return true;
+  } catch (e) {
+    return false;
+  }
 }

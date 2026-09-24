@@ -84,13 +84,16 @@ function createJumpRow(prefix, ids, onJump) {
 }
 
 export function renderPlay(root, opts) {
-  const { state, ctx, data, currentMessage, onSpotTap, onArrowTap, onItemTap, onIconTap, onFaceTap } = opts;
+  const { state, ctx, data, currentMessage, title, onSpotTap, onArrowTap, onItemTap, onIconTap, onFaceTap, onNotePageTap, onNoteClose } = opts;
   root.innerHTML = "";
 
   const view = data.viewsById[state.currentView];
+  const part = data.playPartsById[state.playPart];
+  const faceCharacter = (part && part.faceCharacter) || "黒ぴぐま";
 
   const header = document.createElement("div");
   header.className = "header-icons";
+  header.appendChild(createHeaderTitle(title));
   [
     ["log", "ログ"],
     ["hint", "ヒント"],
@@ -99,6 +102,7 @@ export function renderPlay(root, opts) {
     const btn = document.createElement("button");
     btn.className = "icon-btn";
     btn.textContent = label;
+    btn.dataset.icon = key;
     btn.addEventListener("click", () => onIconTap(key));
     header.appendChild(btn);
   });
@@ -125,6 +129,13 @@ export function renderPlay(root, opts) {
     inv.appendChild(btn);
   });
   main.appendChild(inv);
+
+  if (view && view.layoutType === "note") {
+    renderNote(main, view, state, onNotePageTap, onNoteClose);
+    root.appendChild(main);
+    root.appendChild(createFooter(currentMessage, onFaceTap, faceCharacter));
+    return;
+  }
 
   const background = resolveBackground(view, state, ctx);
 
@@ -205,11 +216,24 @@ export function renderPlay(root, opts) {
     console.log(`[座標メモ] x: ${xPct}%, y: ${yPct}%`);
   });
 
+  root.appendChild(createFooter(currentMessage, onFaceTap, faceCharacter));
+}
+
+// ヘッダー左側のゲームタイトル（プロローグ終了後に変わる。文言は呼び出し側で決める）
+function createHeaderTitle(title) {
+  const el = document.createElement("div");
+  el.className = "header-title";
+  el.textContent = title || "";
+  return el;
+}
+
+// 表情アイコン。画像未用意の間はキャラ名を表示する（操作パート8はぴつじ）。
+function createFooter(currentMessage, onFaceTap, faceCharacter) {
   const footer = document.createElement("div");
   footer.className = "footer-row";
   const face = document.createElement("button");
   face.className = "face-box";
-  face.textContent = "表情\n(TBD)";
+  face.textContent = `${faceCharacter}\n(表情TBD)`;
   face.addEventListener("click", () => onFaceTap && onFaceTap());
   footer.appendChild(face);
   const msg = document.createElement("div");
@@ -217,17 +241,55 @@ export function renderPlay(root, opts) {
   msg.id = "footer-message";
   msg.textContent = currentMessage || "";
   footer.appendChild(msg);
-  root.appendChild(footer);
+  return footer;
 }
 
-export function renderStory(root, line) {
+// 調査ノート: ページ画像(タップで次のページへ)と、その下の閉じるボタンだけを表示する。
+// 実画像が未用意/読み込み失敗の間は、ページ名をプレースホルダーとして見せる。
+function renderNote(main, view, state, onNotePageTap, onNoteClose) {
+  main.classList.add("note-main");
+  const pages = view.pages || [];
+  const index = Math.min(Math.max(state.notePage || 0, 0), Math.max(pages.length - 1, 0));
+  const page = pages[index];
+
+  const pageBtn = document.createElement("button");
+  pageBtn.type = "button";
+  pageBtn.className = "note-page";
+  pageBtn.addEventListener("click", () => onNotePageTap && onNotePageTap());
+  const placeholder = document.createElement("div");
+  placeholder.className = "note-page-placeholder";
+  placeholder.textContent = page ? `${page.label}\n（画像仮）` : "（ページ未設定）";
+  if (page && page.image) {
+    const img = createImageLayer("note-page-img", page.image, () => {
+      img.remove();
+      pageBtn.appendChild(placeholder);
+    });
+    img.alt = page.label || "";
+    pageBtn.appendChild(img);
+  } else {
+    pageBtn.appendChild(placeholder);
+  }
+  main.appendChild(pageBtn);
+
+  const closeBtn = document.createElement("button");
+  closeBtn.type = "button";
+  closeBtn.className = "note-close-btn";
+  closeBtn.textContent = "閉じる";
+  closeBtn.addEventListener("click", () => onNoteClose && onNoteClose());
+  main.appendChild(closeBtn);
+}
+
+export function renderStory(root, line, opts = {}) {
   root.innerHTML = "";
 
   const header = document.createElement("div");
   header.className = "header-icons story-header";
+  header.appendChild(createHeaderTitle(opts.title));
   const btn = document.createElement("button");
   btn.className = "icon-btn";
   btn.textContent = "設定";
+  btn.dataset.icon = "settings";
+  btn.addEventListener("click", () => opts.onIconTap && opts.onIconTap("settings"));
   header.appendChild(btn);
   root.appendChild(header);
 
@@ -262,18 +324,44 @@ export function renderStory(root, line) {
   const footer = document.createElement("div");
   footer.className = "footer-message story-footer";
   footer.id = "footer-message";
+  // 「キャラ名 早送りアイコン」の行（ゲーム概要.txt の画面構成）。早送りは押す度にON/OFF。
+  const nameRow = document.createElement("div");
+  nameRow.className = "story-name-row";
+  const speakerEl = document.createElement("div");
+  speakerEl.className = "speaker-name";
+  speakerEl.textContent = (line && line.speaker) || "";
+  nameRow.appendChild(speakerEl);
+  const ffBtn = document.createElement("button");
+  ffBtn.type = "button";
+  ffBtn.className = "ff-btn" + (opts.fastForwarding ? " ff-btn--on" : "");
+  ffBtn.textContent = opts.fastForwarding ? "■ 停止" : "▶▶ 早送り";
+  ffBtn.addEventListener("click", () => opts.onFastForward && opts.onFastForward());
+  nameRow.appendChild(ffBtn);
+  footer.appendChild(nameRow);
   if (line) {
-    if (line.speaker) {
-      const speakerEl = document.createElement("div");
-      speakerEl.className = "speaker-name";
-      speakerEl.textContent = line.speaker;
-      footer.appendChild(speakerEl);
-    }
     const textEl = document.createElement("div");
     textEl.textContent = line.text || "";
     footer.appendChild(textEl);
   }
   root.appendChild(footer);
+}
+
+// エンディング画面（仮）。正式な演出・画像は未定のため文字のみ。
+export function renderEnding(root, opts) {
+  root.innerHTML = "";
+  const wrap = document.createElement("div");
+  wrap.className = "start-screen end-screen";
+  const title = document.createElement("div");
+  title.className = "start-title";
+  title.textContent = "ぴつじを部屋から脱出させるゲーム\n\nおしまい";
+  wrap.appendChild(title);
+  const btn = document.createElement("button");
+  btn.type = "button";
+  btn.className = "end-back-btn";
+  btn.textContent = "タイトルへ戻る";
+  btn.addEventListener("click", () => opts.onBackToTitle && opts.onBackToTitle());
+  wrap.appendChild(btn);
+  root.appendChild(wrap);
 }
 
 export function renderModalWrap(root) {

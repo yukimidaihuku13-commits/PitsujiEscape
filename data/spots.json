@@ -14,37 +14,50 @@
     "label": "本棚",
     "position": { "x": 3.6, "y": 33.6, "width": 25.1, "height": 14.1 },
     "rules": [
-      { "when": { "everObtained": "itemPisagiCard" }, "actions": [{ "type": "message", "texts": [
-        "クローズド・サークルといえばアガサは外せない",
-        "シャーロック・ホームズは名作だ"
-      ] }] },
+      { "when": { "everObtained": "itemPisagiCard" }, "actions": [{ "type": "message", "texts": ["クローズド・サークルといえばアガサクリスティっぴ", "シャーロック・ホームズは名作だっぴねぇ"] }] },
       { "when": { "playPart": 6 }, "actions": [
-        { "type": "message", "text": "本になにか挟まっている" },
+        { "type": "message", "text": "そういえば名刺をしおり代わりにしてたっぴ" },
         { "type": "se", "id": "本を開くぱらっという音" },
         { "type": "showImageModal", "caption": "しおりが挟まっている本" },
         { "type": "giveItem", "item": "itemPisagiCard" }
       ] },
-      { "when": { "playPart": 5 }, "actions": [{ "type": "message", "text": "ホームズの踊る人形といえば代表的な換字式暗号だ" }] },
+      { "when": { "playPart": 5, "clickCount": { "spot": "spotBookshelf_p5", "gte": 3 } }, "actions": [
+        { "type": "resetClickCount", "spot": "spotBookshelf_p5" },
+        { "type": "clickCountIncrement", "spot": "spotBookshelf_p5" },
+        { "type": "message", "text": "ホームズの踊る人形だっぴ！" }
+      ] },
+      { "when": { "playPart": 5, "clickCount": { "spot": "spotBookshelf_p5", "gte": 2 } }, "actions": [
+        { "type": "clickCountIncrement", "spot": "spotBookshelf_p5" },
+        { "type": "message", "text": "別の記号に置き換えられた絵文字を解読するホームズは凄いっぴ" }
+      ] },
+      { "when": { "playPart": 5, "clickCount": { "spot": "spotBookshelf_p5", "gte": 1 } }, "actions": [
+        { "type": "clickCountIncrement", "spot": "spotBookshelf_p5" },
+        { "type": "message", "text": "換字式暗号の中で一番好きだっぴ！" }
+      ] },
+      { "when": { "playPart": 5 }, "actions": [
+        { "type": "clickCountIncrement", "spot": "spotBookshelf_p5" },
+        { "type": "message", "text": "ホームズの踊る人形だっぴ！" }
+      ] },
       { "when": { "playPart": 3, "clickCount": { "spot": "spotBookshelf", "gte": 4 } }, "actions": [
         { "type": "resetClickCount" },
         { "type": "clickCountIncrement" },
-        { "type": "message", "text": "インクについて、という本がある" }
+        { "type": "message", "text": "インクについて、という本だ。" }
       ] },
       { "when": { "playPart": 3, "clickCount": { "spot": "spotBookshelf", "gte": 3 } }, "actions": [
         { "type": "clickCountIncrement" },
-        { "type": "message", "text": "と書いてある" }
+        { "type": "message", "text": "と書いてある。謎を作る時に参考にした本。" }
       ] },
       { "when": { "playPart": 3, "clickCount": { "spot": "spotBookshelf", "gte": 2 } }, "actions": [
         { "type": "clickCountIncrement" },
-        { "type": "message", "text": "冷やすと文字が消える" }
+        { "type": "message", "text": "冷やすと文字が消える。" }
       ] },
       { "when": { "playPart": 3, "clickCount": { "spot": "spotBookshelf", "gte": 1 } }, "actions": [
         { "type": "clickCountIncrement" },
-        { "type": "message", "text": "温めると文字が消える" }
+        { "type": "message", "text": "温めると文字が消える。" }
       ] },
       { "when": { "playPart": 3 }, "actions": [
         { "type": "clickCountIncrement" },
-        { "type": "message", "text": "インクについて、という本がある" }
+        { "type": "message", "text": "インクについて、という本だ。" }
       ] },
       { "when": {}, "actions": [{ "type": "message", "text": "最近のお気に入りはホームズの踊る人形だ" }] }
     ]
@@ -53,7 +66,7 @@
     "id": "spotBed",
     "viewId": "roomPiguma",
     "label": "ベッド",
-    "position": { "x": 0.0, "y": 63.0, "width": 78.0, "height": 37.0 },
+    "position": { "x": 0.0, "y": 67.0, "width": 72.0, "height": 33.0 },
     "rules": [
       { "when": { "playPart": { "gt": 1 } }, "actions": [{ "type": "moveTo", "target": "viewBed", "transition": "zoom" }] }
     ]
@@ -66,12 +79,12 @@
     "rules": [
       { "when": { "playPart": 7, "selectedItem": "itemMaracas" }, "actions": [
         { "type": "consumeSelectedItem" },
-        { "type": "message", "text": "マラカスを渡してぴぐまはのりのりだ" },
-        { "type": "message", "text": "ぴぐまが音楽CDをくれた！" },
+        { "type": "message", "text": "マラカスを受け取ってぴぐまが踊り出した！" },
+        { "type": "message", "text": "音楽CDを貰ったっぴ！" },
         { "type": "se", "id": "マラカスをシャカシャカする音" },
         { "type": "giveItem", "item": "itemCD" }
       ] },
-      { "when": { "playPart": 7 }, "actions": [{ "type": "message", "text": "うきうきしている 楽しそうだ" }] }
+      { "when": { "playPart": 7 }, "actions": [{ "type": "message", "text": "うきうきしていてなんだか楽しそうだっぴ" }] }
     ]
   },
   {
@@ -80,12 +93,12 @@
     "label": "ゲーム機",
     "position": { "x": 12.1, "y": 28.3, "width": 30.0, "height": 14.9 },
     "rules": [
-      { "when": { "playPart": 6, "flag": { "chatGimmickCleared": true } }, "actions": [{ "type": "message", "text": "これでぴぐまが気付いてくれるはずだ" }] },
+      { "when": { "playPart": 6, "flag": { "chatGimmickCleared": true } }, "actions": [{ "type": "message", "text": "これでぴぐまが気付いてくれるっぴ" }] },
       { "when": { "playPart": 6 }, "actions": [
         { "type": "se", "id": "ゲーム開始っぽい音" },
         { "type": "triggerGimmick", "target": "gimmickPcGame" }
       ] },
-      { "when": { "playPart": { "gte": 2 } }, "actions": [{ "type": "message", "text": "今はゲームの気分じゃない" }] }
+      { "when": { "playPart": { "gte": 2 } }, "actions": [{ "type": "message", "text": "今はゲームの時じゃないっピ...！" }] }
     ]
   },
   {
@@ -103,48 +116,7 @@
     "label": "調査ノート",
     "position": { "x": 10.7, "y": 44.7, "width": 30.1, "height": 14.9 },
     "rules": [
-      { "when": { "playPart": { "gte": 2 } }, "actions": [{ "type": "moveTo", "target": "viewNote1", "transition": "zoom" }] }
-    ]
-  },
-  {
-    "id": "spotNote1left",
-    "viewId": "viewNote1",
-    "label": "調査ノート1(左)",
-    "position": { "x": 11.8, "y": 40.5, "width": 37.0, "height": 23.4 },
-    "rules": [
-      { "when": {}, "actions": [{ "type": "message", "text": "ぴつじはチョコレートが好きと･･･" }] }
-    ]
-  },
-  {
-    "id": "spotNote1right",
-    "viewId": "viewNote1",
-    "label": "調査ノート1(右)",
-    "position": { "x": 51.1, "y": 41.0, "width": 37.1, "height": 23.3 },
-    "rules": [
-      { "when": {}, "actions": [{ "type": "message", "text": "ぴつじはふかふかなものが好きと･･･" }] }
-    ]
-  },
-  {
-    "id": "spotNote2left",
-    "viewId": "viewNote2",
-    "label": "調査ノート2(左)",
-    "position": { "x": 11.8, "y": 40.5, "width": 37.0, "height": 23.4 },
-    "rules": [
-      { "when": {}, "actions": [{ "type": "message", "text": "ぴつじの友達だ" }] }
-    ]
-  },
-  {
-    "id": "spotNote2right",
-    "viewId": "viewNote2",
-    "label": "調査ノート2(右)",
-    "position": { "x": 51.1, "y": 41.0, "width": 37.1, "height": 23.3 },
-    "rules": [
-      { "when": { "playPart": 7, "everObtained": "itemPhoto" }, "actions": [{ "type": "message", "text": "ぴつじが友達と楽しそうにしている写真だ" }] },
-      { "when": { "playPart": 7 }, "actions": [
-        { "type": "giveItem", "item": "itemPhoto" },
-        { "type": "message", "text": "ぴつじが友達と楽しそうにしている写真だ" }
-      ] },
-      { "when": {}, "actions": [{ "type": "message", "text": "ぴつじの友達の写真だ" }] }
+      { "when": { "playPart": { "gte": 2 } }, "actions": [{ "type": "openNote" }] }
     ]
   },
   {
@@ -153,9 +125,9 @@
     "label": "ベッドマット",
     "position": { "x": 10.0, "y": 40.0, "width": 82.0, "height": 13.0 },
     "rules": [
-      { "when": { "everObtained": "itemLargeTowel" }, "actions": [{ "type": "message", "text": "沈み込むタイプのベッドマットで満足度が高い" }] },
+      { "when": { "everObtained": "itemLargeTowel" }, "actions": [{ "type": "message", "text": "沈み込むタイプのベッドマット 満足度が高いっぴ" }] },
       { "when": { "playPart": 5 }, "actions": [
-        { "type": "message", "text": "ふわふわタオルケット これは気にいるんじゃないか" },
+        { "type": "message", "text": "ふわふわタオルケット これは気にいるっぴ" },
         { "type": "giveItem", "item": "itemLargeTowel" }
       ] },
       { "when": {}, "actions": [{ "type": "message", "text": "このタオルケットの生地の触り心地は最高だ" }] }
@@ -167,13 +139,13 @@
     "label": "ベッド下",
     "position": { "x": 20.0, "y": 53.0, "width": 70.0, "height": 9.0 },
     "rules": [
-      { "when": { "everObtained": "itemCamera" }, "actions": [{ "type": "message", "text": "ここにはもう何もない" }] },
+      { "when": { "everObtained": "itemCamera" }, "actions": [{ "type": "message", "text": "ここにはもう何もないっぴ" }] },
       { "when": { "playPart": 6 }, "actions": [
         { "type": "se", "id": "ガサガサっという探す音" },
-        { "type": "message", "text": "カメラを見つけた！" },
+        { "type": "message", "text": "カメラあった！" },
         { "type": "giveItem", "item": "itemCamera" }
       ] },
-      { "when": {}, "actions": [{ "type": "message", "text": "何かありそうだな……まあいいか" }] }
+      { "when": {}, "actions": [{ "type": "message", "text": "今は使わないものが置いてあるっぴ" }] }
     ]
   },
   {
@@ -196,8 +168,8 @@
     "rules": [
       { "when": { "flag": { "doorBUnlocked": true } }, "actions": [{ "type": "message", "text": "ロックは解除されている" }] },
       { "when": { "playPart": 3 }, "actions": [
-        { "type": "message", "text": "えーっと、答えはなんだっけ……" },
-        { "type": "triggerGimmick", "target": "gimmickLockDoorB" }
+        { "type": "triggerGimmick", "target": "gimmickLockDoorB" },
+        { "type": "message", "text": "えーっと、答えはなんだっけ……" }
       ] },
       { "when": {}, "actions": [{ "type": "message", "text": "ドアの鍵を開ける脱出の仕掛けだ" }] }
     ]
@@ -263,9 +235,7 @@
     "position": { "x": 58.0, "y": 71.0, "width": 23.0, "height": 19.0 },
     "rules": [
       { "when": { "playPart": { "gt": 6 } }, "actions": [{ "type": "message", "text": "そのうち片付けよう" }] },
-      { "when": { "playPart": 6, "clickCount": { "spot": "spotCardboardBox", "gte": 2 } }, "actions": [
-        { "type": "showImageModal", "caption": "宛先：2丁目51番地131号" }
-      ] },
+      { "when": { "playPart": 6, "clickCount": { "spot": "spotCardboardBox", "gte": 1 } }, "actions": [{ "type": "showImageModal", "caption": "宛先の画像（画像仮）：2 / 131" }] },
       { "when": { "playPart": 6 }, "actions": [
         { "type": "clickCountIncrement" },
         { "type": "message", "text": "確か下の段のダンボールに書いてあったはず" }
@@ -325,6 +295,7 @@
     "position": { "x": 14.0, "y": 39.0, "width": 75.0, "height": 33.0 },
     "rules": [
       { "when": { "everObtained": "itemToastedBread" }, "actions": [{ "type": "message", "text": "まだトースターが温かい" }] },
+      { "when": { "playPart": { "gt": 3 } }, "actions": [{ "type": "message", "text": "謎解きに使うはずだったトースターだ" }] },
       { "when": { "playPart": 3, "selectedItem": "itemBread" }, "actions": [
         { "type": "consumeSelectedItem" },
         { "type": "message", "text": "後でトースト食べるっぴ～！" }
@@ -387,9 +358,10 @@
     "label": "ドア下隙間",
     "position": { "x": 40.8, "y": 71.1, "width": 44.6, "height": 3.3 },
     "rules": [
-      { "when": { "playPart": { "gt": 2 } }, "actions": [{ "type": "message", "text": "隙間があるけど...下から中の様子は見えないな" }] },
+      { "when": { "playPart": { "gt": 2 } }, "actions": [{ "type": "message", "text": "隙間があるけど……下から中の様子は見えないな" }] },
       { "when": { "playPart": 2, "selectedItem": "itemChocolate" }, "actions": [
         { "type": "consumeSelectedItem" },
+        { "type": "se", "id": "シュッという音" },
         { "type": "message", "text": "チョコレートに釣られてドアの近くに来た気配がする" },
         { "type": "message", "text": "部屋に戻ってぴつじに脱出を呼びかけるっぴ！" }
       ] },
@@ -452,7 +424,7 @@
     "id": "spotDoorA",
     "viewId": "roomB1",
     "label": "ドアA",
-    "position": { "x": 74.0, "y": 35.0, "width": 20.0, "height": 21.0 },
+    "position": { "x": 74.0, "y": 38.0, "width": 20.0, "height": 21.0 },
     "rules": [
       { "when": {}, "actions": [{ "type": "moveTo", "target": "roomA1", "transition": "door" }] }
     ]
@@ -470,7 +442,7 @@
     "id": "spotLockEntrance",
     "viewId": "roomB1",
     "label": "玄関ドアの電子錠",
-    "position": { "x": 8.0, "y": 43.0, "width": 9.0, "height": 5.0 },
+    "position": { "x": 8.0, "y": 48.5, "width": 9.0, "height": 5.0 },
     "rules": [
       { "when": { "playPart": { "lt": 7 }, "flag": { "doorEntranceUnlocked": true } }, "actions": [{ "type": "message", "text": "ドアロックは解除した" }] },
       { "when": { "playPart": { "lt": 7 } }, "actions": [{ "type": "triggerGimmick", "target": "gimmickLockEntrance" }] }
@@ -480,7 +452,7 @@
     "id": "spotDoorEntrance",
     "viewId": "roomB1",
     "label": "玄関ドア",
-    "position": { "x": 18.0, "y": 32.0, "width": 20.0, "height": 21.0 },
+    "position": { "x": 18.0, "y": 37.0, "width": 20.0, "height": 21.0 },
     "rules": [
       { "when": { "flag": { "doorEntranceUnlocked": true } }, "actions": [{ "type": "message", "text": "あとはぴつじを外に出すだけだ！" }] },
       { "when": {}, "actions": [{ "type": "message", "text": "ドアには鍵が掛かっている" }] }
@@ -503,10 +475,11 @@
         { "type": "giveItem", "item": "itemMaracas" },
         { "type": "message", "text": "タンバリンは任せるっぴ！" }
       ] },
-      { "when": { "playPart": 7, "anyOf": [{ "selectedItem": "itemPhoto" }, { "everUsed": "itemPhoto" }] }, "actions": [
+      { "when": { "playPart": 7, "selectedItem": "itemPhoto" }, "actions": [
         { "type": "consumeSelectedItem" },
         { "type": "triggerGimmick", "target": "gimmickPhoto" }
       ] },
+      { "when": { "playPart": 7, "everUsed": "itemPhoto" }, "actions": [{ "type": "triggerGimmick", "target": "gimmickPhoto" }] },
       { "when": { "playPart": 7, "everObtained": "itemCamera" }, "actions": [
         { "type": "message", "text": "写真があれば何でも買ってきてくれるって言うけど" },
         { "type": "message", "text": "なにか買ってきて欲しいものはあるかな……" }
@@ -535,7 +508,7 @@
     "id": "spotLowTable",
     "viewId": "roomB2",
     "label": "ローテーブル",
-    "position": { "x": 39.0, "y": 69.0, "width": 48.0, "height": 10.0 },
+    "position": { "x": 39.0, "y": 81.0, "width": 48.0, "height": 10.0 },
     "rules": [
       { "when": {}, "actions": [{ "type": "moveTo", "target": "viewLowTable", "transition": "zoom" }] }
     ]
@@ -544,7 +517,7 @@
     "id": "spotSofa",
     "viewId": "roomB2",
     "label": "ソファ",
-    "position": { "x": 8.0, "y": 55.0, "width": 48.0, "height": 14.0 },
+    "position": { "x": 8.0, "y": 69.0, "width": 48.0, "height": 14.0 },
     "rules": [
       { "when": { "everObtained": "itemIllust" }, "actions": [{ "type": "message", "text": "ここにはもう何もなかったはずだ" }] },
       { "when": { "playPart": { "gt": 4 } }, "actions": [{ "type": "message", "text": "もう使わないけれど、ソファの下にも脱出のヒントを置いてたんだっけ" }] },

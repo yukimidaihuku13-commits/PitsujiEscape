@@ -157,7 +157,7 @@
   },
   {
     "id": 8,
-    "nextPlayPart": 9,
+    "nextPlayPart": null,
     "lines": [
       { "speaker": null, "text": null, "se": "ドアを開ける音" },
       { "speaker": "ぴつじ", "text": "パーティーだ･･･", "bg": "部屋から顔を出すぴつじ", "portraitImage": "assets/characters/eto_hitsuji_dance.webp" },

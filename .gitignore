@@ -1,0 +1,13 @@
+# 画像のバックアップフォルダ（assets/ 配下の backup, backup_2 等）
+assets/**/backup*/
+
+# PNG画像（ゲームではWebPを使用する）
+*.png
+*.PNG
+
+# デバッグテストのスクリーンショット
+debug/screenshots/
+
+# 作業用の指示ファイル
+設計資料/修正依頼.txt
+設計資料/ClaudeCodeへの注意事項.txt

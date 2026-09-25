@@ -7,13 +7,14 @@ import { resolveActions, resolveMessage } from "./RuleResolver.js";
 import * as Inventory from "../inventory/Inventory.js";
 import * as Navigator from "../nav/Navigator.js";
 import * as SaveManager from "../save/SaveManager.js";
+import { bgmTrackLabel, bgmUnlockMessage } from "../audio/BgmName.js";
 
 export class Engine {
   /**
    * @param {object} state GameState（可変オブジェクト）
    * @param {object} data { itemsById, viewsById, spotsById, playPartsById, storyPartsById, gimmicksById, transitions }
    * @param {object} ctx { selectedItemId }
-   * @param {object} ui  { queueMessage, playSE, openGimmick, closeGimmick, enterStoryPart, enterPlayPart, requestRender, scheduleAutoClear, enterEnding }
+   * @param {object} ui  { queueMessage, playSE, setFlagInOrder, openGimmick, closeGimmick, enterStoryPart, enterPlayPart, requestRender, scheduleAutoClear, enterEnding }
    */
   constructor(state, data, ctx, ui) {
     this.state = state;
@@ -49,6 +50,11 @@ export class Engine {
         break;
       case "setFlag":
         this.state.flags[action.flag] = action.value;
+        break;
+      case "setFlagInOrder":
+        // メッセージ・SEと同じ順番で(前のメッセージを読み終えてから)フラグを切り替える。
+        // 例: 電気スイッチ(操作パート5〜7)「部屋を赤くする → メッセージ → 元に戻す」を順に見せる。
+        this.ui.setFlagInOrder(action.flag, action.value);
         break;
       case "giveItem":
         Inventory.giveItem(this.state, action.item);
@@ -89,9 +95,8 @@ export class Engine {
         const tracks = this.state.bgmState.unlockedTracks;
         if (!tracks.includes(action.track)) {
           tracks.push(action.track);
-          // 修正依頼3: 新しいBGMが追加されたことをメッセージで知らせる。
-          const label = this.data.bgmById?.[action.track]?.label || action.track;
-          this.ui.queueMessage(`BGM ${label} がオーディオに追加された`);
+          // 新しいBGMが追加されたことをメッセージで知らせる（ゲームシステム.txt）。
+          this.ui.queueMessage(bgmUnlockMessage(bgmTrackLabel(this.data.bgmById?.[action.track], this.data.audio)));
         }
         break;
       }

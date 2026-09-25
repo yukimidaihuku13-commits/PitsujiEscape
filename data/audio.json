@@ -3,10 +3,11 @@
     "SE・BGMの一覧（音声ファイルの割り当て表）。spots.json等では左側のキー名で音を指定する。",
     "・音声ファイルを差し替える: file のパスを書き換える",
     "・まだ音声が無い: file を null にする（鳴らさず、コンソールに [SE未設定] と出るだけ）",
-    "・音量: volume（0〜1。省略時 1）",
+    "・音量: volume = 設定が「中」の時の音量（0〜1。省略時 0.6）。大は1.5倍(最大1)、小は0.5倍、消は0。音声ごとに元の音の大きさが違う場合はここで揃える",
     "・SEを削除する: spots.json等から { \"type\": \"se\", \"id\": \"キー名\" } の行を消す（ここのキーは残しても害はない）",
     "・画面操作のSE: ui の itemSelect(所持品アイコン選択) / headerIcon(設定・ヒント・ログ)。null で鳴らさない",
-    "・BGMの流れる場所: 操作パートは playParts.json の bgm、ストーリーは storyParts.json の各行の bgm、オーディオの選曲は bgm.json の sound"
+    "・BGMの流れる場所: 操作パートは playParts.json の bgm、ストーリーは storyParts.json の各行の bgm、オーディオの選曲は bgm.json の sound",
+    "・BGM名: bgm の name（オーディオの選曲画面・「BGM 〇〇 がオーディオに追加された」に表示）。null の間はキー名から BGM_ を除いた先頭6文字"
   ],
   "ui": {
     "itemSelect": "Se_ItemIcon",
@@ -54,14 +55,16 @@
     "ブラックライト点灯音": { "file": null },
     "ソファをずらす音": { "file": null },
     "TBD_ベッドマット": { "file": null },
-    "TBD_椅子": { "file": null }
+    "TBD_椅子": { "file": null },
+    "パラッと名刺が落ちてくる音": { "file": null },
+    "ガーンみたいな音": { "file": null }
   },
   "bgm": {
-    "BGM_bo-tto_hidamari": { "file": "assets/bgm/BGM_bo-tto_hidamari.mp3" },
-    "BGM_Candy Crush": { "file": "assets/bgm/BGM_Candy Crush.mp3" },
-    "BGM_dotabatare-su slow": { "file": "assets/bgm/BGM_dotabatare-su slow.mp3" },
-    "BGM_The Dark Eternal Night": { "file": "assets/bgm/BGM_The Dark Eternal Night.mp3" },
-    "BGM_tie no wa": { "file": "assets/bgm/BGM_tie no wa.mp3" },
-    "BGM_HAPPY": { "file": null }
+    "BGM_bo-tto_hidamari": { "file": "assets/bgm/BGM_bo-tto_hidamari.mp3", "name": null },
+    "BGM_Candy Crush": { "file": "assets/bgm/BGM_Candy Crush.mp3", "name": null },
+    "BGM_dotabatare-su slow": { "file": "assets/bgm/BGM_dotabatare-su slow.mp3", "name": null },
+    "BGM_The Dark Eternal Night": { "file": "assets/bgm/BGM_The Dark Eternal Night.mp3", "name": null },
+    "BGM_tie no wa": { "file": "assets/bgm/BGM_tie no wa.mp3", "name": null },
+    "BGM_HAPPY": { "file": null, "name": "HAPPY" }
   }
 }

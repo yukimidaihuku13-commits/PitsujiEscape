@@ -40,12 +40,17 @@ export function renderTapRegionsGimmick(container, gimmickDef, onResult) {
       const isFound = found.has(region.key);
       const btn = document.createElement("button");
       btn.type = "button";
-      btn.className = "gimmick-key-hotspot" + (isFound ? " gimmick-key-hotspot--selected" : "");
+      // 実画像がある場合、見つける前の正解範囲は見えないようにする（デバッグ表示中は枠を出す）。
+      // 見つけた正解範囲は〇で囲む（gimmick.txt。〇の画像が用意されたら差し替え）。
+      const hidden = !isFound && gimmickDef.image && !DEBUG_SHOW_ANSWER;
+      btn.className = "gimmick-key-hotspot" + (isFound ? " gimmick-key-hotspot--selected gimmick-key-hotspot--circle" : "") + (hidden ? " gimmick-key-hotspot--hidden" : "");
       btn.style.left = `${region.position.x}%`;
       btn.style.top = `${region.position.y}%`;
       btn.style.width = `${region.position.width}%`;
       btn.style.height = `${region.position.height}%`;
-      btn.textContent = isFound ? region.label : "?";
+      // 実画像がある場合は絵が隠れないよう文字を出さない（デバッグ表示中のみ見つけた物の名前を出す）
+      if (!gimmickDef.image) btn.textContent = isFound ? region.label : "?";
+      else btn.textContent = isFound && DEBUG_SHOW_ANSWER ? region.label : "";
       btn.addEventListener("click", () => {
         // 正解位置は再タップしても選択解除されない(gimmick.txt仕様)。
         if (!isFound) found.add(region.key);

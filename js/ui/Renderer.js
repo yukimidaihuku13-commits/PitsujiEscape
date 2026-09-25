@@ -8,6 +8,9 @@ import { hasMatchingRule, resolveBackground } from "../engine/RuleResolver.js";
 
 const ARROW_SYMBOL = { up: "▲", down: "▼", left: "◀", right: "▶" };
 
+// ストーリーの背景のうち、画像を使わず黒一色で表す場面（ゲームストーリー.txt の [BG：黒画面] 等）
+const BLACK_BACKGROUNDS = ["黒画面", "黒背景"];
+
 // 背景/立ち絵の実ファイルが用意できていない、またはパス指定ミスで読み込みに
 // 失敗した場合に、無言で真っ白/真っ黒になるのを防ぐための共通ヘルパー。
 // 画像パスが無ければそもそも呼ばず、呼び出し側でプレースホルダーテキストを出す。
@@ -296,9 +299,15 @@ export function renderStory(root, line, opts = {}) {
   const main = document.createElement("div");
   main.className = "scene-main story-main";
 
+  // 黒画面・黒背景は画像を使わず、黒一色で表現する（文字のプレースホルダーも出さない）。
+  const isBlack = line && !line.bgImage && BLACK_BACKGROUNDS.includes(line.bg);
+  if (isBlack) main.classList.add("story-main--black");
+
+  // bg: 背景の説明文。画像(bgImage)が未用意の場面はこの文言をプレースホルダーとして見せる。
+  // 画像があり bg も書かれている場合は、画像の上に場面の説明として重ねる（差分画像が未用意の場面）。
   const bgLabel = document.createElement("div");
   bgLabel.className = "scene-label";
-  bgLabel.textContent = line && line.bg ? `[BG]${line.bgImage ? "" : "（背景仮）"}${line.bg}` : "";
+  bgLabel.textContent = line && line.bg && !isBlack ? `[BG]${line.bgImage ? "" : "（背景仮）"}${line.bg}` : "";
 
   if (line && line.bgImage) {
     const bgImg = createImageLayer("scene-bg-img", line.bgImage, () => {
@@ -308,16 +317,22 @@ export function renderStory(root, line, opts = {}) {
   }
   main.appendChild(bgLabel);
 
-  if (line && line.speaker) {
-    if (line.portraitImage) {
-      const img = createImageLayer("portrait-img", line.portraitImage, () => {
-        img.replaceWith(createPortraitPlaceholder(line.speaker));
+  // 立ち絵。noPortrait: 配信画面(モニター)越しに話している黒ぴぐま等、立ち絵を出さない行。
+  // portraitImage は1枚(文字列)または複数枚(配列。黒ぴぐまとぴつじが並ぶ場面等)。
+  // speaker が無い行でも portraitImage があれば表示する（台詞の無い立ち絵だけの場面）。
+  const portraits = line && !line.noPortrait ? [].concat(line.portraitImage || []) : [];
+  if (portraits.length > 0 || (line && line.speaker && !line.noPortrait)) {
+    const wrap = document.createElement("div");
+    wrap.className = "story-portraits" + (portraits.length > 1 ? " story-portraits--multi" : "");
+    if (portraits.length === 0) wrap.appendChild(createPortraitPlaceholder(line.speaker));
+    portraits.forEach((path) => {
+      const img = createImageLayer("portrait-img", path, () => {
+        img.replaceWith(createPortraitPlaceholder(line.speaker || ""));
       });
-      img.alt = line.speaker;
-      main.appendChild(img);
-    } else {
-      main.appendChild(createPortraitPlaceholder(line.speaker));
-    }
+      img.alt = line.speaker || "";
+      wrap.appendChild(img);
+    });
+    main.appendChild(wrap);
   }
   root.appendChild(main);
 

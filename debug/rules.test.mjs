@@ -34,7 +34,8 @@ const data = {
   gimmicksById: keyBy(load("gimmicks.json")),
   hintsById: keyBy(load("hints.json")),
   bgmById: keyBy(load("bgm.json")),
-  transitions: load("transitions.json")
+  transitions: load("transitions.json"),
+  audio: load("audio.json")
 };
 
 /** 状態を作り、Engineとイベント記録用のUIを用意する */
@@ -51,10 +52,11 @@ function setup({ part = 2, view = null, items = [], ever = [], used = {}, flags 
   state.notePage = notePage;
   if (bgm) { state.bgmState.unlockedTracks.push(bgm); state.bgmState.currentTrack = bgm; }
   const ctx = { selectedItemId: selected };
-  const log = { msgs: [], se: [], gimmick: [], image: [], imageOpts: [], story: [], bgmMenu: 0, autoClear: 0 };
+  const log = { msgs: [], se: [], gimmick: [], image: [], imageOpts: [], story: [], bgmMenu: 0, autoClear: 0, seq: [] };
   const ui = {
-    queueMessage: (t) => log.msgs.push(t),
-    playSE: (id) => log.se.push(id),
+    queueMessage: (t) => { log.msgs.push(t); log.seq.push("msg:" + t); },
+    playSE: (id) => { log.se.push(id); log.seq.push("se:" + id); },
+    setFlagInOrder: (flag, value) => { state.flags[flag] = value; log.seq.push(`flag:${flag}=${value}`); },
     openGimmick: (id) => log.gimmick.push(id),
     closeGimmick: () => {},
     enterStoryPart: (id) => log.story.push(id),
@@ -105,35 +107,42 @@ function ok(cond, label) { if (!cond) throw new Error(label); }
 // =====================================================================
 // R: クリックポイント毎の全分岐（ゲームクリックポイント.txt）
 // =====================================================================
+const RANDOM_BOOKS = ["クローズド・サークルといえばアガサクリスティっぴ", "シャーロック・ホームズは名作だっぴねぇ"];
 test("R-01", "本棚 PlayPart3: 4行を順に表示し、5回目で1行目に戻る", () => {
   const env = setup({ part: 3, view: "roomPiguma" });
   for (let i = 0; i < 5; i++) tap(env, "spotBookshelf");
-  eq(env.log.msgs, ["「インクについて」という本を読むぴ", "「温めると文字が消える。」", "「冷やすと文字が消える。」", "謎を作る時に参考にした本っぴ", "「インクについて」という本を読むぴ"]);
+  eq(env.log.msgs, ["「インクについて」という本だっぴ", "「温めると文字が消える。」", "「冷やすと文字が消える。」", "謎を作る時に参考にした本っぴ", "「インクについて」という本だっぴ"]);
 });
-test("R-02", "本棚 PlayPart5: 3行ループ（PlayPart3のカウントを引き継がない）", () => {
-  const env = setup({ part: 5, view: "roomPiguma", clicks: { spotBookshelf: 2 } });
-  for (let i = 0; i < 4; i++) tap(env, "spotBookshelf");
-  eq(env.log.msgs, ["ホームズの踊る人形だっぴ！", "換字式暗号の中で一番好きだっぴ！", "置き換えられた絵文字を簡単に解読するホームズは凄いっぴ", "ホームズの踊る人形だっぴ！"]);
+test("R-02", "本棚 PlayPart4: 7行を順に表示し、8回目で1行目に戻る（PlayPart3のカウントを引き継がない） / PlayPart5", () => {
+  const env = setup({ part: 4, view: "roomPiguma", clicks: { spotBookshelf: 2 } });
+  for (let i = 0; i < 9; i++) tap(env, "spotBookshelf");
+  eq(env.log.msgs, [
+    "ホームズの冒険「踊る人形」は好きな本だっぴ～！", "送られてくる手紙が全部踊る人形文字で書かれてるんだっぴ～", "簡単に解読するホームズは凄いっぴ～",
+    "こっちは英語辞書っぴ。しおりが挟んであるっぴ", "塩はSoltじゃなくてSaltっぴ", "電話はPhone、チョコはChocolateっぴ", "英語嫌いだけど謎作るために頑張って調べたッピ！",
+    "ホームズの冒険「踊る人形」は好きな本だっぴ～！", "送られてくる手紙が全部踊る人形文字で書かれてるんだっぴ～"
+  ]);
+  eq(env.log.se, Array(9).fill("Se_Note"), "タップ毎のSE");
+  eq(tap(setup({ part: 5, view: "roomPiguma" }), "spotBookshelf").log.msgs, ["ぴつじが好きそうな本は取り揃えてないっぴねえ"]);
 });
 test("R-03", "本棚 PlayPart6: 名刺入手（メッセージ・SE・本の画像）", () => {
   const env = tap(setup({ part: 6, view: "roomPiguma" }), "spotBookshelf");
-  eq(env.log.msgs, ["そういえば名刺をしおり代わりにしてたっぴ"]);
-  eq(env.log.se, ["Se_Note"]);
+  eq(env.log.msgs, ["名刺をしおり代わりにしてたっぴ！"]);
+  eq(env.log.se, ["Se_Note", "パラッと名刺が落ちてくる音"]);
   eq(env.log.image.length, 1, "画像表示");
   ok(env.state.inventory.includes("itemPisagiCard"), "名刺を所持していない");
 });
-test("R-04", "本棚 名刺入手後: 2種のどちらかをランダム表示", () => {
-  const env = setup({ part: 6, view: "roomPiguma", ever: ["itemPisagiCard"] });
-  for (let i = 0; i < 20; i++) tap(env, "spotBookshelf");
-  const set = new Set(env.log.msgs);
-  ok([...set].every((m) => ["クローズド・サークルといえばアガサクリスティっぴ", "シャーロック・ホームズは名作だっぴねぇ"].includes(m)), [...set].join("/"));
-  ok(set.size === 2, "20回で2種とも出ていない（乱数の偏り。再実行で確認）");
-});
-test("R-05", "本棚 その他のパート(2,4,7)", () => {
-  for (const part of [2, 4, 7]) {
-    const env = tap(setup({ part, view: "roomPiguma" }), "spotBookshelf");
-    eq(env.log.msgs, ["ホームズの踊る人形がお気に入りっぴ～"], `part${part}`);
+test("R-04", "本棚 PlayPart6の名刺入手後: 説明書入手前は説明書類のメッセージ、入手後・PlayPart7は2種のどちらかをランダム表示", () => {
+  eq(tap(setup({ part: 6, view: "roomPiguma", ever: ["itemPisagiCard"] }), "spotBookshelf").log.msgs, ["説明書類はどこかに移動したっぴねえ"]);
+  for (const opt of [{ part: 6, ever: ["itemPisagiCard", "itemPhoneManual"] }, { part: 7 }]) {
+    const env = setup({ view: "roomPiguma", ...opt });
+    for (let i = 0; i < 20; i++) tap(env, "spotBookshelf");
+    const set = new Set(env.log.msgs);
+    ok([...set].every((m) => RANDOM_BOOKS.includes(m)), [...set].join("/"));
+    ok(set.size === 2, "20回で2種とも出ていない（乱数の偏り。再実行で確認）");
   }
+});
+test("R-05", "本棚 その他のパート(2)", () => {
+  eq(tap(setup({ part: 2, view: "roomPiguma" }), "spotBookshelf").log.msgs, ["脱出ゲーム作るためにたくさん本を読んだっぴ～"]);
 });
 test("R-06", "ベッド: PlayPart1は非表示、2以降はベッド拡大へ", () => {
   ok(!visible(setup({ part: 1, view: "roomPiguma" }), "spotBed"), "part1で表示されている");
@@ -185,8 +194,8 @@ test("R-09", "配信用カメラ: 各パートの未達メッセージ", () => {
     [4, {}, ["ぴつじとの勝負っぴ！", "部屋から絶対出してみせるっぴ！！！"]],
     [5, {}, ["なかなか手強いッピね……"]],
     [5, { used: { itemCushion: ["spotPitsujiWindow"] } }, ["なかなか手強いッピね……"]],
-    [6, {}, ["ぴつじが寝てて今は無理ッピ……"]],
-    [6, { flags: { phoneGimmickCleared: true } }, ["ぴつじが寝てて今は無理ッピ……"]],
+    [6, {}, ["ぴつじが寝てるから無理ッピ……"]],
+    [6, { flags: { phoneGimmickCleared: true } }, ["ぴつじが寝てるから無理ッピ……"]],
     [7, {}, ["最後の勝負っぴ。ぴつじを部屋から脱出させるっぴ！"]],
     [7, { bgmUnlockedOnly: true }, ["最後の勝負っぴ。ぴつじを部屋から脱出させるっぴ！"]]
   ];
@@ -236,11 +245,14 @@ test("R-12", "ベッドマット: 取得後 / PlayPart5で入手 / その他", (
   eq(e.log.se, ["TBD_ベッドマット"], "タップ毎のSE");
   eq(e.state.inventory, ["itemLargeTowel"]);
   eq(tap(setup({ part: 4, view: "viewBed" }), "spotBedmat").log.msgs, ["このタオルケットの触り心地最高だっぴ～"]);
+  for (const p of [6, 7]) eq(tap(setup({ part: p, view: "viewBed" }), "spotBedmat").log.msgs, ["ピも昼寝したいっぴ～", "でも我慢っぴ！脱出させるっぴ！"], `part${p}`);
 });
-test("R-13", "ベッドマット: タオルケット入手後はベッド背景が差分に変わる", () => {
-  const { state, ctx } = setup({ part: 5, view: "viewBed", ever: ["itemLargeTowel"] });
+test("R-13", "ベッドマット: タオルケット入手後・操作パート6,7はベッド背景が差分に変わる", () => {
   const v = data.viewsById.viewBed;
-  ok(v.backgroundVariants.some((b) => evaluate(b.when, state, ctx)), "差分背景に切り替わらない");
+  const diff = (opt) => { const { state, ctx } = setup({ view: "viewBed", ...opt }); return v.backgroundVariants.some((b) => evaluate(b.when, state, ctx)); };
+  ok(diff({ part: 5, ever: ["itemLargeTowel"] }), "入手後に差分背景に切り替わらない");
+  ok(diff({ part: 6 }) && diff({ part: 7 }), "操作パート6,7で差分背景にならない");
+  ok(!diff({ part: 5 }), "入手前なのに差分背景");
 });
 test("R-14", "ベッド下: カメラ取得後 / PlayPart6で入手 / その他", () => {
   eq(tap(setup({ part: 6, view: "viewBed", ever: ["itemCamera"] }), "spotUnderBed").log.msgs, ["ここにはもう何もないっぴ"]);
@@ -248,7 +260,18 @@ test("R-14", "ベッド下: カメラ取得後 / PlayPart6で入手 / その他"
   eq(e.log.msgs, ["カメラ見つけたっぴー！"]);
   eq(e.log.se, ["ガサガサっという探す音"]);
   eq(e.state.inventory, ["itemCamera"]);
-  eq(tap(setup({ part: 5, view: "viewBed" }), "spotUnderBed").log.msgs, ["今は使わないものが置いてあるっぴ"]);
+  eq(tap(setup({ part: 5, view: "viewBed" }), "spotUnderBed").log.msgs, ["今は使わないものを収納してあるっぴ～"]);
+  const et = tap(setup({ part: 5, view: "viewBed", items: ["itemLargeTowel"], selected: "itemLargeTowel" }), "spotUnderBed");
+  eq(et.log.msgs, ["タオルケットはしまわないっぴ～", "ぴつじに渡して元気にするっぴ～！"]);
+  eq(et.state.inventory, ["itemLargeTowel"], "タオルケットが消えた");
+  const ec = tap(setup({ part: 5, view: "viewBed", items: ["itemCushion"], selected: "itemCushion" }), "spotUnderBed");
+  eq(ec.log.msgs, ["片付けないっぴ！", "ぴつじに渡すクッションぴ～"]);
+  eq(ec.state.inventory, ["itemCushion"], "クッションが消えた");
+  eq(tap(setup({ part: 7, view: "viewBed" }), "spotUnderBed").log.msgs, ["パーティー用具も置いとけば良かったっぴ～"]);
+  const e2 = tap(setup({ part: 2, view: "viewBed", items: ["itemChocolate"], selected: "itemChocolate" }), "spotUnderBed");
+  eq(e2.log.seq, ["se:Se_ChocoTrhow", "msg:あ！チョコが下に落ちたッピ！！", "se:ガーンみたいな音", "se:ガサガサっという探す音", "msg:ふう、取れたっぴ。一安心っぴ～"]);
+  eq(e2.state.inventory, ["itemChocolate"], "チョコが消えた");
+  for (const p of [2, 3, 4]) eq(tap(setup({ part: p, view: "viewBed" }), "spotUnderBed").log.msgs, ["今は使わないものが置いてあるっぴ"], `part${p}`);
 });
 test("R-15", "ドアB: PlayPart4以降は部屋B1へ / 3の解除前後 / 2", () => {
   const e4 = tap(setup({ part: 4, view: "roomA1" }), "spotDoorB");
@@ -279,13 +302,13 @@ test("R-17", "冷蔵庫/トースター/テーブル/棚/ぴつじ部屋ドア/�
   eq(tap(setup({ part: 4, view: "roomB1" }), "spotDoorA").log.se, ["Se_DoorOpen1"], "ドアAのSE");
 });
 test("R-18", "テーブルの上: PlayPart4以降 / 3で取得後 / 3で食パン(SE) / その他", () => {
-  eq(tap(setup({ part: 4, view: "viewTable" }), "spotOnTable").log.msgs, ["脱出ゲーム終わったらごはん食べるっぴ～"]);
+  eq(tap(setup({ part: 4, view: "viewTable" }), "spotOnTable").log.msgs, ["朝ごはんは食パン派っぴ～"]);
   eq(tap(setup({ part: 3, view: "viewTable", ever: ["itemBread"] }), "spotOnTable").log.msgs, ["少しお腹がすいてきたッピ……"]);
   const e = tap(setup({ part: 3, view: "viewTable" }), "spotOnTable");
   eq(e.log.msgs, ["食べたいけどこれは謎のヒントっぴ～"]);
   eq(e.log.se, ["袋をがさっと開ける音"]);
   eq(e.state.inventory, ["itemBread"]);
-  eq(tap(setup({ part: 2, view: "viewTable" }), "spotOnTable").log.msgs, ["朝は食パンが美味しいっぴ！"]);
+  eq(tap(setup({ part: 2, view: "viewTable" }), "spotOnTable").log.msgs, ["あとで食パン食べるっぴ！"]);
 });
 test("R-19", "椅子: PlayPart6以降 / 5で取得後 / 5でクッション(SE) / その他", () => {
   eq(tap(setup({ part: 6, view: "viewTable", ever: ["itemCushion"] }), "spotChair").log.msgs, ["この椅子はちょっと座り心地が悪いッピ……"]);
@@ -319,7 +342,8 @@ test("R-21", "壁の貼り紙: PlayPart4以降 / 3で取得後 / 3で青い紙 /
   eq(tap(setup({ part: 2, view: "roomA2" }), "spotWallPaper").log.msgs, ["あからさまにヒントを壁に貼っておいたっぴ"]);
 });
 test("R-22", "冷蔵庫(冷蔵部): 取得後 / PlayPart2でチョコ / その他", () => {
-  eq(tap(setup({ part: 2, view: "viewRefrigerator", ever: ["itemChocolate"] }), "spotFridgeCompartment").log.msgs, ["つい開けてしまうけど……何もないッピ"]);
+  eq(tap(setup({ part: 2, view: "viewRefrigerator", ever: ["itemChocolate"] }), "spotFridgeCompartment").log.msgs, ["つい開けてしまうっぴ……何もないッピ"]);
+  for (const p of [4, 7]) eq(tap(setup({ part: p, view: "viewRefrigerator", ever: ["itemChocolate"] }), "spotFridgeCompartment").log.msgs, ["何も入ってないっぴ～"], `part${p}`);
   const e = tap(setup({ part: 2, view: "viewRefrigerator" }), "spotFridgeCompartment");
   eq(e.log.msgs, ["ぴつじの好きなチョコレートっぴ！", "これをぴつじに渡すっぴ！"]);
   eq(e.state.inventory, ["itemChocolate"]);
@@ -341,7 +365,7 @@ test("R-24", "冷凍庫: 違うアイテム(食パン)を選択して使って�
   eq(e.log.msgs, ["冷凍庫も謎解きに使うっぴ～"]);
 });
 test("R-25", "トースター: PlayPart4以降 / 3で焼いたパン選択・取得後 / 3で食パン→焼かれた食パン / 3で未選択 / 2", () => {
-  eq(tap(setup({ part: 4, view: "viewToaster" }), "spotToaster").log.msgs, ["パンを焼くならトースターに限るっぴ～"]);
+  eq(tap(setup({ part: 4, view: "viewToaster" }), "spotToaster").log.msgs, ["なんでも美味しく焼けるトースターっぴ～"]);
   eq(tap(setup({ part: 3, view: "viewToaster", items: ["itemToastedBread"], selected: "itemToastedBread" }), "spotToaster").log.msgs, ["これ以上焼いたら焦げちゃうッピー！"]);
   eq(tap(setup({ part: 3, view: "viewToaster", ever: ["itemToastedBread"] }), "spotToaster").log.msgs, ["美味しく焼けたっぴ～"]);
   const e = tap(setup({ part: 3, view: "viewToaster", items: ["itemBread"], selected: "itemBread" }), "spotToaster");
@@ -350,9 +374,17 @@ test("R-25", "トースター: PlayPart4以降 / 3で焼いたパン選択・取
   eq(e.state.inventory, ["itemToastedBread"]);
   eq(tap(setup({ part: 3, view: "viewToaster" }), "spotToaster").log.msgs, ["このトースターはすごく美味しく焼けるっぴ！"]);
   eq(tap(setup({ part: 2, view: "viewToaster" }), "spotToaster").log.msgs, ["美味しいパンが焼けるトースターっぴ～"]);
+  const ec = tap(setup({ part: 2, view: "viewToaster", items: ["itemChocolate"], selected: "itemChocolate" }), "spotToaster");
+  eq(ec.log.msgs, ["焼きチョコ美味しいけどぴつじが好きなのは板チョコっぴ"]);
+  eq(ec.state.inventory, ["itemChocolate"], "チョコが消えた");
 });
-test("R-26", "ぴつじ部屋ドアノブ", () => {
-  eq(tap(setup({ part: 2, view: "viewPitsujiDoor" }), "spotPitsujiDoorKnob").log.msgs, ["絶対ぴつじを部屋から出してみせるっぴ～！", "意地でもこっちからは開けないっぴ！"]);
+test("R-26", "ぴつじ部屋ドアノブ: PlayPart3以降 / 2でチョコ使用後・チョコ選択中・その他", () => {
+  for (const p of [3, 7]) eq(tap(setup({ part: p, view: "viewPitsujiDoor" }), "spotPitsujiDoorKnob").log.msgs, ["絶対ぴつじを部屋から出してみせるっぴ～！"], `part${p}`);
+  eq(tap(setup({ part: 2, view: "viewPitsujiDoor", used: { itemChocolate: ["spotPitsujiDoorGap"] } }), "spotPitsujiDoorKnob").log.msgs, ["部屋に戻って脱出ゲーム再開するっぴ～"]);
+  const ec = tap(setup({ part: 2, view: "viewPitsujiDoor", items: ["itemChocolate"], selected: "itemChocolate" }), "spotPitsujiDoorKnob");
+  eq(ec.log.msgs, ["ドア開け渡したらばれちゃうっぴ", "ばれないようにチョコ渡すっぴ"]);
+  eq(ec.state.inventory, ["itemChocolate"], "チョコが消えた");
+  eq(tap(setup({ part: 2, view: "viewPitsujiDoor" }), "spotPitsujiDoorKnob").log.msgs, ["ぴつじを脱出させるっぴ～"]);
 });
 test("R-27", "ドア小窓 PlayPart5: 未開放→ドライバーで開放→クッション/タオルケット", () => {
   const e = setup({ part: 5, view: "viewPitsujiDoor", items: ["itemScrewDriver", "itemCushion", "itemLargeTowel"] });
@@ -372,10 +404,10 @@ test("R-27", "ドア小窓 PlayPart5: 未開放→ドライバーで開放→ク
   eq(e.log.msgs.at(-1), "この窓からぴつじの元気出るものを渡すっぴ");
   e.ctx.selectedItemId = "itemCushion";
   tap(e, "spotPitsujiWindow");
-  eq(e.log.msgs.at(-1), "クッション ヲ ツカウッピ");
+  eq(e.log.msgs.slice(-2), ["声色変えるっぴ", "クッション ヲ ツカウッピ！"]);
   e.ctx.selectedItemId = "itemLargeTowel";
   tap(e, "spotPitsujiWindow");
-  eq(e.log.msgs.at(-1), "タオルケット ヲ ツカウッピ");
+  eq(e.log.msgs.slice(-2), ["バレないようにするっぴ", "タオルケット ヲ ツカウッピ"]);
   eq(e.state.inventory, []);
 });
 test("R-28", "ドア小窓 PlayPart6: カメラ使用 / 使用後 / 取得済み未選択 / 未取得", () => {
@@ -389,17 +421,16 @@ test("R-28", "ドア小窓 PlayPart6: カメラ使用 / 使用後 / 取得済み
 });
 test("R-29", "ドア小窓 PlayPart4以前 / 7以降", () => {
   const e = tap(setup({ part: 3, view: "viewPitsujiDoor" }), "spotPitsujiWindow");
-  eq(e.log.msgs, ["あんまりガタガタさせると気付かれるッピ……"]);
+  eq(e.log.msgs, ["あんまりガタガタさせると気付かれるッピ"]);
   eq(e.log.se, ["ガタガタしている音"]);
   eq(tap(setup({ part: 7, view: "viewPitsujiDoor" }), "spotPitsujiWindow").log.msgs, ["気持ちよさそうに寝てるッピ"]);
 });
 test("R-30", "ドア下隙間: PlayPart2でチョコ使用 / 2で未選択 / 3以降", () => {
   const e = tap(setup({ part: 2, view: "viewPitsujiDoor", items: ["itemChocolate"], selected: "itemChocolate" }), "spotPitsujiDoorGap");
-  eq(e.log.msgs, ["チョコレートに釣られて動いた気配がするっぴ～！", "部屋に戻ってぴつじに脱出させるっぴ！"]);
-  eq(e.log.se, ["Se_ChocoTrhow"]);
+  eq(e.log.seq, ["msg:ここからシュッと入れるっぴ！", "se:Se_ChocoTrhow", "msg:チョコレートに釣られて動いた気配がするっぴ～！", "msg:部屋に戻ってぴつじに脱出させるっぴ！"]);
   eq(e.state.inventory, []);
-  eq(tap(setup({ part: 2, view: "viewPitsujiDoor" }), "spotPitsujiDoorGap").log.msgs, ["狭いけどチョコなら入れられそうっぴ"]);
-  eq(tap(setup({ part: 3, view: "viewPitsujiDoor" }), "spotPitsujiDoorGap").log.msgs, ["この隙間からはチョコしか入れられないッピ"]);
+  eq(tap(setup({ part: 2, view: "viewPitsujiDoor" }), "spotPitsujiDoorGap").log.msgs, ["狭いけどチョコなら通りそうっぴ"]);
+  eq(tap(setup({ part: 3, view: "viewPitsujiDoor" }), "spotPitsujiDoorGap").log.msgs, ["この隙間はチョコしか通らないッピ"]);
 });
 test("R-31", "引き出し: PlayPart6で電話の説明書 / 取得後 / その他（毎回SE）", () => {
   const e = tap(setup({ part: 6, view: "viewShelf" }), "spotDrawer");
@@ -407,9 +438,9 @@ test("R-31", "引き出し: PlayPart6で電話の説明書 / 取得後 / その�
   eq(e.log.se, ["Se_Shelf"]);
   eq(e.state.inventory, ["itemPhoneManual"]);
   eq(tap(setup({ part: 6, view: "viewShelf", ever: ["itemPhoneManual"] }), "spotDrawer").log.msgs, ["もうここには何もないっぴ～"]);
-  for (const p of [3, 7]) {
+  for (const [p, m] of [[3, "今必要なものは何も無いっぴ"], [7, "もうここには何もないっぴ～"]]) {
     const o = tap(setup({ part: p, view: "viewShelf" }), "spotDrawer");
-    eq(o.log.msgs, ["今必要なものは何も無いっぴ"], `part${p}`);
+    eq(o.log.msgs, [m], `part${p}`);
     eq(o.log.se, ["Se_Shelf"], `part${p} SE`);
   }
 });
@@ -469,8 +500,11 @@ test("R-36", "オーディオ: いつでもBGM選択", () => {
   eq(tap(setup({ part: 7, view: "roomB2" }), "spotAudioPlayer").log.bgmMenu, 1);
 });
 test("R-37", "ソファ: PlayPart5以降 / 4で取得後 / 4で絵", () => {
-  eq(tap(setup({ part: 4, view: "roomB2", ever: ["itemIllust"] }), "spotSofa").log.msgs, ["ここにはもう何もないっぴ"]);
-  eq(tap(setup({ part: 5, view: "roomB2" }), "spotSofa").log.msgs, ["必要なものは何も無いっぴ～"]);
+  eq(tap(setup({ part: 4, view: "roomB2", ever: ["itemIllust"] }), "spotSofa").log.msgs, ["もう何も落ちてないっぴ"]);
+  eq(tap(setup({ part: 5, view: "roomB2" }), "spotSofa").log.msgs, ["ふかふかだけどこれはぴつじの部屋に運べないっぴ～"]);
+  eq(tap(setup({ part: 6, view: "roomB2" }), "spotSofa").log.msgs, ["ここには名刺落ちてなかったぴ", "どこかで使った気がするっぴ～"]);
+  eq(tap(setup({ part: 6, view: "roomB2", ever: ["itemPisagiCard"] }), "spotSofa").log.msgs, ["何も落ちてないっぴ～"]);
+  eq(tap(setup({ part: 7, view: "roomB2" }), "spotSofa").log.msgs, ["大きいソファー用意しといて良かったっぴ～", "皆で座れるっぴ～"]);
   const e = tap(setup({ part: 4, view: "roomB2" }), "spotSofa");
   eq(e.log.msgs, ["これを探してたんだっぴ～"]);
   eq(e.state.inventory, ["itemIllust"]);
@@ -480,33 +514,53 @@ test("R-38", "電気スイッチ: 赤⇔元の色のトグル", () => {
   tap(e, "spotSwitch"); tap(e, "spotSwitch"); tap(e, "spotSwitch");
   eq(e.log.msgs, ["部屋が赤くなったっぴ", "元の色に戻ったっぴ", "部屋が赤くなったっぴ"]);
   eq(e.state.flags.roomLightRed, true);
+  // 操作パート5〜7: 赤くする → メッセージ → 消す音 → メッセージ → 元に戻す（順番どおりに見せる）
+  for (const [p, m1, m2] of [[5, "電気の色か落ち着かないッピ～", "元の部屋に戻すっぴ～"], [6, "これじゃ見にくいッピ", "元の電気に戻すっぴ～"], [7, "これじゃパーティーできないッピ！", "元の電気に戻すっぴ～"]]) {
+    const ep = tap(setup({ part: p, view: "roomB2" }), "spotSwitch");
+    eq(ep.log.seq, ["se:Se_Switch", "flag:roomLightRed=true", "msg:" + m1, "se:Se_Switch", "msg:" + m2, "flag:roomLightRed=false"], `part${p}`);
+    ok(!ep.state.flags.roomLightRed, `part${p} 赤いまま`);
+  }
 });
 test("R-39", "電話: PlayPart7以降 / 6でギミック / 6クリア後 / 4でブラックライト / その他", () => {
-  eq(tap(setup({ part: 7, view: "viewPhoneStand" }), "spotPhone").log.msgs, ["電話したいところはないっぴ"]);
+  eq(tap(setup({ part: 7, view: "viewPhoneStand" }), "spotPhone").log.msgs, ["電話したいところはないっぴ～"]);
   const e = tap(setup({ part: 6, view: "viewPhoneStand" }), "spotPhone");
   eq(e.log.gimmick, ["gimmickPhone"]);
   eq(e.log.msgs, ["ぴさぎを呼び出すっぴ！"]);
-  eq(tap(setup({ part: 6, view: "viewPhoneStand", flags: { phoneGimmickCleared: true } }), "spotPhone").log.msgs, ["あとはぴさぎが気付くのを待つだけっぴ～"]);
+  const ecard = tap(setup({ part: 6, view: "viewPhoneStand", items: ["itemPisagiCard"], selected: "itemPisagiCard" }), "spotPhone");
+  eq(ecard.log.seq, ["msg:直接名刺使ってもダメだっぴ～", "se:ギミック起動音", "msg:ぴさぎを呼び出すっぴ～"]);
+  eq(ecard.log.gimmick, ["gimmickPhone"]);
+  eq(ecard.state.inventory, ["itemPisagiCard"], "名刺が消えた");
+  eq(tap(setup({ part: 6, view: "viewPhoneStand", flags: { phoneGimmickCleared: true } }), "spotPhone").log.msgs, ["あとはぴさぎが来るのを待つだけだっぴ～"]);
+  const ecam = tap(setup({ part: 6, view: "viewPhoneStand", items: ["itemCamera"], flags: { phoneGimmickCleared: true }, selected: "itemCamera" }), "spotPhone");
+  eq(ecam.log.msgs, ["電話の写真撮っても意味ないっぴ～"]);
+  eq(ecam.state.inventory, ["itemCamera"], "カメラが消えた");
   const e4 = tap(setup({ part: 4, view: "viewPhoneStand", items: ["itemBlackLight"], selected: "itemBlackLight" }), "spotPhone");
   eq(e4.log.msgs, ["ヒントが見えたっぴ！"]);
   eq(e4.log.image.length, 1);
   eq(e4.state.inventory, ["itemBlackLight"], "ブラックライト(残存)が消えた");
   eq(tap(setup({ part: 4, view: "viewPhoneStand" }), "spotPhone").log.msgs, ["今は電話したいところはないっぴ"]);
-  eq(tap(setup({ part: 5, view: "viewPhoneStand" }), "spotPhone").log.msgs, ["今は電話したいところはないっぴ"]);
+  eq(tap(setup({ part: 5, view: "viewPhoneStand" }), "spotPhone").log.msgs, ["今は電話よりぴつじのことっぴ～！"]);
 });
 test("R-40", "電話台引き出し: PlayPart5以降 / 4で取得後 / 4でブラックライト", () => {
   eq(tap(setup({ part: 4, view: "viewPhoneStand", ever: ["itemBlackLight"] }), "spotPhoneStandDrawer").log.msgs, ["もうここには何も入れてないっぴ"]);
   eq(tap(setup({ part: 5, view: "viewPhoneStand" }), "spotPhoneStandDrawer").log.msgs, ["必要なものは何も無いっぴ～"]);
+  eq(tap(setup({ part: 6, view: "viewPhoneStand" }), "spotPhoneStandDrawer").log.msgs, ["説明書は隣の部屋にあるはずっぴ～"]);
+  eq(tap(setup({ part: 6, view: "viewPhoneStand", ever: ["itemPhoneManual"] }), "spotPhoneStandDrawer").log.msgs, ["説明書近くに置いとけばよかったっぴ～"]);
+  const em = tap(setup({ part: 6, view: "viewPhoneStand", items: ["itemPhoneManual"], selected: "itemPhoneManual" }), "spotPhoneStandDrawer");
+  eq(em.log.msgs, ["使い終わったらこっちに片付けるっぴ～"]);
+  eq(em.state.inventory, ["itemPhoneManual"], "説明書が消えた");
+  eq(tap(setup({ part: 7, view: "viewPhoneStand" }), "spotPhoneStandDrawer").log.msgs, ["ここには何も無いっぴ～"]);
   const e = tap(setup({ part: 4, view: "viewPhoneStand" }), "spotPhoneStandDrawer");
   eq(e.log.msgs, ["ブラックライト見つけたっぴ～！"]);
   eq(e.state.inventory, ["itemBlackLight"]);
 });
 test("R-41", "塩: PlayPart5以降 / 4でブラックライト / 4未選択", () => {
-  eq(tap(setup({ part: 5, view: "viewLowTable" }), "spotSalt").log.msgs, ["ゆで卵は塩で食べるのが美味しいんだっぴ～"]);
+  for (const p of [5, 6]) eq(tap(setup({ part: p, view: "viewLowTable" }), "spotSalt").log.msgs, ["ゆで卵と塩の相性は最高だっぴ～"], `part${p}`);
+  eq(tap(setup({ part: 7, view: "viewLowTable" }), "spotSalt").log.msgs, ["さっきぴさぎが卵食べてたっぴ", "この塩美味しいって言ってたっぴ～"]);
   const e = tap(setup({ part: 4, view: "viewLowTable", items: ["itemBlackLight"], selected: "itemBlackLight" }), "spotSalt");
   eq(e.log.msgs, ["塩にヒントが描いてあるっぴ！"]);
   eq(e.log.image.length, 1);
-  eq(tap(setup({ part: 4, view: "viewLowTable" }), "spotSalt").log.msgs, ["ゆで卵にはクレイジーソルトを使うのがお気に入りっぴ！"]);
+  eq(tap(setup({ part: 4, view: "viewLowTable" }), "spotSalt").log.msgs, ["ゆで卵にはクレイジーソルトっぴ！"]);
 });
 test("R-42", "ぴつじ部屋の出口: PlayPart8クリア", () => {
   const e = tap(setup({ part: 8 }), "spotPitsujiExitDoor");
@@ -671,6 +725,18 @@ test("P-12", "ゲーム画面ギミックの正解は A.サーカステント / 
   eq(g.blanks.map((b) => [b.key, b.answer]), [["A", "サーカステント"], ["B", "お寺"]]);
   eq([...g.options].sort(), ["お寺", "サーカステント", "学校", "高層ビル"].sort());
   for (const b of g.blanks) ok(g.lines.some((l) => l.includes(`{${b.key}}`)), `文章に{${b.key}}がない`);
+  eq(g.friends, ["ぴのくま", "ぴりくま", "ぴよくま", "ぴかくま"], "送り先の候補");
+  eq(g.friendAnswer, "ぴかくま", "送り先の正解");
+  eq(g.ranking, ["ぴかくま", "ぷるゃ", "黒くま", "たぴおか"], "ランキング");
+});
+test("P-15", "写真ギミック: 画像(pic_tmp_gimmicPhoto)が設定され、正解範囲が画像内に収まっている", () => {
+  const g = data.gimmicksById.gimmickPhoto;
+  eq(g.image, "assets/backgrounds/pic_tmp_gimmicPhoto.webp");
+  ok(fs.existsSync(path.join(ROOT, g.image)), "画像ファイルが無い");
+  for (const r of g.regions) {
+    const p = r.position;
+    ok(p.x >= 0 && p.y >= 0 && p.x + p.width <= 100 && p.y + p.height <= 100, `${r.key} が画像からはみ出している`);
+  }
 });
 test("P-13", "電話ギミック: #7*27で成功 / 7*27は不在 / その他は存在しない番号", () => {
   const e = setup({ part: 6 });
@@ -696,6 +762,84 @@ test("P-14", "表情タップ PlayPart7: HAPPY追加前 / 追加後・変更前 
   const e2 = setup({ part: 7 }); e2.state.bgmState.unlockedTracks.push("happy");
   eq(pick(e2), ["さっきの音楽最高だったっぴ～！", "パーティーには楽しい音楽が欠かせないっぴ！"]);
   eq(pick(setup({ part: 7, bgm: "happy" })), ["これなら賑やかでぴつじも目を覚ますっぴ！", "ぴつじの脱出ゲームが始まるっぴ！"]);
+});
+
+test("P-16", "PlayPart1: 表情タップ時メッセージ「……」、ヒント「机上のモニターをタップしてみよう」", () => {
+  eq(data.playPartsById[1].faceMessage.map((d) => d.text), ["……"]);
+  eq(data.hintsById[1].steps, ["机上のモニターをタップしてみよう"]);
+});
+
+// =====================================================================
+// S: ストーリー（ゲームストーリー.txt）・BGM
+// =====================================================================
+const IMG = (f) => `assets/backgrounds/${f}.webp`;
+test("S-01", "ストーリーの背景画像・立ち絵・BGMのファイルが存在する", () => {
+  const errs = [];
+  for (const st of Object.values(data.storyPartsById)) for (const l of st.lines) {
+    for (const p of [l.bgImage, ...[].concat(l.portraitImage || [])]) if (p && !fs.existsSync(path.join(ROOT, p))) errs.push(`story${st.id}: ${p}`);
+  }
+  eq(errs, []);
+});
+test("S-02", "配信画面(モニター)越しに話す黒ぴぐまは立ち絵を出さず、配信を切った後は立ち絵を出す", () => {
+  const errs = [];
+  for (const st of Object.values(data.storyPartsById)) {
+    let streaming = false;
+    for (const l of st.lines) {
+      if (l.se === "モニターが映る音" || l.bgImage === IMG("bg_storyStream")) streaming = true;
+      if (l.se === "モニターが切れる音") streaming = false;
+      if (!l.speaker) continue;
+      const shown = !l.noPortrait;
+      if (l.speaker === "黒ぴぐま" && streaming && shown) errs.push(`story${st.id} 配信中に立ち絵: ${l.text}`);
+      if (l.speaker === "黒ぴぐま" && !streaming && !l.portraitImage) errs.push(`story${st.id} 配信外で立ち絵なし: ${l.text}`);
+      if (l.speaker === "ぴつじ" && !l.portraitImage) errs.push(`story${st.id} ぴつじの立ち絵なし: ${l.text}`);
+    }
+  }
+  eq(errs, []);
+});
+test("S-03", "ストーリー1: 台詞・背景・BGMの切替タイミングが資料どおり", () => {
+  const L = data.storyPartsById[1].lines;
+  const texts = L.map((l) => l.text);
+  eq(texts.slice(0, 3), ["ここは……？", "さっきまで木陰でお昼寝してたような……", "おはよう。気分はどうかな？"]);
+  eq(L[0].bgm, "BGM_The Dark Eternal Night");
+  eq(L[1].bgImage, IMG("bg_pitsujiRoom1"));
+  eq([L[2].se, L[2].bgImage], ["モニターが映る音", IMG("bg_storyStream")]);
+  const eIdx = texts.indexOf("え！？");
+  eq([L[eIdx].stopBgm, L[eIdx].se, L[eIdx].bgImage], [true, "ぽにょん、と座り込む音", IMG("bg_pitsujiRoom1")], "BGMを止める");
+  const again = texts.indexOf("お、おはよう。気分はどうかな？");
+  eq([L[again].bgm, L[again].bgImage], ["BGM_The Dark Eternal Night", IMG("bg_storyStream")], "BGM再開");
+  eq(L[texts.indexOf("･･････脱出しない")].bgm, "BGM_bo-tto_hidamari");
+  const cut = texts.indexOf("え･･････？！");
+  eq([L[cut].se, L[cut].bg], ["モニターが切れる音", "黒画面"]);
+  eq(L[cut + 1].bgImage, IMG("bg_viewDesk"), "モニターを切った後は机(viewDesk)の背景");
+  eq(texts.at(-1), "よーし！絶対ぴつじを脱出させてやるっぴよー！！");
+});
+test("S-04", "各ストーリーの最初と最後の台詞が資料どおり", () => {
+  const exp = {
+    1: ["ここは……？", "よーし！絶対ぴつじを脱出させてやるっぴよー！！"],
+    2: ["ふふふ、チョコのお味はどうかな？", "やってやるっぴー！！"],
+    3: ["ご機嫌はどうかな、ぴつじくん", "ぴつじとの根比べっぴ！！！"],
+    4: ["今から君には脱出ゲーム", "ぴつじには負けないっぴー！！"],
+    5: ["･･････", "どうするッピ･･････"],
+    6: ["という訳だっぴ", "や、やるっぴー！！"],
+    7: ["今から君には脱出ゲームをしてもらう！", "お祝いだっぴー！！！"],
+    8: ["パーティーっぴー！", "いぇぇぇっぴー！！"]
+  };
+  for (const [id, [first, last]] of Object.entries(exp)) {
+    const t = data.storyPartsById[id].lines.map((l) => l.text).filter(Boolean);
+    eq([t[0], t.at(-1)], [first, last], `story${id}`);
+  }
+});
+const { bgmSoundName, bgmTrackLabel, bgmUnlockMessage } = await imp("js/audio/BgmName.js");
+test("S-05", "BGM名: audio.json の name、未設定(null)ならファイル名(BGM_除く)の先頭6文字。追加メッセージの書式", () => {
+  eq(bgmSoundName("BGM_The Dark Eternal Night", data.audio), "The Da");
+  eq(bgmSoundName("BGM_bo-tto_hidamari", data.audio), "bo-tto");
+  eq(bgmTrackLabel(data.bgmById.happy, data.audio), "HAPPY");
+  eq(bgmTrackLabel(data.bgmById.default, data.audio), "通常");
+  eq(bgmSoundName("BGM_bo-tto_hidamari", { bgm: { "BGM_bo-tto_hidamari": { name: "ひだまり" } } }), "ひだまり", "name を設定した場合");
+  eq(bgmUnlockMessage("HAPPY"), "BGM HAPPY がオーディオに追加された");
+  // ストーリーで流れるBGMは、オーディオで選べる曲(bgm.json)に登録されている
+  const storyBgms = new Set(Object.values(data.storyPartsById).flatMap((s) => s.lines.map((l) => l.bgm).filter(Boolean)));
+  for (const k of storyBgms) ok(Object.values(data.bgmById).some((t) => t.sound === k), `bgm.json に ${k} が無い`);
 });
 
 // =====================================================================
@@ -872,14 +1016,21 @@ test("X-05", "通常パス(エンジン): PlayPart1〜8を設計どおりの手�
   ok(JSON.stringify(e.state).length < 3000, `セーブが大きい ${JSON.stringify(e.state).length}`);
 });
 
-test("X-06", "SE: 1回のタップで鳴るSEは多くても2つ（多重SEの防止）/ 視点移動SEはドアのみ", () => {
+test("X-06", "SE: メッセージを挟まずに続けて鳴るSEは多くても2つ・同じSEが同時に重ならない（多重SEの防止）", () => {
   const errs = [];
   for (const s of ALL_SPOTS) for (const r of s.rules) {
-    const n = r.actions.filter((a) => a.type === "se").length;
-    if (n > 2) errs.push(`${s.id}: ${n}個`);
-    // 同じSEが1つのルールで2回鳴らない
-    const ids = r.actions.filter((a) => a.type === "se").map((a) => a.id);
-    if (new Set(ids).size !== ids.length) errs.push(`${s.id}: 同じSEが重複 ${ids}`);
+    // メッセージ・画像表示で区切られたSEは、前のメッセージを読み終えてから順に鳴るため同時には鳴らない
+    let group = [];
+    const check = () => {
+      if (group.length > 2) errs.push(`${s.id}: 続けて${group.length}個`);
+      if (new Set(group).size !== group.length) errs.push(`${s.id}: 同じSEが重複 ${group}`);
+      group = [];
+    };
+    for (const a of r.actions) {
+      if (a.type === "se") group.push(a.id);
+      else if (["message", "showImageModal", "triggerGimmick"].includes(a.type)) check();
+    }
+    check();
   }
   eq(errs, []);
 });

@@ -1,4 +1,6 @@
 [
   { "id": "default", "label": "通常", "sound": null },
-  { "id": "happy", "label": "HAPPY", "sound": "BGM_HAPPY" }
+  { "id": "happy", "sound": "BGM_HAPPY" },
+  { "id": "darkEternalNight", "sound": "BGM_The Dark Eternal Night" },
+  { "id": "hidamari", "sound": "BGM_bo-tto_hidamari" }
 ]

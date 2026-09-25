@@ -98,7 +98,7 @@
     "spots": ["spotBedmat", "spotUnderBed"],
     "background": "assets/backgrounds/bg_viewBed.webp",
     "backgroundVariants": [
-      { "when": { "everObtained": "itemLargeTowel" }, "background": "assets/backgrounds/bg_viewBedDiff.webp" }
+      { "when": { "anyOf": [{ "everObtained": "itemLargeTowel" }, { "playPart": { "gt": 5 } }] }, "background": "assets/backgrounds/bg_viewBedDiff.webp" }
     ]
   },
   {

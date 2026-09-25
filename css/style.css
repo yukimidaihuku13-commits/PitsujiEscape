@@ -287,11 +287,27 @@ html, body {
   text-align: center;
   color: #eceff1;
 }
+.story-main--black {
+  background: #000;
+}
+/* 立ち絵。背景画像(scene-bg-img)より手前に表示する */
+.story-portraits {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 8px;
+  width: 100%;
+  margin-top: 14px;
+}
 .portrait-img {
   max-width: 60%;
-  max-height: 50%;
-  margin-top: 14px;
+  max-height: 38vh;
   object-fit: contain;
+}
+.story-portraits--multi .portrait-img {
+  max-width: 45%;
 }
 
 /* --- 矢印 ---
@@ -419,6 +435,7 @@ html, body {
 }
 .modal-close-btn {
   position: absolute;
+  z-index: 5; /* ギミック画像等(position指定あり)より手前に出す */
   top: 8px;
   right: 10px;
   border: none;
@@ -630,6 +647,19 @@ html, body {
   background: rgba(76, 175, 80, 0.35);
   color: #2e7d32;
 }
+.gimmick-key-hotspot--hidden {
+  border-color: transparent;
+  background: transparent;
+}
+/* 写真ギミック: 見つけた正解位置を〇で囲む */
+.gimmick-key-hotspot--circle {
+  border: 3px solid #e53935;
+  border-radius: 50%;
+  background: transparent;
+  color: #e53935;
+  font-size: 0.7rem;
+  text-shadow: 0 0 3px #fff;
+}
 .gimmick-key-hotspot--result {
   border-color: rgba(96, 125, 139, 0.85);
   background: rgba(255, 255, 255, 0.85);
@@ -729,6 +759,49 @@ html, body {
 .gimmick-controls button:disabled {
   opacity: 0.4;
 }
+/* チャット画面: 縦に長くスクロールするため、下部にも閉じるボタンを置く */
+.gimmick-controls .gimmick-close-btn {
+  margin-top: 10px;
+  background: #fff;
+}
+/* チャット画面: フレンド選択（左: 送り先の候補 / 右: ゲームのランキング） */
+.gimmick-friends-layout {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin-bottom: 10px;
+}
+.gimmick-friends-list {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.gimmick-ranking {
+  flex: 1;
+  border: 1px solid #b0bec5;
+  border-radius: 8px;
+  background: #fafafa;
+  padding: 6px 8px;
+  font-size: 0.85rem;
+}
+.gimmick-ranking-title {
+  font-weight: bold;
+  margin-bottom: 4px;
+  text-align: center;
+}
+.gimmick-ranking-line {
+  padding: 2px 0;
+}
+.gimmick-ranking-img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+.gimmick-chat-to {
+  font-size: 0.85rem;
+  color: #37474f;
+}
 
 /* --- 設定モーダル: SE/BGMのON/OFF・著作権表記 --- */
 .settings-audio {
@@ -741,15 +814,20 @@ html, body {
   padding: 6px 0;
   border-bottom: 1px solid #e0e0e0;
 }
-.settings-toggle {
-  min-width: 64px;
-  padding: 6px 10px;
+/* 音量 大・中・小・消 の4択（選択中の段階を緑にする） */
+.settings-levels {
+  display: flex;
+  gap: 4px;
+}
+.settings-level {
+  min-width: 40px;
+  padding: 6px 0;
   border-radius: 16px;
   border: 1px solid #999;
   background: #eee;
   color: #555;
 }
-.settings-toggle--on {
+.settings-level--on {
   background: #4caf50;
   border-color: #388e3c;
   color: #fff;

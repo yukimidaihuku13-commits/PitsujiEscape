@@ -56,7 +56,7 @@ function AUDIO_SPY() {
   window.Audio = SpyAudio;
   const origPlay = HTMLMediaElement.prototype.play;
   HTMLMediaElement.prototype.play = function () {
-    log.push({ ev: "play", src: name(this), loop: this.loop });
+    log.push({ ev: "play", src: name(this), loop: this.loop, volume: this.volume });
     const p = origPlay.call(this);
     p.then(() => { maxBgm = Math.max(maxBgm, playing().length); }).catch((e) => log.push({ ev: "fail", src: name(this), name: e.name }));
     return p;
@@ -64,6 +64,8 @@ function AUDIO_SPY() {
   window.__audio = {
     se: () => log.filter((l) => l.ev === "play" && !l.loop).map((l) => l.src.replace(/\.mp3$/, "")),
     bgm: () => playing().map((s) => s.replace(/\.mp3$/, "")),
+    bgmVolume: () => all.filter((a) => a.loop && !a.paused).map((a) => Math.round(a.volume * 100) / 100),
+    seVolume: () => log.filter((l) => l.ev === "play" && !l.loop).map((l) => Math.round(l.volume * 100) / 100),
     maxBgm: () => Math.max(maxBgm, playing().length),
     fails: () => log.filter((l) => l.ev === "fail"),
     reset: () => { log.length = 0; maxBgm = playing().length; }
@@ -139,7 +141,9 @@ function helpers(page) {
       await page.waitForTimeout(WAIT);
     },
     async openSettings() { await h.click(page.locator('.header-icons [data-icon="settings"]')); },
-    async toggleAudio(label) { await h.click(page.locator(".settings-row").filter({ hasText: label }).locator(".settings-toggle")); },
+    // 音量の段階を選ぶ（label: "効果音" / "BGM"、level: "大" / "中" / "小" / "消"）
+    async setLevel(label, level) { await h.click(page.locator(".settings-row").filter({ hasText: label }).locator(".settings-level").filter({ hasText: level })); },
+    levels: () => page.$$eval(".settings-level--on", (els) => els.map((e) => e.textContent)),
     // 音声
     se: () => page.evaluate(() => window.__audio.se()),
     bgm: () => page.evaluate(() => window.__audio.bgm()),
@@ -151,7 +155,7 @@ function helpers(page) {
       await h.click(page.locator("button.gimmick-key-hotspot").filter({ hasText: "発信" }));
     },
     async chatGame(a, b, attach = true) {
-      await h.click(page.locator(".gimmick-chat-items .inventory-item").filter({ hasText: "ぴぐま" }));
+      await h.click(page.locator(".gimmick-friends-list .inventory-item").filter({ hasText: /^ぴかくま$/ }));
       await h.click(page.locator(".gimmick-chat-blank").first());
       await h.click(page.locator(".gimmick-chat-items .inventory-item").filter({ hasText: new RegExp(`^${a}$`) }));
       await h.click(page.locator(".gimmick-chat-blank").nth(1));
@@ -300,8 +304,9 @@ function ok(c, label) { if (!c) throw new Error(label); }
     await h.tapItem("チョコレート");
     await h.audioReset();
     await h.tapSpot("ドア下隙間");
+    eq(await h.se(), [], "メッセージを読む前にSEが鳴った");
+    eq(await h.readAll(), ["ここからシュッと入れるっぴ！", "チョコレートに釣られて動いた気配がするっぴ～！", "部屋に戻ってぴつじに脱出させるっぴ！"]);
     eq(await h.se(), ["Se_ChocoTrhow"]);
-    eq(await h.readAll(), ["チョコレートに釣られて動いた気配がするっぴ～！", "部屋に戻ってぴつじに脱出させるっぴ！"]);
     eq(await h.inv(), []);
     eq(await h.selected(), []);
   });
@@ -424,7 +429,7 @@ function ok(c, label) { if (!c) throw new Error(label); }
   const faceRead = async (page, h, n) => { const got = []; for (let i = 0; i < n; i++) { await h.click(page.locator(".face-box")); got.push(...(await h.readAll())); } return got; };
   await test("M-02", "表情タップ: PlayPart1/8 固定、6 は2行ループ", async (page, h) => {
     await h.load(baseState({ playPart: 1 }));
-    eq(await faceRead(page, h, 2), ["画面をタップするっぴ", "画面をタップするっぴ"]);
+    eq(await faceRead(page, h, 2), ["……", "……"]);
     await h.load(baseState({ playPart: 6 }));
     eq(await faceRead(page, h, 3), ["ぴつじの友達を呼び出してやるっぴ！", "友達のことは調査済みっぴ～", "ぴつじの友達を呼び出してやるっぴ！"]);
   });
@@ -494,7 +499,7 @@ function ok(c, label) { if (!c) throw new Error(label); }
     await page.waitForTimeout(8000);
     eq((await h.save()).phase, "play", "最後まで早送りされない");
     eq((await h.save()).playPart, 3);
-    eq(await h.readAll(), ["ドアの鍵を開けるっぴ！"], "早送りが操作パートのメッセージまで送ってしまった");
+    eq(await h.readAll(), ["ドアの鍵を開けるっぴ！", "BGM The Da がオーディオに追加された", "BGM bo-tto がオーディオに追加された"], "早送りが操作パートのメッセージまで送ってしまった");
     ok((await h.maxBgm()) <= 1, "早送り中にBGMが二重再生");
   });
   await test("M-09", "表情タップ: PlayPart7 HAPPY追加前 / 追加後・変更前 / 変更後", async (page, h) => {
@@ -577,6 +582,12 @@ function ok(c, label) { if (!c) throw new Error(label); }
     eq(await h.msg(), "ドアの鍵を開けるっぴ！");
     await h.arrow("▼");
     eq(await h.view(), "viewDesk", "開始時メッセージ中に移動できた");
+    // 開始時メッセージの後に、ストーリー2で流れたBGMがオーディオに追加されたことを知らせる
+    eq(await h.msg(), "BGM The Da がオーディオに追加された");
+    await h.arrow("▼");
+    eq(await h.msg(), "BGM bo-tto がオーディオに追加された");
+    await h.arrow("▼");
+    eq(await h.view(), "viewDesk", "BGM追加のメッセージ中に移動できた");
     eq(await h.msg(), "");
     await h.arrow("▼");
     eq(await h.view(), "roomPiguma");
@@ -588,14 +599,15 @@ function ok(c, label) { if (!c) throw new Error(label); }
     await h.arrow("▼");
     eq(await h.view(), "roomPiguma", "通常メッセージ中に矢印が効かない");
   });
-  await test("S-07", "設定画面: SE/BGMのON/OFFと著作権表記(効果音ラボ様・OtoLogic様)が表示される", async (page, h) => {
+  await test("S-07", "設定画面: SE/BGMの音量(大・中・小・消、初期値は中)と著作権表記(効果音ラボ様・OtoLogic様)が表示される", async (page, h) => {
     await h.load(baseState({ playPart: 3 }));
     await h.openSettings();
     const t = await page.textContent(".modal-box");
-    ok(t.includes("効果音(SE)") && t.includes("BGM"), "ON/OFFが無い");
+    ok(t.includes("効果音(SE)") && t.includes("BGM"), "音量設定が無い");
+    for (const kind of ["効果音", "BGM"]) eq(await page.locator(".settings-row").filter({ hasText: kind }).locator(".settings-level").allTextContents(), ["大", "中", "小", "消"], kind);
     ok(t.includes("SE：効果音ラボ 様") && t.includes("BGM：OtoLogic 様"), "著作権表記が無い");
     ok(!/CC/.test(t), "CC表記がある");
-    eq(await page.locator(".settings-toggle").allTextContents(), ["ON", "ON"]);
+    eq(await h.levels(), ["中", "中"], "初期値が中ではない");
     const link = page.locator(".settings-credits a").first();
     eq(await link.getAttribute("rel"), "noopener noreferrer");
     await h.shot("S-07_settings");
@@ -620,9 +632,9 @@ function ok(c, label) { if (!c) throw new Error(label); }
     eq(await h.readAll(), ["ぴつじは預かってるっぴ", "速く助けにくるっぴ", "困ってるっぴ！"]);
     eq((await h.save()).phase, "play", "電話だけでクリアした");
     await h.tapSpot("電話");
-    eq(await h.readAll(), ["あとはぴさぎが気付くのを待つだけっぴ～"]);
+    eq(await h.readAll(), ["あとはぴさぎが来るのを待つだけだっぴ～"]);
   });
-  await test("A-02", "ゲーム画面: カメラ使用前は起動しない / ぴぐま選択→A/B選択(誤り→メッセージ、正解→メッセージ)→写真添付→送信 → 電話済みならストーリー6", async (page, h) => {
+  await test("A-02", "ゲーム画面: カメラ使用前は起動しない / ぴかくま選択→A/B選択(誤り→メッセージ、正解→メッセージ)→写真添付→送信 → 電話済みならストーリー6", async (page, h) => {
     await h.load(p6({ flags: { phoneGimmickCleared: true } }));
     await h.tapSpot("パソコン");
     eq(await h.readAll(), ["ぴぐまを呼び出す準備をするっぴ～", "悪戯じゃない証拠にぴつじの写真もつけるっぴ"]);
@@ -951,7 +963,7 @@ function ok(c, label) { if (!c) throw new Error(label); }
     eq(await part(), 6, "part6");
     await h.readAll();
     await h.arrow("▼"); await h.tapSpot("本棚");
-    eq(await h.readThrough(), ["そういえば名刺をしおり代わりにしてたっぴ", "[画像]しおりが挟まっている本（画像仮）"], "本棚");
+    eq(await h.readThrough(), ["名刺をしおり代わりにしてたっぴ！", "[画像]しおりが挟まっている本（画像仮）"], "本棚");
     await h.tapSpot("ベッド"); await h.tapSpot("ベッド下"); await h.readAll(); await h.arrow("▼");
     await h.arrow("▼"); await h.tapSpot("ぴつじ部屋のドア"); await h.useItem("カメラ", "ドア小窓"); await h.readAll(); await h.arrow("▼");
     await h.tapSpot("棚"); await h.tapSpot("引き出し"); await h.readAll(); await h.arrow("▼");
@@ -1039,29 +1051,30 @@ function ok(c, label) { if (!c) throw new Error(label); }
     eq(await h.bgm(), ["BGM_Candy Crush"]);
     ok((await h.maxBgm()) <= 1, "二重再生");
   });
-  await test("AU-03", "BGM OFF/ON: OFFで止まり、ONで同じ曲が1つだけ流れる（素早く6回切替しても二重にならない）", async (page, h) => {
+  await test("AU-03", "BGM 消/中: 消で止まり、中に戻すと同じ曲が1つだけ流れる（素早く段階を切替しても二重にならない）", async (page, h) => {
     await h.load(baseState({ playPart: 4, currentView: "roomB2" }));
     await h.openSettings();
-    await h.toggleAudio("BGM");
-    eq(await h.bgm(), [], "OFFで止まらない");
-    for (let i = 0; i < 6; i++) await page.locator(".settings-row").filter({ hasText: "BGM" }).locator(".settings-toggle").click();
-    await h.toggleAudio("BGM");
+    await h.setLevel("BGM", "消");
+    eq(await h.bgm(), [], "消で止まらない");
+    const row = page.locator(".settings-row").filter({ hasText: "BGM" });
+    for (const lv of ["中", "消", "大", "消", "小", "消"]) await row.locator(".settings-level").filter({ hasText: lv }).click();
+    await h.setLevel("BGM", "中");
     await page.waitForTimeout(300);
     eq(await h.bgm(), ["BGM_tie no wa"]);
     ok((await h.maxBgm()) <= 1, "二重再生");
   });
-  await test("AU-04", "SE OFF: クリックポイント・所持品・アイコンのSEが鳴らない / ONで鳴る。設定はリロード後も保持", async (page, h) => {
+  await test("AU-04", "SE 消: クリックポイント・所持品・アイコンのSEが鳴らない / 中で鳴る。設定はリロード後も保持", async (page, h) => {
     await h.load(baseState({ playPart: 4, currentView: "roomB2", inventory: ["itemIllust"] }));
     await h.openSettings();
-    await h.toggleAudio("効果音");
+    await h.setLevel("効果音", "消");
     await h.click(page.locator(".modal-close-btn"));
     await h.audioReset();
     await h.tapSpot("電気スイッチ"); await h.readAll(); await h.tapItem("絵"); await h.openSettings();
-    eq(await h.se(), [], "OFFなのにSEが鳴った");
+    eq(await h.se(), [], "消なのにSEが鳴った");
     await page.reload(); await page.waitForTimeout(WAIT);
     await h.openSettings();
-    eq(await page.locator(".settings-toggle").allTextContents(), ["OFF", "ON"], "リロードで設定が戻った");
-    await h.toggleAudio("効果音");
+    eq(await h.levels(), ["消", "中"], "リロードで設定が戻った");
+    await h.setLevel("効果音", "中");
     await h.click(page.locator(".modal-close-btn"));
     await h.audioReset();
     await h.tapSpot("電気スイッチ");
@@ -1070,13 +1083,13 @@ function ok(c, label) { if (!c) throw new Error(label); }
   await test("AU-05", "セーブデータ削除してもSE/BGM設定は残る", async (page, h) => {
     await h.load(baseState({ playPart: 3 }));
     await h.openSettings();
-    await h.toggleAudio("BGM");
+    await h.setLevel("BGM", "小");
     page.once("dialog", (d) => d.accept());
     await page.locator(".danger-btn").click();
     await page.waitForSelector(".start-screen");
     await h.click(page.locator(".start-title"));
     await h.openSettings();
-    eq(await page.locator(".settings-toggle").allTextContents(), ["ON", "OFF"]);
+    eq(await h.levels(), ["中", "小"]);
   });
   await test("AU-06", "メッセージの後のSEは、メッセージを送った時に鳴る（トースター: パンを焼く→焼く音→終わる音）", async (page, h) => {
     await h.load(baseState({ playPart: 3, currentView: "viewToaster", inventory: ["itemBread"], everObtainedItems: ["itemBread"] }));
@@ -1173,7 +1186,7 @@ function ok(c, label) { if (!c) throw new Error(label); }
     await h.arrow("▼");
     eq(await h.view(), "roomPiguma");
     await h.tapSpot("本棚");
-    eq(await h.readAll(), ["ホームズの踊る人形がお気に入りっぴ～"]);
+    eq(await h.readAll(), ["脱出ゲーム作るためにたくさん本を読んだっぴ～"]);
   }, { route: (page) => page.route("**/assets/**", async (r) => { await new Promise((res) => setTimeout(res, 5000)); await r.continue().catch(() => {}); }) });
   await test("E-05", "背景画像が404: エラー表示のラベルになり操作は可能", async (page, h) => {
     await h.load(baseState({ playPart: 2, currentView: "roomPiguma" }));
@@ -1194,7 +1207,7 @@ function ok(c, label) { if (!c) throw new Error(label); }
     ok(await page.locator(".story-footer").count() === 1, "ストーリーへ進まない");
     await h.click(page.locator(".story-header .icon-btn"));
     ok((await page.textContent(".modal-box")).includes("セーブされません"), "警告なし");
-    await h.toggleAudio("BGM");
+    await h.setLevel("BGM", "消");
     eq(await h.bgm(), [], "BGMが止まらない");
   }, { init: blockStorage, allowConsoleError: true });
   await test("E-07", "Cookie無効環境で「セーブデータを削除」を押してもエラーで止まらない", async (page, h) => {
@@ -1376,6 +1389,172 @@ function ok(c, label) { if (!c) throw new Error(label); }
     if (await h.modalCount()) { await page.mouse.click(200, 300); await page.waitForTimeout(WAIT); }
     eq(await h.modalCount(), 0, "画像が閉じない");
     ok((await h.save()).inventory.filter((x) => x === "itemPisagiCard").length === 1, "名刺が重複");
+  });
+
+  // ===================== ST: ストーリー（ゲームストーリー.txt） =====================
+  await test("ST-01", "ストーリー1: 背景画像(ぴつじ部屋/配信画面/黒画面/机)・立ち絵(配信中の黒ぴぐまは出さない)・BGM停止と再開", async (page, h) => {
+    await h.load(null);
+    await h.click(page.locator(".start-debug-btn").filter({ hasText: /^StoryPart1$/ }));
+    const cur = async () => ({
+      text: (await page.textContent(".story-footer div:last-child")).trim(),
+      speaker: (await page.textContent(".speaker-name")).trim(),
+      bg: await page.$eval(".story-main", (m) => { const i = m.querySelector(".scene-bg-img"); return i ? i.getAttribute("src").split("/").pop() : (m.classList.contains("story-main--black") ? "黒" : ""); }),
+      portrait: await page.$$eval(".story-portraits .portrait-img, .story-portraits .portrait-box", (els) => els.map((e) => (e.getAttribute("src") || "仮").split("/").pop())),
+      bgm: (await h.bgm()).join("+")
+    });
+    const seen = [];
+    for (let i = 0; i < 40 && (await h.save()).phase === "story"; i++) {
+      seen.push(await cur());
+      if (["おはよう。気分はどうかな？", "え！？", "え･･････？！", "脱出ゲームは、始まったら脱出するものだっぴ！？！"].includes(seen.at(-1).text)) await h.shot("ST-01_" + i);
+      await page.locator(".story-footer").click(); await page.waitForTimeout(80);
+    }
+    const at = (t) => seen.find((x) => x.text === t) || {};
+    eq([at("ここは……？").bgm, at("ここは……？").portrait], ["BGM_The Dark Eternal Night", ["eto_remake_hitsuji.webp"]], "1行目");
+    eq(at("さっきまで木陰でお昼寝してたような……").bg, "bg_pitsujiRoom1.webp");
+    const hello = at("おはよう。気分はどうかな？");
+    eq([hello.bg, hello.portrait], ["bg_storyStream.webp", []], "配信画面の黒ぴぐまに立ち絵が出ている");
+    const e1 = seen.find((x) => x.text === "え！？");
+    eq([e1.bg, e1.bgm, e1.portrait], ["bg_pitsujiRoom1.webp", "", []], "「え！？」でBGMが止まらない");
+    eq(at("お、おはよう。気分はどうかな？").bgm, "BGM_The Dark Eternal Night", "BGMが再開しない");
+    eq(at("･･････脱出しない").bgm, "BGM_bo-tto_hidamari");
+    const cut = at("え･･････？！");
+    eq([cut.bg, cut.portrait], ["黒", ["char_kuropiguma1.webp"]], "配信を切った後の黒画面");
+    const desk = at("脱出ゲームは、始まったら脱出するものだっぴ！？！");
+    eq([desk.bg, desk.portrait], ["bg_viewDesk.webp", ["char_kuropiguma1.webp"]], "机の背景＋黒ぴぐまの立ち絵");
+    ok(!seen.some((x) => /\[BG\]/.test(x.text)), "台詞に[BG]が混ざった");
+    ok((await h.maxBgm()) <= 1, "二重再生");
+  });
+  await test("ST-02", "ストーリーで流れたBGMが、次の操作パートの開始時メッセージの後に「BGM 〇〇 がオーディオに追加された」と表示され、オーディオで選べる", async (page, h) => {
+    await h.load(null);
+    await h.click(page.locator(".start-debug-btn").filter({ hasText: /^StoryPart3$/ }));
+    for (let i = 0; i < 40 && (await h.save()).phase === "story"; i++) { await page.locator(".story-footer").click(); await page.waitForTimeout(40); }
+    await page.waitForTimeout(WAIT);
+    eq(await h.readAll(), [...startMsgs[4], "BGM The Da がオーディオに追加された", "BGM bo-tto がオーディオに追加された"]);
+    eq((await h.save()).bgmState.unlockedTracks, ["default", "darkEternalNight", "hidamari"]);
+    await h.arrow("▼"); await h.arrow("▼"); await h.arrow("◀"); await h.tapSpot("ドアB"); await h.arrow("▶");
+    await h.tapSpot("オーディオ");
+    eq(await page.locator(".bgm-track-btn").allTextContents(), ["通常", "HAPPY（未入手）", "The Da", "bo-tto"]);
+    await h.shot("ST-02_audio");
+    await h.click(page.locator(".bgm-track-btn").filter({ hasText: /^The Da$/ }));
+    eq(await h.bgm(), ["BGM_The Dark Eternal Night"], "選んだ曲が流れない");
+    // 既に追加済みのBGMは、次のストーリー後に再度知らせない
+    await page.evaluate(() => localStorage.clear());
+    await h.load(baseState({ phase: "story", storyPart: 4, playPart: 4, bgmState: { unlockedTracks: ["default", "darkEternalNight", "hidamari"], currentTrack: "default" } }));
+    for (let i = 0; i < 40 && (await h.save()).phase === "story"; i++) { await page.locator(".story-footer").click(); await page.waitForTimeout(40); }
+    await page.waitForTimeout(WAIT);
+    eq(await h.readAll(), startMsgs[5], "追加済みのBGMを再度知らせた");
+  });
+  await test("ST-03", "オーディオでHAPPYを選んでいても、ストーリー7ではストーリーのBGM(The Dark Eternal Night)が流れる", async (page, h) => {
+    await h.load(baseState({ phase: "story", storyPart: 7, playPart: 7, bgmState: { unlockedTracks: ["default", "happy"], currentTrack: "happy" } }));
+    eq(await h.bgm(), ["BGM_The Dark Eternal Night"]);
+    await page.locator(".story-footer").click(); await page.waitForTimeout(100);
+    eq(await h.bgm(), [], "ハッピーな音楽(HAPPY・素材待ち)に切り替わらない");
+    ok((await h.maxBgm()) <= 1, "二重再生");
+  });
+  await test("ST-04", "ストーリー8: 黒ぴぐまとぴつじの立ち絵が並ぶ／最後まで進むとエンディング", async (page, h) => {
+    await h.load(null);
+    await h.click(page.locator(".start-debug-btn").filter({ hasText: /^StoryPart8$/ }));
+    for (let i = 0; i < 40 && !(await h.storyText()).includes("はっ！"); i++) { await page.locator(".story-footer").click(); await page.waitForTimeout(40); }
+    eq(await page.locator(".story-portraits .portrait-img").count(), 2, "立ち絵が2枚並ばない");
+    await h.shot("ST-04_two_portraits");
+    for (let i = 0; i < 40 && (await h.save()).phase === "story"; i++) { await page.locator(".story-footer").click(); await page.waitForTimeout(40); }
+    eq((await h.save()).phase, "end");
+  });
+
+  // ===================== AV: 音量（大・中・小・消） =====================
+  await test("AV-01", "音量: 中=audio.jsonの基準音量(省略時0.6)、大=1.5倍(最大1)、小=0.5倍。BGMは流れている曲の音量がすぐ変わる", async (page, h) => {
+    await h.load(baseState({ playPart: 4, currentView: "roomB2" }));
+    eq(await page.evaluate(() => window.__audio.bgmVolume()), [0.6], "中");
+    await h.openSettings();
+    await h.setLevel("BGM", "大");
+    eq(await page.evaluate(() => window.__audio.bgmVolume()), [0.9], "大");
+    await h.setLevel("BGM", "小");
+    eq(await page.evaluate(() => window.__audio.bgmVolume()), [0.3], "小");
+    await h.audioReset();
+    await h.setLevel("効果音", "大");
+    await h.setLevel("効果音", "小");
+    eq(await page.evaluate(() => window.__audio.seVolume()), [0.9, 0.3], "SEの音量(変更時に確認用のSEが鳴る)");
+    await h.setLevel("効果音", "消");
+    eq(await page.evaluate(() => window.__audio.seVolume()), [0.9, 0.3], "消でSEが鳴った");
+  });
+  await test("AV-02", "音量: 以前のON/OFF設定(true/false)は ON→中・OFF→消 として引き継ぐ", async (page, h) => {
+    await page.goto(BASE);
+    await page.evaluate(([k, sk, st]) => { localStorage.clear(); localStorage.setItem(k, JSON.stringify({ se: false, bgm: true })); localStorage.setItem(sk, JSON.stringify(st)); }, [AUDIO_KEY, SAVE_KEY, baseState({ playPart: 3 })]);
+    await page.reload(); await page.waitForSelector(".header-icons"); await page.waitForTimeout(WAIT);
+    await h.openSettings();
+    eq(await h.levels(), ["消", "中"]);
+  });
+
+  // ===================== PC: ゲーム画面(チャット)ギミック =====================
+  await test("PC-01", "ゲーム画面: 送り先は4択(ぴのくま/ぴりくま/ぴよくま/ぴかくま)、横にランキング。ぴかくま以外は進めない。下部の閉じるボタンで閉じられる", async (page, h) => {
+    await h.load(p6({ everObtainedItems: ["itemCamera"], itemUsageLog: { itemCamera: ["spotPitsujiWindow"] } }));
+    await h.tapSpot("パソコン"); await h.readAll();
+    eq(await page.locator(".gimmick-friends-list .inventory-item").allTextContents(), ["ぴのくま", "ぴりくま", "ぴよくま", "ぴかくま"]);
+    eq(await page.locator(".gimmick-ranking-line").allTextContents(), ["1. ぴかくま", "2. ぷるゃ", "3. 黒くま", "4. たぴおか"]);
+    ok((await page.textContent(".gimmick-ranking")).includes("ランキング"), "ランキングの見出しが無い");
+    const f = await page.locator(".gimmick-friends-list").boundingBox(), r = await page.locator(".gimmick-ranking").boundingBox();
+    ok(r.x > f.x + f.width - 1, "ランキングが送り先の横にない");
+    await h.shot("PC-01_friends");
+    for (const wrong of ["ぴのくま", "ぴりくま", "ぴよくま"]) {
+      await h.click(page.locator(".gimmick-friends-list .inventory-item").filter({ hasText: new RegExp(`^${wrong}$`) }));
+      eq(await page.locator(".gimmick-chat-blank").count(), 0, `${wrong}で進めた`);
+      ok((await page.textContent(".modal-box")).includes("この人じゃないっぴ……"), "間違いのメッセージが無い");
+    }
+    ok(await page.locator(".gimmick-close-btn").isVisible(), "フレンド選択画面に閉じるボタンが無い");
+    await h.click(page.locator(".gimmick-friends-list .inventory-item").filter({ hasText: /^ぴかくま$/ }));
+    ok((await page.textContent(".modal-box")).includes("送り先: ぴかくま"), "送り先が表示されない");
+    eq(await page.locator(".gimmick-chat-blank").count(), 2, "チャット画面に進まない");
+    await page.locator(".gimmick-close-btn").scrollIntoViewIfNeeded();
+    ok(await page.locator(".gimmick-close-btn").isVisible(), "チャット画面の下部に閉じるボタンが無い");
+    await h.shot("PC-01_chat_close");
+    await h.click(page.locator(".gimmick-close-btn"));
+    eq(await h.modalCount(), 0, "閉じるボタンで閉じない");
+    ok(!(await h.save()).flags.chatGimmickCleared, "閉じただけで解除された");
+    await h.tapSpot("パソコン"); await h.readAll();
+    await h.click(page.locator(".modal-close-btn"));
+    eq(await h.modalCount(), 0, "×で閉じない");
+  });
+
+  // ===================== PH: 写真ギミック =====================
+  await test("PH-01", "写真ギミック: 写真画像(pic_tmp_gimmicPhoto)の上のマラカス・タンバリン位置が正解。見つけると〇で囲む", async (page, h) => {
+    await h.load(baseState({ playPart: 7, currentView: "roomB1", inventory: ["itemPhoto"], everObtainedItems: ["itemPhoto"] }));
+    await h.useItem("写真", "ぴさぎ");
+    const img = page.locator(".gimmick-image-wrap img.gimmick-image");
+    ok((await img.getAttribute("src")).endsWith("pic_tmp_gimmicPhoto.webp"), "写真画像ではない");
+    ok(await img.evaluate((i) => i.complete && i.naturalWidth > 0), "写真画像が読み込めない");
+    const w = await page.locator(".gimmick-image-wrap").boundingBox();
+    // マラカス(左下)・タンバリン(右上)の位置をタップ
+    await page.mouse.click(w.x + w.width * 0.12, w.y + w.height * 0.53); await page.waitForTimeout(WAIT);
+    await page.mouse.click(w.x + w.width * 0.77, w.y + w.height * 0.14); await page.waitForTimeout(WAIT);
+    eq(await page.locator(".gimmick-key-hotspot--circle").count(), 2, "正解位置が〇で囲まれない");
+    await h.shot("PH-01_photo_found");
+    ok(!(await page.locator(".gimmick-controls button").filter({ hasText: "決定" }).isDisabled()), "決定が押せない");
+  });
+
+  // ===================== SWI: 電気スイッチ（操作パート5〜7） =====================
+  await test("SWI-01", "電気スイッチ(PlayPart6): 赤くなる→メッセージ→消す音→メッセージ→元の色。途中で別の操作をしても赤いまま残らない", async (page, h) => {
+    await h.load(baseState({ playPart: 6, currentView: "roomB2" }));
+    await h.audioReset();
+    await h.tapSpot("電気スイッチ");
+    eq([await h.msg(), await page.locator(".scene-tint").count()], ["これじゃ見にくいッピ", 1], "赤くならない");
+    await h.shot("SWI-01_red");
+    await page.locator("#footer-message").click(); await page.waitForTimeout(WAIT);
+    eq([await h.msg(), await page.locator(".scene-tint").count()], ["元の電気に戻すっぴ～", 1]);
+    eq(await h.se(), ["Se_Switch", "Se_Switch"], "消す時のSE");
+    await page.locator("#footer-message").click(); await page.waitForTimeout(WAIT);
+    eq(await page.locator(".scene-tint").count(), 0, "元の色に戻らない");
+    ok(!(await h.save()).flags.roomLightRed, "セーブが赤いまま");
+    // メッセージ途中で矢印・別スポットをタップしても、演出を飛ばして赤いまま残ることはない
+    await h.tapSpot("電気スイッチ");
+    await h.arrow("◀");
+    await h.tapSpot("ローテーブル");
+    await h.readAll();
+    await page.waitForTimeout(WAIT);
+    ok(!(await h.save()).flags.roomLightRed, "途中操作で赤いまま残った");
+  });
+  await test("SWI-02", "ベッド(PlayPart6)はタオルケットの無い差分背景", async (page, h) => {
+    await h.load(baseState({ playPart: 6, currentView: "viewBed" }));
+    ok((await page.getAttribute(".scene-bg-img", "src")).endsWith("bg_viewBedDiff.webp"), "差分背景ではない");
   });
 
   await browser.close();

@@ -119,10 +119,10 @@
     "id": "gimmickPhoto",
     "label": "写真ギミック",
     "type": "tapRegions",
-    "image": null,
+    "image": "assets/backgrounds/pic_tmp_gimmicPhoto.webp",
     "regions": [
-      { "key": "maracas", "label": "マラカス", "position": { "x": 10, "y": 35, "width": 35, "height": 25 } },
-      { "key": "tambourine", "label": "タンバリン", "position": { "x": 55, "y": 35, "width": 35, "height": 25 } }
+      { "key": "maracas", "label": "マラカス", "position": { "x": 4, "y": 43, "width": 19, "height": 22 } },
+      { "key": "tambourine", "label": "タンバリン", "position": { "x": 71, "y": 6, "width": 13, "height": 17 } }
     ],
     "missMessage": "ここじゃないっぴねえ",
     "onSuccess": [
@@ -146,7 +146,11 @@
     "label": "チャット画面",
     "type": "chatSelect",
     "image": "assets/backgrounds/pic_tmp_gimmickPcGame.webp",
-    "friendLabel": "ぴぐま",
+    "friends": ["ぴのくま", "ぴりくま", "ぴよくま", "ぴかくま"],
+    "friendAnswer": "ぴかくま",
+    "friendWrongMessage": "この人じゃないっぴ……",
+    "ranking": ["ぴかくま", "ぷるゃ", "黒くま", "たぴおか"],
+    "rankingImage": null,
     "lines": [
       "ぴつじは預かっている。",
       "ここの前の道をまっすぐ歩くと{A}があって",

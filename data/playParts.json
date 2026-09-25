@@ -7,7 +7,7 @@
     "clearCondition": {},
     "notYetMessage": null,
     "faceMessage": [
-      { "when": {}, "text": "画面をタップするっぴ" }
+      { "when": {}, "text": "……" }
     ],
     "nextStoryPart": 1
   },
@@ -110,7 +110,7 @@
       ]
     },
     "autoClear": true,
-    "notYetMessage": "ぴつじが寝てて今は無理ッピ……",
+    "notYetMessage": "ぴつじが寝てるから無理ッピ……",
     "faceMessage": [
       { "when": {}, "cycle": ["ぴつじの友達を呼び出してやるっぴ！", "友達のことは調査済みっぴ～"] }
     ],

@@ -11,6 +11,7 @@ import * as SaveManager from "./save/SaveManager.js";
 import * as Renderer from "./ui/Renderer.js";
 import { MessageQueue } from "./ui/DialogueBox.js";
 import * as AudioManager from "./audio/AudioManager.js";
+import { bgmTrackLabel, bgmUnlockMessage } from "./audio/BgmName.js";
 import { renderNumericCodeGimmick } from "./gimmick/NumericCodeGimmick.js";
 import { renderLetterSelectGimmick } from "./gimmick/LetterSelectGimmick.js";
 import { renderTapRegionsGimmick } from "./gimmick/TapRegionsGimmick.js";
@@ -169,6 +170,11 @@ async function main() {
         msgQueue.advance();
         return;
       }
+      if (item && item.flag != null) {
+        applyFlagNow(item.flag, item.value);
+        msgQueue.advance();
+        return;
+      }
       const el = document.getElementById("footer-message");
       if (el) el.textContent = (item && item.text) || "";
       if (item && item.image) openQueuedImage(item);
@@ -183,8 +189,11 @@ async function main() {
   const storyQueue = new MessageQueue(
     (line) => {
       markScreen("story");
-      if (line && line.bgm) {
-        baseBgm = line.bgm;
+      // bgm: その行からBGMを切り替える / stopBgm: その行からBGMを止める。
+      // ストーリー内でBGMの指定があった後は、オーディオで選んだ曲よりストーリーのBGMを優先する。
+      if (line && (line.bgm || line.stopBgm)) {
+        baseBgm = line.stopBgm ? null : line.bgm;
+        storyBgmOverride = true;
         refreshBgm();
       }
       if (line && line.se) AudioManager.playSE(line.se);
@@ -192,6 +201,7 @@ async function main() {
     },
     () => {
       const story = data.storyPartsById[state.storyPart];
+      pendingBgmNotices = unlockStoryBgms(story);
       engine.advanceToPlayPart(story.nextPlayPart);
     }
   );
@@ -287,6 +297,11 @@ async function main() {
       if (msgQueue.isBusy() && !currentModalStatusEl) msgQueue.enqueue({ se: id });
       else playSENow(id);
     },
+    // メッセージ表示待ちがある間は、その後ろに積んで順番にフラグを切り替える（部屋の色の演出等）。
+    setFlagInOrder: (flag, value) => {
+      if (msgQueue.isBusy() && !currentModalStatusEl) msgQueue.enqueue({ flag, value });
+      else applyFlagNow(flag, value);
+    },
     // 先に読むメッセージがある場合は、読み終えてからギミックを開く（資料の記載順: メッセージ → ギミック）
     openGimmick: (gimmickId) => {
       if (msgQueue.isBusy() && !currentModalStatusEl) msgQueue.enqueue({ gimmick: gimmickId });
@@ -326,6 +341,13 @@ async function main() {
     AudioManager.playSE(id);
   }
 
+  // メッセージキューの順番が回ってきたフラグを切り替えて、画面(部屋の色等)に反映する。
+  function applyFlagNow(flag, value) {
+    state.flags[flag] = value;
+    SaveManager.save(state);
+    if (state.phase === "play") drawPlay();
+  }
+
   // 画面操作(所持品・ヘッダーアイコン)のSE。どの音を使うかは data/audio.json の ui で指定する。
   function playUiSE(key) {
     const id = data.audio.ui && data.audio.ui[key];
@@ -339,6 +361,11 @@ async function main() {
   //   3. 操作パート/ストーリーのBGM                … baseBgm (audio.jsonのBGMキー)
   let baseBgm = null;
   let imageBgmTrack = null;
+  // ストーリーの行でBGMが指定された後は、オーディオで選んだ曲よりストーリーのBGMを優先する
+  // （ストーリーの演出どおりに曲が切り替わる／止まるようにする）。ストーリー・操作パートの開始時に解除。
+  let storyBgmOverride = false;
+  // ストーリーで流れて新しくオーディオに追加されたBGMの名前。次の操作パートの開始時メッセージの後に知らせる。
+  let pendingBgmNotices = [];
 
   function bgmSoundOfTrack(trackId) {
     const track = data.bgmById[trackId];
@@ -361,8 +388,23 @@ async function main() {
     }
     let key = baseBgm;
     if (imageBgmTrack) key = bgmSoundOfTrack(imageBgmTrack);
+    else if (state.phase === "story" && storyBgmOverride) key = baseBgm;
     else if (state.bgmState.currentTrack && state.bgmState.currentTrack !== "default") key = bgmSoundOfTrack(state.bgmState.currentTrack);
     AudioManager.playBgm(key);
+  }
+
+  // ストーリーで流れたBGMを、オーディオで選べる曲(bgm.json の sound が一致するトラック)に追加する。
+  // 新しく追加された曲の表示名の配列を返す（操作パート開始時メッセージの後に知らせる）。
+  function unlockStoryBgms(story) {
+    const names = [];
+    for (const line of (story && story.lines) || []) {
+      if (!line.bgm) continue;
+      const track = Object.values(data.bgmById).find((t) => t.sound === line.bgm);
+      if (!track || state.bgmState.unlockedTracks.includes(track.id)) continue;
+      state.bgmState.unlockedTracks.push(track.id);
+      names.push(bgmTrackLabel(track, data.audio));
+    }
+    return names;
   }
 
   function onSpotTap(spotId) {
@@ -572,6 +614,7 @@ async function main() {
     for (const q of rest) {
       if (q.text) queueMessage(q.text);
       else if (q.se != null) playSENow(q.se);
+      else if (q.flag != null) applyFlagNow(q.flag, q.value);
     }
   }
 
@@ -610,7 +653,7 @@ async function main() {
     } else if (gimmick.type === "tapRegions") {
       renderTapRegionsGimmick(gimmickContainer, gimmick, onResult);
     } else if (gimmick.type === "chatSelect") {
-      renderChatSelectGimmick(gimmickContainer, gimmick, onResult);
+      renderChatSelectGimmick(gimmickContainer, gimmick, onResult, () => closeGimmick());
     } else if (gimmick.type === "phoneDial") {
       renderPhoneDialGimmick(gimmickContainer, gimmick, onResult);
     } else {
@@ -710,7 +753,8 @@ async function main() {
       const btn = document.createElement("button");
       btn.type = "button";
       btn.className = "bgm-track-btn" + (state.bgmState.currentTrack === track.id ? " selected" : "");
-      btn.textContent = unlocked ? track.label : `${track.label}（未入手）`;
+      const label = bgmTrackLabel(track, data.audio);
+      btn.textContent = unlocked ? label : `${label}（未入手）`;
       btn.disabled = !unlocked;
       btn.addEventListener("click", () => {
         state.bgmState.currentTrack = track.id;
@@ -806,7 +850,7 @@ async function main() {
     title.className = "modal-title";
     title.textContent = "設定";
     box.appendChild(title);
-    // SE・BGMのON/OFF（ゲームのセーブとは別に保存される）
+    // SE・BGMの音量 大・中・小・消（ゲームのセーブとは別に保存される。初期値は中）
     const audioSettings = document.createElement("div");
     audioSettings.className = "settings-audio";
     [["se", "効果音(SE)"], ["bgm", "BGM"]].forEach(([kind, label]) => {
@@ -814,19 +858,29 @@ async function main() {
       row.className = "settings-row";
       const name = document.createElement("span");
       name.textContent = label;
-      const toggle = document.createElement("button");
-      toggle.type = "button";
+      const levels = document.createElement("div");
+      levels.className = "settings-levels";
+      levels.dataset.kind = kind;
       const draw = () => {
-        const on = AudioManager.getSettings()[kind];
-        toggle.textContent = on ? "ON" : "OFF";
-        toggle.className = "settings-toggle" + (on ? " settings-toggle--on" : "");
+        const current = AudioManager.getSettings()[kind];
+        levels.querySelectorAll("button").forEach((b) => {
+          b.className = "settings-level" + (b.dataset.level === current ? " settings-level--on" : "");
+        });
       };
-      toggle.addEventListener("click", () => {
-        AudioManager.setEnabled(kind, !AudioManager.getSettings()[kind]);
-        draw();
+      AudioManager.VOLUME_LEVELS.forEach((lv) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.dataset.level = lv.id;
+        btn.textContent = lv.label;
+        btn.addEventListener("click", () => {
+          AudioManager.setLevel(kind, lv.id);
+          draw();
+          if (kind === "se") playUiSE("headerIcon"); // 変えた後の音量を確かめられるよう鳴らす
+        });
+        levels.appendChild(btn);
       });
       draw();
-      row.append(name, toggle);
+      row.append(name, levels);
       audioSettings.appendChild(row);
     });
     box.appendChild(audioSettings);
@@ -908,6 +962,7 @@ async function main() {
     storyQueue.clear();
     // ストーリー開始時点では直前の操作パートのBGMを流し続ける（行に bgm があればそこで切り替わる）
     imageBgmTrack = null;
+    storyBgmOverride = false;
     baseBgm = partBgm(storyPartId);
     refreshBgm();
     story.lines.forEach((line) => storyQueue.enqueue(line));
@@ -920,11 +975,15 @@ async function main() {
     zoomShownItemId = null;
     pendingAutoClear = false;
     imageBgmTrack = null;
+    storyBgmOverride = false;
     baseBgm = partBgm(part.id);
     refreshBgm();
     drawPlay();
-    startMessagesPending = part.startMessages.length > 0;
-    part.startMessages.forEach((t) => queueMessage(t));
+    // 開始時メッセージの後に、直前のストーリーで新しくオーディオに追加されたBGMを知らせる。
+    const lines = [...part.startMessages, ...pendingBgmNotices.map((name) => bgmUnlockMessage(name))];
+    pendingBgmNotices = [];
+    startMessagesPending = lines.length > 0;
+    lines.forEach((t) => queueMessage(t));
   }
 
   function startGame() {
@@ -933,6 +992,7 @@ async function main() {
     state.playPart = 1;
     state.currentView = part.startView;
     SaveManager.save(state);
+    pendingBgmNotices = []; // 前回のプレイ(エンディング前のストーリー)の知らせを持ち越さない
     enterPlayPart(part);
   }
 
@@ -950,6 +1010,7 @@ async function main() {
     ctx.selectedItemId = null;
     msgQueue.clear();
     storyQueue.clear();
+    pendingBgmNotices = [];
     state.phase = "play";
     state.playPart = playPartId;
     state.currentView = part.startView;
@@ -1029,9 +1090,9 @@ async function main() {
       } else if (state.phase === "play" && msgQueue.isBusy()) {
         const actionable =
           e.target.closest && e.target.closest(".spot-btn, .spot-hotspot, .arrow-btn, .inventory-item, .note-page, .note-close-btn");
-        // 画像表示が控えている間は、スポット等のタップでキューを捨てない（演出・BGM追加の
-        // メッセージを見逃さないよう、通常のメッセージ送りとして扱う）。
-        const hasQueuedImage = msgQueue.queue.some((q) => q.image || q.gimmick);
+        // 画像表示・ギミック・フラグ切替(部屋の色を戻す等)が控えている間は、スポット等のタップでキューを
+        // 捨てない（演出・BGM追加のメッセージを見逃さない／部屋が赤いまま残らないよう、通常のメッセージ送りとして扱う）。
+        const hasQueuedImage = msgQueue.queue.some((q) => q.image || q.gimmick || q.flag != null);
         if (actionable && !hasQueuedImage) {
           msgQueue.clear();
           return; // 伝播を止めず、各要素側のクリック処理へそのまま進める

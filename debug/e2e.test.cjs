@@ -599,17 +599,18 @@ function ok(c, label) { if (!c) throw new Error(label); }
     await h.arrow("▼");
     eq(await h.view(), "roomPiguma", "通常メッセージ中に矢印が効かない");
   });
-  await test("S-07", "設定画面: SE/BGMの音量(大・中・小・消、初期値は中)と著作権表記(効果音ラボ様・OtoLogic様)が表示される", async (page, h) => {
+  await test("S-07", "設定画面: SE/BGMの音量(大・中・小・消、初期値は中)と著作権表記(効果音ラボ様・OtoLogic様、サイト名のみ・リンクなし)が表示される", async (page, h) => {
     await h.load(baseState({ playPart: 3 }));
     await h.openSettings();
     const t = await page.textContent(".modal-box");
     ok(t.includes("効果音(SE)") && t.includes("BGM"), "音量設定が無い");
     for (const kind of ["効果音", "BGM"]) eq(await page.locator(".settings-row").filter({ hasText: kind }).locator(".settings-level").allTextContents(), ["大", "中", "小", "消"], kind);
-    ok(t.includes("SE：効果音ラボ 様") && t.includes("BGM：OtoLogic 様"), "著作権表記が無い");
+    ok(t.includes("SE：効果音ラボ　様") && t.includes("BGM：OtoLogic　様"), "著作権表記が無い");
     ok(!/CC/.test(t), "CC表記がある");
     eq(await h.levels(), ["中", "中"], "初期値が中ではない");
-    const link = page.locator(".settings-credits a").first();
-    eq(await link.getAttribute("rel"), "noopener noreferrer");
+    // 著作権表記はサイト名のみ。外部サイトへのリンク・URLは表示しない
+    eq(await page.locator(".settings-credits a").count(), 0, "著作権表記にリンクがある");
+    ok(!/https?:\/\//.test(t), "著作権表記にURLがある");
     await h.shot("S-07_settings");
   });
 
@@ -1026,6 +1027,121 @@ function ok(c, label) { if (!c) throw new Error(label); }
     ok(await page.locator(".start-screen .start-title").count() === 1, "タイトルに戻らない");
     eq(await h.save(), null, "セーブが消えていない");
     eq(await h.bgm(), [], "タイトルでBGMが止まらない");
+  });
+
+  // ===================== F: 2周目（リロードせずに「タイトルへ戻る」から遊び直す） =====================
+  // 表情タップのループ位置は実行時のみの状態のため、リロードすれば必ず1行目に戻る。
+  // 同じタブのまま2周目を始めた場合も1行目から表示されること（前回の続きにならないこと）を確認する。
+  const faceTap = async (page, h) => { await h.click(page.locator(".face-box")); const t = await h.msg(); await h.readAll(); return t; };
+  const P3_FACE = ["ドアの鍵開けるっぴ～", "暗証番号忘れたッピ", "この部屋にヒントがあるはずっぴ！"];
+  // スタート画面 → PlayPart1 → PlayPart2 → PlayPart3（開始時メッセージを読み終えた状態）
+  const playTitleToPart3 = async (page, h) => {
+    await h.click(page.locator(".start-title"));
+    await h.readAll();
+    await h.tapSpot("配信用カメラ"); await h.story();
+    eq((await h.save()).playPart, 2, "part2");
+    await h.readAll();
+    await h.arrow("▼"); await h.arrow("▼");
+    await h.arrow("◀"); await h.tapSpot("冷蔵庫"); await h.tapSpot("冷蔵庫"); await h.readAll();
+    await h.arrow("▼"); await h.arrow("▶"); await h.tapSpot("ぴつじ部屋のドア");
+    await h.useItem("チョコレート", "ドア下隙間"); await h.readAll();
+    await h.arrow("▼"); await h.tapSpot("黒ぴぐま部屋のドア"); await h.tapSpot("机"); await h.tapSpot("配信用カメラ"); await h.story();
+    eq((await h.save()).playPart, 3, "part3");
+    await h.readAll();
+  };
+  // PlayPart3(机拡大) → エンディング（F-01と同じ手順。リロードしない）
+  const playPart3ToEnding = async (page, h) => {
+    await h.arrow("▼"); await h.arrow("▼"); await h.tapSpot("壁の貼り紙"); await h.readAll();
+    await h.arrow("◀"); await h.tapSpot("冷蔵庫"); await h.useItem("青い紙", "冷凍庫"); await h.readAll(); await h.arrow("▼");
+    await h.tapSpot("テーブル"); await h.tapSpot("テーブルの上"); await h.readAll(); await h.arrow("▼");
+    await h.tapSpot("トースター"); await h.useItem("食パン", "トースター"); await h.readAll(); await h.arrow("▼");
+    await h.tapSpot("ドアBの電子錠"); await h.doorB(); await h.readAll();
+    await h.arrow("▶"); await h.tapSpot("黒ぴぐま部屋のドア"); await h.tapSpot("机"); await h.tapSpot("配信用カメラ"); await h.story();
+    eq((await h.save()).playPart, 4, "part4");
+    await h.readAll();
+    await h.arrow("▼"); await h.arrow("▼"); await h.arrow("◀"); await h.tapSpot("ドアB");
+    await h.tapSpot("電話台"); await h.tapSpot("電話台引き出し"); await h.readAll();
+    await h.useItem("ブラックライト", "電話"); await h.readThrough(); await h.arrow("▼");
+    await h.arrow("▶"); await h.tapSpot("ソファ"); await h.readAll(); await h.tapSpot("電気スイッチ"); await h.readAll();
+    await h.tapSpot("ローテーブル"); await h.useItem("ブラックライト", "塩"); await h.readThrough(); await h.arrow("▼");
+    await h.arrow("◀"); await h.tapSpot("玄関ドアの電子錠"); await h.entrance(); await h.readAll();
+    await h.tapSpot("ドアA"); await h.arrow("▶"); await h.tapSpot("黒ぴぐま部屋のドア"); await h.tapSpot("机"); await h.tapSpot("配信用カメラ"); await h.story();
+    eq((await h.save()).playPart, 5, "part5");
+    await h.readAll();
+    await h.arrow("▼"); await h.tapSpot("ベッド"); await h.tapSpot("ベッドマット"); await h.readAll(); await h.arrow("▼");
+    await h.arrow("▼"); await h.tapSpot("棚"); await h.tapSpot("工具箱"); await h.readAll(); await h.arrow("▼");
+    await h.arrow("◀"); await h.tapSpot("テーブル"); await h.tapSpot("椅子"); await h.readAll(); await h.arrow("▼"); await h.arrow("▶");
+    await h.tapSpot("ぴつじ部屋のドア");
+    await h.useItem("プラスドライバー", "ドア小窓"); await h.readAll();
+    await h.useItem("クッション", "ドア小窓"); await h.readAll();
+    await h.useItem("タオルケット", "ドア小窓"); await h.readAll();
+    await h.arrow("▼"); await h.tapSpot("黒ぴぐま部屋のドア"); await h.tapSpot("机"); await h.tapSpot("配信用カメラ"); await h.story();
+    eq((await h.save()).playPart, 6, "part6");
+    await h.readAll();
+    await h.arrow("▼"); await h.tapSpot("本棚"); await h.readThrough();
+    await h.tapSpot("ベッド"); await h.tapSpot("ベッド下"); await h.readAll(); await h.arrow("▼");
+    await h.arrow("▼"); await h.tapSpot("ぴつじ部屋のドア"); await h.useItem("カメラ", "ドア小窓"); await h.readAll(); await h.arrow("▼");
+    await h.tapSpot("棚"); await h.tapSpot("引き出し"); await h.readAll(); await h.arrow("▼");
+    await h.arrow("◀"); await h.tapSpot("ドアB"); await h.tapSpot("電話台"); await h.tapSpot("電話");
+    await h.dialPhone("#7*27"); await h.readAll();
+    await h.arrow("▼"); await h.tapSpot("ドアA"); await h.arrow("▶"); await h.tapSpot("黒ぴぐま部屋のドア"); await h.tapSpot("机");
+    await h.tapSpot("パソコン"); await h.readAll();
+    await h.chatGame("サーカステント", "お寺");
+    await h.click(page.locator(".gimmick-controls button").filter({ hasText: "送信" }));
+    await h.story();
+    eq((await h.save()).playPart, 7, "part7");
+    await h.readAll();
+    await h.tapSpot("調査ノート");
+    for (let i = 0; i < 6; i++) await h.click(page.locator(".note-page"));
+    await h.readAll(); await h.click(page.locator(".note-close-btn"));
+    await h.arrow("▼"); await h.arrow("▼"); await h.arrow("◀"); await h.tapSpot("ドアB");
+    await h.useItem("写真", "ぴさぎ");
+    for (const r of await page.locator(".gimmick-image-wrap .gimmick-key-hotspot").all()) await r.click();
+    await h.click(page.locator(".gimmick-controls button").filter({ hasText: "決定" }));
+    await h.readThrough();
+    await h.useItem("タンバリン", "ぴさぎ"); await h.readAll();
+    await h.tapSpot("ドアA"); await h.arrow("▶"); await h.tapSpot("黒ぴぐま部屋のドア");
+    await h.useItem("マラカス", "ぴぐま");
+    await page.locator("#footer-message").click(); await page.waitForTimeout(WAIT);
+    await h.readThrough();
+    await h.arrow("▼"); await h.arrow("◀"); await h.tapSpot("ドアB"); await h.arrow("▶");
+    await h.tapSpot("オーディオ");
+    await h.click(page.locator(".bgm-track-btn").filter({ hasText: "HAPPY" }));
+    await h.arrow("◀"); await h.tapSpot("ドアA"); await h.arrow("▶"); await h.tapSpot("黒ぴぐま部屋のドア"); await h.tapSpot("机"); await h.tapSpot("配信用カメラ");
+    await h.story();
+    eq((await h.save()).playPart, 8, "part8");
+    await h.readAll();
+    await h.tapSpot("ぴつじ部屋の出口");
+    for (let i = 0; i < 40; i++) { const s = await page.$(".story-footer"); if (!s) break; await s.click(); await page.waitForTimeout(30); }
+    await page.waitForTimeout(WAIT);
+    eq((await h.save()).phase, "end", "エンディングに到達しない");
+  };
+
+  await test("F-02", "2周目: 1周目の表情タップのループ位置を持ち越さない（エンディング→タイトルへ戻る→スタート。リロードなし）", async (page, h) => {
+    await h.load(baseState({ playPart: 3 }));
+    eq(await faceTap(page, h), P3_FACE[0], "1周目1回目");
+    eq(await faceTap(page, h), P3_FACE[1], "1周目2回目");
+    await playPart3ToEnding(page, h);
+    await h.click(page.locator(".end-back-btn"));
+    await playTitleToPart3(page, h);
+    eq(await faceTap(page, h), P3_FACE[0], "2周目1回目が1行目ではない");
+    eq(await faceTap(page, h), P3_FACE[1], "2周目2回目");
+    eq(await faceTap(page, h), P3_FACE[2], "2周目3回目");
+    eq(await faceTap(page, h), P3_FACE[0], "2周目4回目(ループ)");
+    await h.shot("F-02_face_2nd");
+  });
+
+  await test("F-03", "デバッグの直接ジャンプ: 同じタブで再ジャンプしても表情タップは1行目から（エンディング→タイトルへ戻る→再ジャンプ。リロードなし）", async (page, h) => {
+    await h.load(null);
+    await h.click(page.locator(".start-debug-btn").filter({ hasText: /^PlayPart3$/ }));
+    await h.readAll();
+    eq(await faceTap(page, h), P3_FACE[0], "1回目のジャンプ後1回目");
+    eq(await faceTap(page, h), P3_FACE[1], "1回目のジャンプ後2回目");
+    await playPart3ToEnding(page, h);
+    await h.click(page.locator(".end-back-btn"));
+    await h.click(page.locator(".start-debug-btn").filter({ hasText: /^PlayPart3$/ }));
+    await h.readAll();
+    eq(await faceTap(page, h), P3_FACE[0], "再ジャンプ後1回目が1行目ではない");
   });
 
   // ===================== AU: SE・BGM =====================

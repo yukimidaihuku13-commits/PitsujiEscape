@@ -140,6 +140,10 @@ async function main() {
 
   // 表情タップのループ表示用カウンタ { "パート番号:faceMessageの添字": 次に出す行 }
   const faceCycleIndex = {};
+  // 新しくゲームを始める時(2周目・デバッグジャンプ)は、表情タップを必ず1行目から表示する。
+  function resetFaceCycle() {
+    for (const key of Object.keys(faceCycleIndex)) delete faceCycleIndex[key];
+  }
 
   // 自動クリア待ち(パート6)。メッセージを読み終えた時点でストーリーへ移る。
   let pendingAutoClear = false;
@@ -885,7 +889,7 @@ async function main() {
     });
     box.appendChild(audioSettings);
 
-    // 著作権表記（data/credits.json）
+    // 著作権表記（data/credits.json）。サイト名のみを文字で表示し、外部サイトへのリンクは行わない。
     const credits = document.createElement("div");
     credits.className = "settings-credits";
     const creditsTitle = document.createElement("div");
@@ -896,14 +900,6 @@ async function main() {
       const line = document.createElement("div");
       line.className = "settings-credits-line";
       line.textContent = c.text;
-      if (c.url) {
-        const link = document.createElement("a");
-        link.href = c.url;
-        link.target = "_blank";
-        link.rel = "noopener noreferrer";
-        link.textContent = c.url;
-        line.append(document.createElement("br"), link);
-      }
       credits.appendChild(line);
     });
     box.appendChild(credits);
@@ -993,6 +989,7 @@ async function main() {
     state.currentView = part.startView;
     SaveManager.save(state);
     pendingBgmNotices = []; // 前回のプレイ(エンディング前のストーリー)の知らせを持ち越さない
+    resetFaceCycle();
     enterPlayPart(part);
   }
 
@@ -1011,6 +1008,7 @@ async function main() {
     msgQueue.clear();
     storyQueue.clear();
     pendingBgmNotices = [];
+    resetFaceCycle();
     state.phase = "play";
     state.playPart = playPartId;
     state.currentView = part.startView;
@@ -1028,6 +1026,7 @@ async function main() {
     ctx.selectedItemId = null;
     msgQueue.clear();
     storyQueue.clear();
+    resetFaceCycle();
     state.phase = "story";
     state.storyPart = storyPartId;
     SaveManager.save(state);

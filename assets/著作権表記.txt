@@ -3,7 +3,7 @@ SE：効果音ラボ　様
 BGM：OtoLogic　様
 
 
-#以下メモ
+##以下メモのためソースコードには記載不要
 効果音ラボ　様
 https://soundeffect-lab.info
 クレジット表記不要(任意)

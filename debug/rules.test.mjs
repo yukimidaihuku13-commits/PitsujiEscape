@@ -51,7 +51,7 @@ function setup({ part = 2, view = null, items = [], ever = [], used = {}, flags 
   state.notePage = notePage;
   if (bgm) { state.bgmState.unlockedTracks.push(bgm); state.bgmState.currentTrack = bgm; }
   const ctx = { selectedItemId: selected };
-  const log = { msgs: [], se: [], gimmick: [], image: [], story: [], bgmMenu: 0, autoClear: 0 };
+  const log = { msgs: [], se: [], gimmick: [], image: [], imageOpts: [], story: [], bgmMenu: 0, autoClear: 0 };
   const ui = {
     queueMessage: (t) => log.msgs.push(t),
     playSE: (id) => log.se.push(id),
@@ -59,7 +59,8 @@ function setup({ part = 2, view = null, items = [], ever = [], used = {}, flags 
     closeGimmick: () => {},
     enterStoryPart: (id) => log.story.push(id),
     enterPlayPart: () => {},
-    showImageModal: (o) => log.image.push(o.caption),
+    enterEnding: () => log.story.push("end"),
+    showImageModal: (o) => { log.image.push(o.caption); log.imageOpts.push(o); },
     openBgmMenu: () => log.bgmMenu++,
     requestRender: () => {},
     scheduleAutoClear: () => log.autoClear++
@@ -107,17 +108,17 @@ function ok(cond, label) { if (!cond) throw new Error(label); }
 test("R-01", "本棚 PlayPart3: 4行を順に表示し、5回目で1行目に戻る", () => {
   const env = setup({ part: 3, view: "roomPiguma" });
   for (let i = 0; i < 5; i++) tap(env, "spotBookshelf");
-  eq(env.log.msgs, ["インクについて、という本だ。", "温めると文字が消える。", "冷やすと文字が消える。", "と書いてある。謎を作る時に参考にした本。", "インクについて、という本だ。"]);
+  eq(env.log.msgs, ["「インクについて」という本を読むぴ", "「温めると文字が消える。」", "「冷やすと文字が消える。」", "謎を作る時に参考にした本っぴ", "「インクについて」という本を読むぴ"]);
 });
 test("R-02", "本棚 PlayPart5: 3行ループ（PlayPart3のカウントを引き継がない）", () => {
   const env = setup({ part: 5, view: "roomPiguma", clicks: { spotBookshelf: 2 } });
   for (let i = 0; i < 4; i++) tap(env, "spotBookshelf");
-  eq(env.log.msgs, ["ホームズの踊る人形だっぴ！", "換字式暗号の中で一番好きだっぴ！", "別の記号に置き換えられた絵文字を解読するホームズは凄いっぴ", "ホームズの踊る人形だっぴ！"]);
+  eq(env.log.msgs, ["ホームズの踊る人形だっぴ！", "換字式暗号の中で一番好きだっぴ！", "置き換えられた絵文字を簡単に解読するホームズは凄いっぴ", "ホームズの踊る人形だっぴ！"]);
 });
 test("R-03", "本棚 PlayPart6: 名刺入手（メッセージ・SE・本の画像）", () => {
   const env = tap(setup({ part: 6, view: "roomPiguma" }), "spotBookshelf");
   eq(env.log.msgs, ["そういえば名刺をしおり代わりにしてたっぴ"]);
-  eq(env.log.se, ["本を開くぱらっという音"]);
+  eq(env.log.se, ["Se_Note"]);
   eq(env.log.image.length, 1, "画像表示");
   ok(env.state.inventory.includes("itemPisagiCard"), "名刺を所持していない");
 });
@@ -131,7 +132,7 @@ test("R-04", "本棚 名刺入手後: 2種のどちらかをランダム表示",
 test("R-05", "本棚 その他のパート(2,4,7)", () => {
   for (const part of [2, 4, 7]) {
     const env = tap(setup({ part, view: "roomPiguma" }), "spotBookshelf");
-    eq(env.log.msgs, ["最近のお気に入りはホームズの踊る人形だ"], `part${part}`);
+    eq(env.log.msgs, ["ホームズの踊る人形がお気に入りっぴ～"], `part${part}`);
   }
 });
 test("R-06", "ベッド: PlayPart1は非表示、2以降はベッド拡大へ", () => {
@@ -139,70 +140,102 @@ test("R-06", "ベッド: PlayPart1は非表示、2以降はベッド拡大へ", 
   const env = tap(setup({ part: 2, view: "roomPiguma" }), "spotBed");
   eq(env.state.currentView, "viewBed");
 });
-test("R-07", "ぴぐま: PlayPart7のみ表示。マラカス使用でCD入手", () => {
+test("R-07", "ぴぐま: PlayPart7のみ表示。マラカス/タンバリン選択時の分岐", () => {
   for (const p of [2, 3, 4, 5, 6, 8]) ok(!visible(setup({ part: p, view: "roomPiguma" }), "spotPiguma"), `part${p}で表示`);
-  const e1 = tap(setup({ part: 7, view: "roomPiguma" }), "spotPiguma");
-  eq(e1.log.msgs, ["うきうきしていてなんだか楽しそうだっぴ"]);
-  const e2 = tap(setup({ part: 7, view: "roomPiguma", items: ["itemMaracas"], selected: "itemMaracas" }), "spotPiguma");
-  eq(e2.log.msgs, ["マラカスを受け取ってぴぐまが踊り出した！", "音楽CDを貰ったっぴ！"]);
-  eq(e2.log.se, ["マラカスをシャカシャカする音"]);
-  eq(e2.state.inventory, ["itemCD"]);
+  eq(tap(setup({ part: 7, view: "roomPiguma" }), "spotPiguma").log.msgs, ["ぴぐまがわくわくしてるっぴ！"]);
+  // タンバリンはぴぐまには渡せない
+  const et = tap(setup({ part: 7, view: "roomPiguma", items: ["itemTambourine"], selected: "itemTambourine" }), "spotPiguma");
+  eq(et.log.msgs, ["「こっちじゃないッピ！」って言ってるぴ～"]);
+  eq(et.state.inventory, ["itemTambourine"], "タンバリンが消費された");
+  // マラカス使用後
+  const eu = tap(setup({ part: 7, view: "roomPiguma", used: { itemMaracas: ["spotPiguma"] } }), "spotPiguma");
+  eq(eu.log.msgs, ["マラカスのりのりだっぴ～"]);
+  eq(eu.log.se, ["SE_MaracasRoll"]);
+  // ぴさぎにタンバリンを渡す前: マラカスを渡すだけ
+  const e1 = tap(setup({ part: 7, view: "roomPiguma", items: ["itemMaracas"], selected: "itemMaracas" }), "spotPiguma");
+  eq(e1.log.msgs, ["ぴぐまがマラカスを振り出したっぴ～", "ぴさぎも楽器やりたそうっぴ～"]);
+  eq(e1.log.se, ["SE_MaracasRoll"]);
+  eq(e1.state.inventory, []);
+  eq(e1.log.image.length, 0, "片方だけでパーティー画像が出た");
+  ok(!e1.state.bgmState.unlockedTracks.includes("happy"), "片方だけでHAPPYが追加された");
+  // ぴさぎにタンバリンを渡した後: パーティー画像(BGM HAPPY)→HAPPY追加
+  const e2 = tap(setup({ part: 7, view: "roomPiguma", items: ["itemMaracas"], used: { itemTambourine: ["spotPisagi"] }, selected: "itemMaracas" }), "spotPiguma");
+  eq(e2.log.msgs, ["ぴぐまがマラカスを振り出したっぴ～", "BGM HAPPY がオーディオに追加された", "最後に部屋を賑やかにするっぴ！"]);
+  eq(e2.log.imageOpts.map((o) => [o.text, o.bgm]), [["のりのりだっぴ～！", "happy"]]);
+  ok(e2.state.bgmState.unlockedTracks.includes("happy"), "HAPPYが追加されない");
+  eq(e2.state.bgmState.currentTrack, "default", "画像を閉じた後のBGMが元に戻らない");
 });
-test("R-08", "ゲーム機: PlayPart1非表示 / 6でギミック / 6クリア後 / その他", () => {
+test("R-08", "パソコン: PlayPart1非表示 / 6のカメラ使用前・後・クリア後 / その他", () => {
   ok(!visible(setup({ part: 1 }), "spotGame"), "part1で表示");
-  const e6 = tap(setup({ part: 6 }), "spotGame");
+  const e0 = tap(setup({ part: 6 }), "spotGame");
+  eq(e0.log.gimmick, [], "カメラ使用前にギミックが開いた");
+  eq(e0.log.msgs, ["ぴぐまを呼び出す準備をするっぴ～", "悪戯じゃない証拠にぴつじの写真もつけるっぴ"]);
+  const e6 = tap(setup({ part: 6, used: { itemCamera: ["spotPitsujiWindow"] } }), "spotGame");
   eq(e6.log.gimmick, ["gimmickPcGame"]);
-  eq(e6.log.se, ["ゲーム開始っぽい音"]);
-  eq(tap(setup({ part: 6, flags: { chatGimmickCleared: true } }), "spotGame").log.msgs, ["これでぴぐまが気付いてくれるっぴ"]);
-  for (const p of [2, 3, 4, 5, 7]) eq(tap(setup({ part: p }), "spotGame").log.msgs, ["今はゲームの時じゃないっピ...！"], `part${p}`);
+  eq(e6.log.se, ["Se_ChangeSelect", "ゲーム開始っぽい音"]);
+  eq(e6.log.msgs, ["ぴぐまを呼び出すっぴ！", "どうせならちょっと謎解きの要素も加えるっぴ～"]);
+  eq(tap(setup({ part: 6, flags: { chatGimmickCleared: true } }), "spotGame").log.msgs, ["これでぴぐまは呼び出せたっぴ！", "次はぴさぎを呼び出すっぴ～"]);
+  for (const p of [2, 3, 4, 5, 7]) eq(tap(setup({ part: p }), "spotGame").log.msgs, ["今はゲームの時じゃないッピ...！"], `part${p}`);
 });
 test("R-09", "配信用カメラ: 各パートの未達メッセージ", () => {
   const cases = [
-    [2, {}, ["ぴつじのテンションを上げるっぴ！"]],
-    [2, { ever: ["itemChocolate"] }, ["チョコレートでテンションアップっぴ！"]],
-    [3, {}, ["ぴつじを脱出させるっぴ～！！！"]],
-    [4, {}, ["これはぴつじとの勝負っぴ！", "ぴつじを！部屋から！脱出させる！！！"]],
-    [5, {}, ["ぴつじなかなか手強いッピ……", "何をしたら出てくるっぴ？！"]],
-    [5, { used: { itemCushion: ["spotPitsujiWindow"] } }, ["ぴつじなかなか手強いッピ……", "何をしたら出てくるっぴ？！"]],
-    [6, {}, ["ぴつじが寝てて今は無理ッピ......"]],
-    [6, { used: { itemPisagiCard: ["spotPhone"] } }, ["ぴつじが寝てて今は無理ッピ......"]],
-    [7, {}, ["脱出させるっぴ！！！！"]],
+    [2, {}, ["ぴつじのやる気を出して脱出させるっぴ～"]],
+    [2, { ever: ["itemChocolate"] }, ["チョコでぴつじのやる気を出すっぴ～"]],
+    [3, {}, ["ぴつじを脱出させるっぴ～！！"]],
+    [4, {}, ["ぴつじとの勝負っぴ！", "部屋から絶対出してみせるっぴ！！！"]],
+    [5, {}, ["なかなか手強いッピね……"]],
+    [5, { used: { itemCushion: ["spotPitsujiWindow"] } }, ["なかなか手強いッピね……"]],
+    [6, {}, ["ぴつじが寝てて今は無理ッピ……"]],
+    [6, { flags: { phoneGimmickCleared: true } }, ["ぴつじが寝てて今は無理ッピ……"]],
+    [7, {}, ["最後の勝負っぴ。ぴつじを部屋から脱出させるっぴ！"]],
+    [7, { bgmUnlockedOnly: true }, ["最後の勝負っぴ。ぴつじを部屋から脱出させるっぴ！"]]
   ];
   for (const [part, opt, exp] of cases) {
-    const env = tap(setup({ part, ...opt }), "spotPcStream");
+    const env = setup({ part, ...opt });
+    if (opt.bgmUnlockedOnly) env.state.bgmState.unlockedTracks.push("happy");
+    tap(env, "spotPcStream");
     eq(env.log.msgs, exp, `part${part} ${JSON.stringify(opt)}`);
     eq(env.log.story, [], `part${part} 未達なのにクリアした`);
+    eq(env.log.autoClear, 0, `part${part} 未達なのにクリア待ちになった`);
   }
 });
-test("R-10", "配信用カメラ: 各パートのクリア条件（1,2,3,4,5,7）でストーリーへ", () => {
+test("R-10", "配信用カメラ: クリア条件を満たすと、クリア時の台詞を読み終えてからストーリーへ", () => {
   const cases = [
-    [1, {}],
-    [2, { used: { itemChocolate: ["spotPitsujiDoorGap"] } }],
-    [3, { flags: { doorBUnlocked: true } }],
-    [4, { flags: { doorEntranceUnlocked: true } }],
-    [5, { used: { itemCushion: ["spotPitsujiWindow"], itemLargeTowel: ["spotPitsujiWindow"] } }],
-    [7, { bgm: "happy" }]
+    [2, { used: { itemChocolate: ["spotPitsujiDoorGap"] } }, ["始めるっぴ～！"]],
+    [3, { flags: { doorBUnlocked: true } }, ["今度こそ脱出ゲームっぴ！"]],
+    [4, { flags: { doorEntranceUnlocked: true } }, ["ぴつじ脱出やるっぴ！！"]],
+    [5, { used: { itemCushion: ["spotPitsujiWindow"], itemLargeTowel: ["spotPitsujiWindow"] } }, ["嫌な予感がするッピ……"]],
+    [7, { bgm: "happy" }, ["最後の勝負っぴー！！"]]
   ];
-  for (const [part, opt] of cases) {
+  for (const [part, opt, msgs] of cases) {
     const env = tap(setup({ part, ...opt }), "spotPcStream");
+    eq(env.log.msgs, msgs, `part${part} 台詞`);
+    eq(env.log.se, ["Se_StartStream"], `part${part} SE`);
+    eq(env.log.story, [], `part${part} 台詞を読む前にストーリーへ進んだ`);
+    eq(env.log.autoClear, 1, `part${part} クリア待ちにならない`);
+    env.engine.runAutoClear(); // 台詞を読み終えた(main.jsのrunPendingAutoClear)
     eq(env.log.story, [part], `part${part}`);
-    eq(env.log.se, ["click"], `part${part} SE`);
     eq(env.state.phase, "story");
   }
+  // PlayPart1はクリア時の台詞なし → 即ストーリーへ
+  const e1 = tap(setup({ part: 1 }), "spotPcStream");
+  eq(e1.log.story, [1], "part1");
+  eq(e1.log.se, ["Se_StartStream"], "part1 SE");
 });
 test("R-11", "調査ノート: PlayPart1は非表示、2以降はノートを開く(ページ1左)", () => {
   ok(!visible(setup({ part: 1 }), "spotNotebook"), "part1で表示");
   const env = tap(setup({ part: 2, notePage: 3 }), "spotNotebook");
   eq(env.state.currentView, "viewNote");
   eq(notePageId(env), "note1left");
-  eq(env.log.msgs, ["ぴつじはチョコレートが好きと……"]);
+  eq(env.log.msgs, ["調査によるとぴつじはチョコ好きっぴ"]);
 });
 test("R-12", "ベッドマット: 取得後 / PlayPart5で入手 / その他", () => {
-  eq(tap(setup({ part: 5, view: "viewBed", ever: ["itemLargeTowel"] }), "spotBedmat").log.msgs, ["沈み込むタイプのベッドマット 満足度が高いっぴ"]);
+  eq(tap(setup({ part: 5, view: "viewBed", ever: ["itemLargeTowel"] }), "spotBedmat").log.msgs, ["タオルケットが無くても寝心地は最高っぴ"]);
   const e = tap(setup({ part: 5, view: "viewBed" }), "spotBedmat");
-  eq(e.log.msgs, ["ふわふわタオルケット これは気にいるっぴ"]);
+  eq(e.log.msgs, ["ふわふわタオルケット。これは気にいるっぴ"]);
+  eq(e.log.se, ["TBD_ベッドマット"], "タップ毎のSE");
   eq(e.state.inventory, ["itemLargeTowel"]);
-  eq(tap(setup({ part: 4, view: "viewBed" }), "spotBedmat").log.msgs, ["このタオルケットの生地の触り心地は最高だ"]);
+  eq(tap(setup({ part: 4, view: "viewBed" }), "spotBedmat").log.msgs, ["このタオルケットの触り心地最高だっぴ～"]);
 });
 test("R-13", "ベッドマット: タオルケット入手後はベッド背景が差分に変わる", () => {
   const { state, ctx } = setup({ part: 5, view: "viewBed", ever: ["itemLargeTowel"] });
@@ -212,24 +245,28 @@ test("R-13", "ベッドマット: タオルケット入手後はベッド背景�
 test("R-14", "ベッド下: カメラ取得後 / PlayPart6で入手 / その他", () => {
   eq(tap(setup({ part: 6, view: "viewBed", ever: ["itemCamera"] }), "spotUnderBed").log.msgs, ["ここにはもう何もないっぴ"]);
   const e = tap(setup({ part: 6, view: "viewBed" }), "spotUnderBed");
-  eq(e.log.msgs, ["カメラあった！"]);
+  eq(e.log.msgs, ["カメラ見つけたっぴー！"]);
   eq(e.log.se, ["ガサガサっという探す音"]);
   eq(e.state.inventory, ["itemCamera"]);
   eq(tap(setup({ part: 5, view: "viewBed" }), "spotUnderBed").log.msgs, ["今は使わないものが置いてあるっぴ"]);
 });
 test("R-15", "ドアB: PlayPart4以降は部屋B1へ / 3の解除前後 / 2", () => {
-  eq(tap(setup({ part: 4, view: "roomA1" }), "spotDoorB").state.currentView, "roomB1");
-  eq(tap(setup({ part: 3, view: "roomA1", flags: { doorBUnlocked: true } }), "spotDoorB").log.msgs, ["これでぴつじも脱出したくなるはず！"]);
-  eq(tap(setup({ part: 3, view: "roomA1" }), "spotDoorB").log.msgs, ["ロックを解除しないと開かない仕組みにしてある"]);
-  eq(tap(setup({ part: 2, view: "roomA1" }), "spotDoorB").log.msgs, ["隣の部屋に続くドアだ"]);
+  const e4 = tap(setup({ part: 4, view: "roomA1" }), "spotDoorB");
+  eq(e4.state.currentView, "roomB1");
+  eq(e4.log.se, ["Se_DoorOpen1"]);
+  eq(tap(setup({ part: 3, view: "roomA1", flags: { doorBUnlocked: true } }), "spotDoorB").log.msgs, ["これでぴつじも簡単に脱出できるっぴ～", "早くぴつじ脱出させるっぴ～！"]);
+  eq(tap(setup({ part: 3, view: "roomA1" }), "spotDoorB").log.msgs, ["この謎も頑張って考えたっぴ～！", "でも答え忘れたッピ……"]);
+  eq(tap(setup({ part: 2, view: "roomA1" }), "spotDoorB").log.msgs, ["隣室に続いてるドアっぴ～"]);
   eq(tap(setup({ part: 3, view: "roomA1", flags: { doorBUnlocked: true } }), "spotDoorB").state.currentView, "roomA1", "part3で部屋Bに移動できてしまう");
 });
-test("R-16", "ドアBの電子錠: 解除後 / PlayPart3でギミック / その他", () => {
-  eq(tap(setup({ part: 4, view: "roomA1", flags: { doorBUnlocked: true } }), "spotLockDoorB").log.msgs, ["ロックは解除されている"]);
+test("R-16", "ドアBの電子錠: PlayPart4以降 / 3の解除後 / 3でギミック(SE) / その他", () => {
+  eq(tap(setup({ part: 4, view: "roomA1", flags: { doorBUnlocked: true } }), "spotLockDoorB").log.msgs, ["もう鍵は開いてるっぴ～"]);
+  eq(tap(setup({ part: 3, view: "roomA1", flags: { doorBUnlocked: true } }), "spotLockDoorB").log.msgs, ["もう鍵は開いてるっぴ！やることないっぴ！"]);
   const e = tap(setup({ part: 3, view: "roomA1" }), "spotLockDoorB");
   eq(e.log.gimmick, ["gimmickLockDoorB"]);
-  eq(e.log.msgs, ["えーっと、答えはなんだっけ……"]);
-  eq(tap(setup({ part: 2, view: "roomA1" }), "spotLockDoorB").log.msgs, ["ドアの鍵を開ける脱出の仕掛けだ"]);
+  eq(e.log.se, ["ギミック起動音"]);
+  eq(e.log.msgs, ["謎を解き明かすっぴ！"]);
+  eq(tap(setup({ part: 2, view: "roomA1" }), "spotLockDoorB").log.msgs, ["ドアの鍵を開ける謎っぴ～"]);
 });
 test("R-17", "冷蔵庫/トースター/テーブル/棚/ぴつじ部屋ドア/黒ぴぐま部屋ドア/机/電話台/ドアA/ローテーブル: 視点移動", () => {
   const moves = [
@@ -239,207 +276,246 @@ test("R-17", "冷蔵庫/トースター/テーブル/棚/ぴつじ部屋ドア/�
     ["roomB2", "spotLowTable", "viewLowTable"]
   ];
   for (const [view, spot, target] of moves) eq(tap(setup({ part: 4, view }), spot).state.currentView, target, spot);
+  eq(tap(setup({ part: 4, view: "roomB1" }), "spotDoorA").log.se, ["Se_DoorOpen1"], "ドアAのSE");
 });
-test("R-18", "テーブルの上: 取得後 / PlayPart3で食パン / その他", () => {
-  eq(tap(setup({ part: 3, view: "viewTable", ever: ["itemBread"] }), "spotOnTable").log.msgs, ["少しお腹がすいてきたな"]);
+test("R-18", "テーブルの上: PlayPart4以降 / 3で取得後 / 3で食パン(SE) / その他", () => {
+  eq(tap(setup({ part: 4, view: "viewTable" }), "spotOnTable").log.msgs, ["脱出ゲーム終わったらごはん食べるっぴ～"]);
+  eq(tap(setup({ part: 3, view: "viewTable", ever: ["itemBread"] }), "spotOnTable").log.msgs, ["少しお腹がすいてきたッピ……"]);
   const e = tap(setup({ part: 3, view: "viewTable" }), "spotOnTable");
-  eq(e.log.msgs, ["食パンを手に入れた"]);
+  eq(e.log.msgs, ["食べたいけどこれは謎のヒントっぴ～"]);
+  eq(e.log.se, ["袋をがさっと開ける音"]);
   eq(e.state.inventory, ["itemBread"]);
-  eq(tap(setup({ part: 2, view: "viewTable" }), "spotOnTable").log.msgs, ["朝は断然食パンっぴ！"]);
+  eq(tap(setup({ part: 2, view: "viewTable" }), "spotOnTable").log.msgs, ["朝は食パンが美味しいっぴ！"]);
 });
-test("R-19", "椅子: 取得後 / PlayPart5でクッション / その他", () => {
-  eq(tap(setup({ part: 5, view: "viewTable", ever: ["itemCushion"] }), "spotChair").log.msgs, ["クッションが無いと背もたれが硬くて座りにくい"]);
+test("R-19", "椅子: PlayPart6以降 / 5で取得後 / 5でクッション(SE) / その他", () => {
+  eq(tap(setup({ part: 6, view: "viewTable", ever: ["itemCushion"] }), "spotChair").log.msgs, ["この椅子はちょっと座り心地が悪いッピ……"]);
+  eq(tap(setup({ part: 5, view: "viewTable", ever: ["itemCushion"] }), "spotChair").log.msgs, ["クッションが無くなったッピ", "少し背もたれが固くて痛いッピ……"]);
   const e = tap(setup({ part: 5, view: "viewTable" }), "spotChair");
-  eq(e.log.msgs, ["クッションを手に入れた"]);
+  eq(e.log.msgs, ["クッションを手に入れたっぴ！", "これでぴつじも満足ぴ～"]);
+  eq(e.log.se, ["TBD_椅子"]);
   eq(e.state.inventory, ["itemCushion"]);
-  eq(tap(setup({ part: 4, view: "viewTable" }), "spotChair").log.msgs, ["ふかふかのクッションが背中を守ってくれる"]);
+  eq(tap(setup({ part: 4, view: "viewTable" }), "spotChair").log.msgs, ["ふかふかのクッションが背中を守ってくれるっぴ"]);
 });
 test("R-20", "段ボール: PlayPart6の1回目はメッセージ、2回目以降は宛先画像 / 7以降 / その他", () => {
   const e = setup({ part: 6, view: "roomA2" });
   tap(e, "spotCardboardBox");
-  eq(e.log.msgs, ["確か下の段のダンボールに書いてあったはず"]);
+  eq(e.log.msgs, ["下の段のダンボール見ればわかるっぴ～"]);
+  eq(e.log.se, ["箱をがさがさする音"]);
   eq(e.log.image.length, 0, "1回目で画像表示");
   tap(e, "spotCardboardBox");
   eq(e.log.image.length, 1, "2回目で画像が出ない");
+  eq(e.log.imageOpts[0].text, "隣に誤配された時の箱っぴ～");
   tap(e, "spotCardboardBox");
   eq(e.log.image.length, 2, "3回目以降で画像が出ない");
-  eq(tap(setup({ part: 7, view: "roomA2" }), "spotCardboardBox").log.msgs, ["そのうち片付けよう"]);
-  eq(tap(setup({ part: 5, view: "roomA2" }), "spotCardboardBox").log.msgs, ["脱出に必要なものを色々買った時のダンボールだ"]);
+  eq(tap(setup({ part: 7, view: "roomA2" }), "spotCardboardBox").log.msgs, ["段ボールはあとで片付けるっぴ"]);
+  eq(tap(setup({ part: 5, view: "roomA2" }), "spotCardboardBox").log.msgs, ["脱出用具をたくさん買った時の箱っぴ～"]);
 });
-test("R-21", "壁の貼り紙: 取得後 / PlayPart4以降 / 3で青い紙 / 2", () => {
-  eq(tap(setup({ part: 3, view: "roomA2", ever: ["itemBluePaper"] }), "spotWallPaper").log.msgs, ["もうここには何もなさそうだ"]);
-  eq(tap(setup({ part: 4, view: "roomA2" }), "spotWallPaper").log.msgs, ["この紙は脱出ゲーム用に用意したんだったな"]);
+test("R-21", "壁の貼り紙: PlayPart4以降 / 3で取得後 / 3で青い紙 / 2", () => {
+  eq(tap(setup({ part: 3, view: "roomA2", ever: ["itemBluePaper"] }), "spotWallPaper").log.msgs, ["もうここには何もないっぴ"]);
+  eq(tap(setup({ part: 4, view: "roomA2" }), "spotWallPaper").log.msgs, ["もうここには何もないっぴ"]);
   const e = tap(setup({ part: 3, view: "roomA2" }), "spotWallPaper");
-  eq(e.log.msgs, ["青い紙を取得した"]);
+  eq(e.log.msgs, ["これがヒントになるっぴ～！"]);
   eq(e.state.inventory, ["itemBluePaper"]);
-  eq(tap(setup({ part: 2, view: "roomA2" }), "spotWallPaper").log.msgs, ["壁に何か貼ってある"]);
+  eq(tap(setup({ part: 2, view: "roomA2" }), "spotWallPaper").log.msgs, ["あからさまにヒントを壁に貼っておいたっぴ"]);
 });
 test("R-22", "冷蔵庫(冷蔵部): 取得後 / PlayPart2でチョコ / その他", () => {
   eq(tap(setup({ part: 2, view: "viewRefrigerator", ever: ["itemChocolate"] }), "spotFridgeCompartment").log.msgs, ["つい開けてしまうけど……何もないッピ"]);
   const e = tap(setup({ part: 2, view: "viewRefrigerator" }), "spotFridgeCompartment");
   eq(e.log.msgs, ["ぴつじの好きなチョコレートっぴ！", "これをぴつじに渡すっぴ！"]);
   eq(e.state.inventory, ["itemChocolate"]);
-  eq(tap(setup({ part: 3, view: "viewRefrigerator" }), "spotFridgeCompartment").log.msgs, ["いざという時に食べたいチョコレートが入れてある"]);
+  eq(tap(setup({ part: 3, view: "viewRefrigerator" }), "spotFridgeCompartment").log.msgs, ["ヒント用のチョコレートっぴ"]);
 });
-test("R-23", "冷凍庫: 取得後 / 3で青い紙→冷凍後の青い紙 / 3で未選択 / その他", () => {
-  eq(tap(setup({ part: 3, view: "viewRefrigerator", ever: ["itemFrozenBluePaper"] }), "spotFreezerCompartment").log.msgs, ["アイスでも入れておけばよかった"]);
+test("R-23", "冷凍庫: PlayPart4以降 / 取得後 / 3で青い紙→冷凍後の青い紙 / 3で未選択 / その他", () => {
+  eq(tap(setup({ part: 4, view: "viewRefrigerator" }), "spotFreezerCompartment").log.msgs, ["アイス入れておけば良かったッピ～"]);
+  eq(tap(setup({ part: 3, view: "viewRefrigerator", ever: ["itemFrozenBluePaper"] }), "spotFreezerCompartment").log.msgs, ["アイス入れておけば良かったッピ～"]);
   const e = tap(setup({ part: 3, view: "viewRefrigerator", items: ["itemBluePaper"], selected: "itemBluePaper" }), "spotFreezerCompartment");
   eq(e.log.msgs, ["この紙は冷やすと文字が出てくるっぴ！"]);
   eq(e.state.inventory, ["itemFrozenBluePaper"]);
   eq(e.ctx.selectedItemId, null);
-  eq(tap(setup({ part: 3, view: "viewRefrigerator", items: ["itemBluePaper"] }), "spotFreezerCompartment").log.msgs, ["ここにあれを入れればいいっぴね～"]);
-  eq(tap(setup({ part: 2, view: "viewRefrigerator" }), "spotFreezerCompartment").log.msgs, ["開けるとひんやりする"]);
+  eq(tap(setup({ part: 3, view: "viewRefrigerator", items: ["itemBluePaper"] }), "spotFreezerCompartment").log.msgs, ["冷凍庫も謎解きに使うっぴ～"]);
+  eq(tap(setup({ part: 2, view: "viewRefrigerator" }), "spotFreezerCompartment").log.msgs, ["何も入ってないッピ"]);
 });
 test("R-24", "冷凍庫: 違うアイテム(食パン)を選択して使っても消費されない", () => {
   const e = tap(setup({ part: 3, view: "viewRefrigerator", items: ["itemBread"], selected: "itemBread" }), "spotFreezerCompartment");
   eq(e.state.inventory, ["itemBread"]);
-  eq(e.log.msgs, ["ここにあれを入れればいいっぴね～"]);
+  eq(e.log.msgs, ["冷凍庫も謎解きに使うっぴ～"]);
 });
-test("R-25", "トースター: 取得後 / PlayPart4以降 / 3で食パン→焼かれた食パン / 3で未選択 / 2", () => {
-  eq(tap(setup({ part: 3, view: "viewToaster", ever: ["itemToastedBread"] }), "spotToaster").log.msgs, ["まだトースターが温かい"]);
-  eq(tap(setup({ part: 4, view: "viewToaster" }), "spotToaster").log.msgs, ["謎解きに使うはずだったトースターだ"]);
+test("R-25", "トースター: PlayPart4以降 / 3で焼いたパン選択・取得後 / 3で食パン→焼かれた食パン / 3で未選択 / 2", () => {
+  eq(tap(setup({ part: 4, view: "viewToaster" }), "spotToaster").log.msgs, ["パンを焼くならトースターに限るっぴ～"]);
+  eq(tap(setup({ part: 3, view: "viewToaster", items: ["itemToastedBread"], selected: "itemToastedBread" }), "spotToaster").log.msgs, ["これ以上焼いたら焦げちゃうッピー！"]);
+  eq(tap(setup({ part: 3, view: "viewToaster", ever: ["itemToastedBread"] }), "spotToaster").log.msgs, ["美味しく焼けたっぴ～"]);
   const e = tap(setup({ part: 3, view: "viewToaster", items: ["itemBread"], selected: "itemBread" }), "spotToaster");
-  eq(e.log.msgs, ["後でトースト食べるっぴ～！"]);
+  eq(e.log.msgs, ["パンを焼くっぴ～", "お腹空いたけど食べる前にヒント見るっぴ！", "後で美味しくいただくっぴ～！"]);
+  eq(e.log.se, ["焼いている音", "トースターが終わる音"]);
   eq(e.state.inventory, ["itemToastedBread"]);
-  eq(tap(setup({ part: 3, view: "viewToaster" }), "spotToaster").log.msgs, ["このトースターは美味しく焼けるっぴ！"]);
-  eq(tap(setup({ part: 2, view: "viewToaster" }), "spotToaster").log.msgs, ["美味しいパンが焼けるっぴ"]);
+  eq(tap(setup({ part: 3, view: "viewToaster" }), "spotToaster").log.msgs, ["このトースターはすごく美味しく焼けるっぴ！"]);
+  eq(tap(setup({ part: 2, view: "viewToaster" }), "spotToaster").log.msgs, ["美味しいパンが焼けるトースターっぴ～"]);
 });
 test("R-26", "ぴつじ部屋ドアノブ", () => {
-  eq(tap(setup({ part: 2, view: "viewPitsujiDoor" }), "spotPitsujiDoorKnob").log.msgs, ["よし！絶対ぴつじを脱出させてやる！"]);
+  eq(tap(setup({ part: 2, view: "viewPitsujiDoor" }), "spotPitsujiDoorKnob").log.msgs, ["絶対ぴつじを部屋から出してみせるっぴ～！", "意地でもこっちからは開けないっぴ！"]);
 });
 test("R-27", "ドア小窓 PlayPart5: 未開放→ドライバーで開放→クッション/タオルケット", () => {
   const e = setup({ part: 5, view: "viewPitsujiDoor", items: ["itemScrewDriver", "itemCushion", "itemLargeTowel"] });
   tap(e, "spotPitsujiWindow");
-  eq(e.log.msgs, ["これを外したらぴつじになにか渡せそうだ"]);
+  eq(e.log.msgs, ["この曇り窓は外せるっぴ～"]);
   eq(e.log.se, ["ガタガタしている音"]);
   e.ctx.selectedItemId = "itemCushion";
   tap(e, "spotPitsujiWindow");
   eq(e.state.inventory.includes("itemCushion"), true, "未開放なのにクッションが消費された");
   e.ctx.selectedItemId = "itemScrewDriver";
   tap(e, "spotPitsujiWindow");
-  eq(e.log.msgs.at(-1), "曇りガラス窓を外した！");
+  eq(e.log.msgs.slice(-2), ["曇り窓が外れたっぴ～", "ばれないようにこっそりっぴ～"]);
   eq(e.log.se.at(-1), "カチャンっという音");
   ok(e.state.flags.pitsujiWindowOpen, "小窓が開いていない");
-  ok(e.state.inventory.includes("itemScrewDriver"), "ドライバー(残存)が消えた");
+  ok(!e.state.inventory.includes("itemScrewDriver"), "ドライバー(消失)が残っている");
   tap(e, "spotPitsujiWindow");
-  eq(e.log.msgs.at(-1), "ここからぴつじになにか渡せそう");
+  eq(e.log.msgs.at(-1), "この窓からぴつじの元気出るものを渡すっぴ");
   e.ctx.selectedItemId = "itemCushion";
   tap(e, "spotPitsujiWindow");
-  eq(e.log.msgs.at(-1), "ふかふかのクッションを窓から投げ入れた！");
+  eq(e.log.msgs.at(-1), "クッション ヲ ツカウッピ");
   e.ctx.selectedItemId = "itemLargeTowel";
   tap(e, "spotPitsujiWindow");
-  eq(e.log.msgs.at(-1), "タオルケットを窓から投げ込んだ！");
-  eq(e.state.inventory, ["itemScrewDriver"]);
+  eq(e.log.msgs.at(-1), "タオルケット ヲ ツカウッピ");
+  eq(e.state.inventory, []);
 });
-test("R-28", "ドア小窓 PlayPart6: カメラで写真 / 写真入手後 / 未選択", () => {
+test("R-28", "ドア小窓 PlayPart6: カメラ使用 / 使用後 / 取得済み未選択 / 未取得", () => {
   const e = tap(setup({ part: 6, view: "viewPitsujiDoor", items: ["itemCamera"], selected: "itemCamera" }), "spotPitsujiWindow");
-  eq(e.log.msgs, ["このカメラでぴつじの様子を撮影して……"]);
-  eq(e.state.inventory, ["itemPhotoPitsuji"]);
-  eq(tap(setup({ part: 6, view: "viewPitsujiDoor", ever: ["itemPhotoPitsuji"] }), "spotPitsujiWindow").log.msgs, ["ぴつじが硬い床で熟睡している"]);
-  eq(tap(setup({ part: 6, view: "viewPitsujiDoor" }), "spotPitsujiWindow").log.msgs, ["ぴつじが硬い床で熟睡している"]);
+  eq(e.log.msgs, ["ぴつじの様子を撮影するピ", "証拠写真にするっぴ！"]);
+  eq(e.state.inventory, [], "カメラが消えない(写真アイテムは入手しない)");
+  eq(e.state.itemUsageLog.itemCamera, ["spotPitsujiWindow"]);
+  eq(tap(setup({ part: 6, view: "viewPitsujiDoor", used: { itemCamera: ["spotPitsujiWindow"] } }), "spotPitsujiWindow").log.msgs, ["気持ちよさそうに熟睡しているッピ……", "少しの音では起きなさそうッピ……"]);
+  eq(tap(setup({ part: 6, view: "viewPitsujiDoor", items: ["itemCamera"] }), "spotPitsujiWindow").log.msgs, ["ぴつじがここにいる証拠写真を撮るっぴ～"]);
+  eq(tap(setup({ part: 6, view: "viewPitsujiDoor" }), "spotPitsujiWindow").log.msgs, ["ここにぴつじがいるって証拠を見せつけるっぴ！"]);
 });
 test("R-29", "ドア小窓 PlayPart4以前 / 7以降", () => {
   const e = tap(setup({ part: 3, view: "viewPitsujiDoor" }), "spotPitsujiWindow");
-  eq(e.log.msgs, ["がたついている曇りガラス窓だ"]);
+  eq(e.log.msgs, ["あんまりガタガタさせると気付かれるッピ……"]);
   eq(e.log.se, ["ガタガタしている音"]);
-  eq(tap(setup({ part: 7, view: "viewPitsujiDoor" }), "spotPitsujiWindow").log.msgs, ["ぴつじが硬い床で熟睡している"]);
+  eq(tap(setup({ part: 7, view: "viewPitsujiDoor" }), "spotPitsujiWindow").log.msgs, ["気持ちよさそうに寝てるッピ"]);
 });
 test("R-30", "ドア下隙間: PlayPart2でチョコ使用 / 2で未選択 / 3以降", () => {
   const e = tap(setup({ part: 2, view: "viewPitsujiDoor", items: ["itemChocolate"], selected: "itemChocolate" }), "spotPitsujiDoorGap");
-  eq(e.log.msgs, ["チョコレートに釣られてドアの近くに来た気配がする", "部屋に戻ってぴつじに脱出を呼びかけるっぴ！"]);
-  eq(e.log.se, ["シュッという音"]);
+  eq(e.log.msgs, ["チョコレートに釣られて動いた気配がするっぴ～！", "部屋に戻ってぴつじに脱出させるっぴ！"]);
+  eq(e.log.se, ["Se_ChocoTrhow"]);
   eq(e.state.inventory, []);
-  eq(tap(setup({ part: 2, view: "viewPitsujiDoor" }), "spotPitsujiDoorGap").log.msgs, ["ここから渡せそうっぴ"]);
-  eq(tap(setup({ part: 3, view: "viewPitsujiDoor" }), "spotPitsujiDoorGap").log.msgs, ["隙間があるけど……下から中の様子は見えないな"]);
+  eq(tap(setup({ part: 2, view: "viewPitsujiDoor" }), "spotPitsujiDoorGap").log.msgs, ["狭いけどチョコなら入れられそうっぴ"]);
+  eq(tap(setup({ part: 3, view: "viewPitsujiDoor" }), "spotPitsujiDoorGap").log.msgs, ["この隙間からはチョコしか入れられないッピ"]);
 });
-test("R-31", "引き出し: PlayPart3 / その他", () => {
-  eq(tap(setup({ part: 3, view: "viewShelf" }), "spotDrawer").log.msgs, ["何も入ってないっぴ"]);
-  eq(tap(setup({ part: 4, view: "viewShelf" }), "spotDrawer").log.msgs, ["ぴつじを脱出させるっぴ！！"]);
+test("R-31", "引き出し: PlayPart6で電話の説明書 / 取得後 / その他（毎回SE）", () => {
+  const e = tap(setup({ part: 6, view: "viewShelf" }), "spotDrawer");
+  eq(e.log.msgs, ["電話の説明書を読むっぴ～"]);
+  eq(e.log.se, ["Se_Shelf"]);
+  eq(e.state.inventory, ["itemPhoneManual"]);
+  eq(tap(setup({ part: 6, view: "viewShelf", ever: ["itemPhoneManual"] }), "spotDrawer").log.msgs, ["もうここには何もないっぴ～"]);
+  for (const p of [3, 7]) {
+    const o = tap(setup({ part: p, view: "viewShelf" }), "spotDrawer");
+    eq(o.log.msgs, ["今必要なものは何も無いっぴ"], `part${p}`);
+    eq(o.log.se, ["Se_Shelf"], `part${p} SE`);
+  }
 });
-test("R-32", "工具箱: 取得後 / PlayPart5でドライバー / その他", () => {
-  eq(tap(setup({ part: 5, view: "viewShelf", ever: ["itemScrewDriver"] }), "spotToolbox").log.msgs, ["他に使うものはなさそうだ"]);
+test("R-32", "工具箱: PlayPart6以降 / 5で取得後 / 5でドライバー(メッセージ) / 4以前（全てSE）", () => {
+  eq(tap(setup({ part: 6, view: "viewShelf" }), "spotToolbox").log.msgs, ["使えるものは何も無いっぴ～"]);
+  eq(tap(setup({ part: 5, view: "viewShelf", ever: ["itemScrewDriver"] }), "spotToolbox").log.msgs, ["使えるものは何も無いっぴ～"]);
   const e = tap(setup({ part: 5, view: "viewShelf" }), "spotToolbox");
+  eq(e.log.msgs, ["見つけたっぴ！ドライバーだっぴー"]);
+  eq(e.log.se, ["Se_LockOpen"]);
   eq(e.state.inventory, ["itemScrewDriver"]);
-  eq(tap(setup({ part: 4, view: "viewShelf" }), "spotToolbox").log.msgs, ["ここには脱出の準備で使った工具が色々と入れてある"]);
+  eq(tap(setup({ part: 4, view: "viewShelf" }), "spotToolbox").log.msgs, ["色んな道具をしまってあるっぴ", "整頓上手だっぴ～"]);
 });
-test("R-33", "玄関ドア: 解除後 / 解除前", () => {
-  eq(tap(setup({ part: 4, view: "roomB1", flags: { doorEntranceUnlocked: true } }), "spotDoorEntrance").log.msgs, ["あとはぴつじを外に出すだけだ！"]);
-  eq(tap(setup({ part: 4, view: "roomB1" }), "spotDoorEntrance").log.msgs, ["ドアには鍵が掛かっている"]);
+test("R-33", "玄関ドア: PlayPart5以降 / 4の解除後・解除前 / その他", () => {
+  eq(tap(setup({ part: 5, view: "roomB1" }), "spotDoorEntrance").log.msgs, ["鍵開いてるのにぴつじはなんで脱出しないッピ……？"]);
+  eq(tap(setup({ part: 4, view: "roomB1", flags: { doorEntranceUnlocked: true } }), "spotDoorEntrance").log.msgs, ["ぴつじも楽々出られるっぴ！", "今度こそ脱出っぴ～！"]);
+  eq(tap(setup({ part: 4, view: "roomB1" }), "spotDoorEntrance").log.msgs, ["鍵を開けるっぴ！任せるっぴ！"]);
 });
 test("R-34", "玄関ドアの電子錠: PlayPart7は非表示 / 解除後 / 解除前はギミック", () => {
   ok(!visible(setup({ part: 7, view: "roomB1" }), "spotLockEntrance"), "part7で表示");
-  eq(tap(setup({ part: 5, view: "roomB1", flags: { doorEntranceUnlocked: true } }), "spotLockEntrance").log.msgs, ["ドアロックは解除した"]);
+  eq(tap(setup({ part: 5, view: "roomB1", flags: { doorEntranceUnlocked: true } }), "spotLockEntrance").log.msgs, ["もう鍵は開いてるっぴ～"]);
   eq(tap(setup({ part: 4, view: "roomB1" }), "spotLockEntrance").log.gimmick, ["gimmickLockEntrance"]);
 });
-test("R-35", "ぴさぎ: PlayPart7のみ。各段階", () => {
+test("R-35", "ぴさぎ: PlayPart7のみ。写真→ギミック / 楽器の受け渡し", () => {
   for (const p of [4, 5, 6]) ok(!visible(setup({ part: p, view: "roomB1" }), "spotPisagi"), `part${p}で表示`);
-  eq(tap(setup({ part: 7, view: "roomB1", ever: ["itemCamera"] }), "spotPisagi").log.msgs, ["写真があれば何でも買ってきてくれるって言うけど", "なにか買ってきて欲しいものはあるかな……"]);
-  eq(tap(setup({ part: 7, view: "roomB1" }), "spotPisagi").log.msgs, ["必要なものを買ってきてくれる？", "なにか見た目がわかるものがあれば？"]);
+  eq(tap(setup({ part: 7, view: "roomB1" }), "spotPisagi").log.msgs, ["「必要なものを買ってくるっぴ」って言ってるぴ", "「買うものの見た目を教えるっぴ」っぴ？"]);
   const e = tap(setup({ part: 7, view: "roomB1", items: ["itemPhoto"], selected: "itemPhoto" }), "spotPisagi");
   eq(e.log.gimmick, ["gimmickPhoto"]);
   eq(e.state.inventory, []);
-  const e2 = tap(setup({ part: 7, view: "roomB1", used: { itemPhoto: ["spotPisagi"] }, items: ["itemCD"], selected: "itemCD" }), "spotPisagi");
+  const e2 = tap(setup({ part: 7, view: "roomB1", used: { itemPhoto: ["spotPisagi"] }, items: ["itemBlackLight"], selected: "itemBlackLight" }), "spotPisagi");
   eq(e2.log.gimmick, ["gimmickPhoto"], "写真使用後に再度ギミックを開けない");
-  eq(e2.state.inventory, ["itemCD"], "無関係の選択中アイテムが消費された");
+  eq(e2.state.inventory, ["itemBlackLight"], "無関係の選択中アイテムが消費された");
+  // 写真ギミッククリア後
   const e3 = tap(setup({ part: 7, view: "roomB1", used: { itemPhoto: ["spotPisagi"] }, flags: { gimmickPhotoCleared: true } }), "spotPisagi");
-  eq(e3.log.msgs, ["これを買ってきて欲しい！", "任せるっぴ！", "タンバリンは任せるっぴ！"]);
-  eq(e3.state.inventory, ["itemMaracas"]);
-  const e4 = tap(setup({ part: 7, view: "roomB1", ever: ["itemMaracas"], flags: { gimmickPhotoCleared: true } }), "spotPisagi");
-  eq(e4.log.msgs, ["タンバリンを鳴らして楽しそうだ"]);
-  eq(e4.log.se, ["タンバリンを鳴らす音"]);
+  eq(e3.log.msgs, ["ぴさぎがやる気に満ちた目で見てくるっぴ"]);
+  // マラカスはぴさぎには渡せない
+  const em = tap(setup({ part: 7, view: "roomB1", items: ["itemMaracas"], flags: { gimmickPhotoCleared: true }, selected: "itemMaracas" }), "spotPisagi");
+  eq(em.log.msgs, ["「ぴさぎはこっちじゃないっぴ！」って顔で見てるっぴ"]);
+  eq(em.state.inventory, ["itemMaracas"]);
+  // タンバリンを先に渡す
+  const et = tap(setup({ part: 7, view: "roomB1", items: ["itemTambourine"], flags: { gimmickPhotoCleared: true }, selected: "itemTambourine" }), "spotPisagi");
+  eq(et.log.msgs, ["これを任せたっぴ！", "あとはぴぐまっぴ～！"]);
+  eq(et.log.se, ["SE_TambourineRoll"]);
+  eq(et.state.inventory, []);
+  eq(et.log.image.length, 0, "片方だけでパーティー画像が出た");
+  // ぴぐまにマラカスを渡した後にタンバリン → パーティー
+  const ep = tap(setup({ part: 7, view: "roomB1", items: ["itemTambourine"], used: { itemMaracas: ["spotPiguma"] }, flags: { gimmickPhotoCleared: true }, selected: "itemTambourine" }), "spotPisagi");
+  eq(ep.log.msgs, ["これを任せたっぴ！", "BGM HAPPY がオーディオに追加された", "最後に部屋を賑やかにするっぴ！"]);
+  eq(ep.log.imageOpts.map((o) => [o.text, o.bgm]), [["のりのりだっぴ～！", "happy"]]);
+  ok(ep.state.bgmState.unlockedTracks.includes("happy"), "HAPPYが追加されない");
+  // タンバリン使用後
+  const e4 = tap(setup({ part: 7, view: "roomB1", used: { itemTambourine: ["spotPisagi"] }, flags: { gimmickPhotoCleared: true } }), "spotPisagi");
+  eq(e4.log.msgs, ["楽しそうにタンバリン叩いてるっぴ～"]);
+  eq(e4.log.se, ["SE_TambourineRoll"]);
 });
-test("R-36", "オーディオ: CD使用でHAPPY解禁 / 通常はBGM選択", () => {
-  const e = tap(setup({ part: 7, view: "roomB2", items: ["itemCD"], selected: "itemCD" }), "spotAudioPlayer");
-  eq(e.log.msgs, ["流せる音楽が増えたな"]);
-  ok(e.state.bgmState.unlockedTracks.includes("happy"), "happy未解禁");
-  eq(e.state.inventory, []);
+test("R-36", "オーディオ: いつでもBGM選択", () => {
   eq(tap(setup({ part: 4, view: "roomB2" }), "spotAudioPlayer").log.bgmMenu, 1);
+  eq(tap(setup({ part: 7, view: "roomB2" }), "spotAudioPlayer").log.bgmMenu, 1);
 });
-test("R-37", "ソファ: 取得後 / PlayPart5以降 / 4で絵", () => {
-  eq(tap(setup({ part: 4, view: "roomB2", ever: ["itemIllust"] }), "spotSofa").log.msgs, ["ここにはもう何もなかったはずだ"]);
-  eq(tap(setup({ part: 5, view: "roomB2" }), "spotSofa").log.msgs, ["もう使わないけれど、ソファの下にも脱出のヒントを置いてたんだっけ"]);
+test("R-37", "ソファ: PlayPart5以降 / 4で取得後 / 4で絵", () => {
+  eq(tap(setup({ part: 4, view: "roomB2", ever: ["itemIllust"] }), "spotSofa").log.msgs, ["ここにはもう何もないっぴ"]);
+  eq(tap(setup({ part: 5, view: "roomB2" }), "spotSofa").log.msgs, ["必要なものは何も無いっぴ～"]);
   const e = tap(setup({ part: 4, view: "roomB2" }), "spotSofa");
-  eq(e.log.msgs, ["ソファの下に落ちていた絵を拾った"]);
+  eq(e.log.msgs, ["これを探してたんだっぴ～"]);
   eq(e.state.inventory, ["itemIllust"]);
 });
-test("R-38", "電気スイッチ: 赤⇔青のトグル", () => {
+test("R-38", "電気スイッチ: 赤⇔元の色のトグル", () => {
   const e = setup({ part: 4, view: "roomB2" });
   tap(e, "spotSwitch"); tap(e, "spotSwitch"); tap(e, "spotSwitch");
-  eq(e.log.msgs, ["部屋が赤くなった", "部屋が青くなった", "部屋が赤くなった"]);
+  eq(e.log.msgs, ["部屋が赤くなったっぴ", "元の色に戻ったっぴ", "部屋が赤くなったっぴ"]);
   eq(e.state.flags.roomLightRed, true);
 });
-test("R-39", "電話: PlayPart7以降 / 6で名刺 / 6未選択 / 4でブラックライト / 4未選択 / その他", () => {
-  eq(tap(setup({ part: 7, view: "viewPhoneStand" }), "spotPhone").log.msgs, ["懐かしの黒電話。触り心地がいい"]);
-  const e = tap(setup({ part: 6, view: "viewPhoneStand", items: ["itemPisagiCard"], selected: "itemPisagiCard" }), "spotPhone");
-  eq(e.log.msgs, ["留守番電話だ。すぐ来てほしいとメッセージを残しておこう"]);
-  eq(e.state.inventory, []);
-  eq(tap(setup({ part: 6, view: "viewPhoneStand" }), "spotPhone").log.msgs, ["どうにかぴつじを脱出させたい！"]);
+test("R-39", "電話: PlayPart7以降 / 6でギミック / 6クリア後 / 4でブラックライト / その他", () => {
+  eq(tap(setup({ part: 7, view: "viewPhoneStand" }), "spotPhone").log.msgs, ["電話したいところはないっぴ"]);
+  const e = tap(setup({ part: 6, view: "viewPhoneStand" }), "spotPhone");
+  eq(e.log.gimmick, ["gimmickPhone"]);
+  eq(e.log.msgs, ["ぴさぎを呼び出すっぴ！"]);
+  eq(tap(setup({ part: 6, view: "viewPhoneStand", flags: { phoneGimmickCleared: true } }), "spotPhone").log.msgs, ["あとはぴさぎが気付くのを待つだけっぴ～"]);
   const e4 = tap(setup({ part: 4, view: "viewPhoneStand", items: ["itemBlackLight"], selected: "itemBlackLight" }), "spotPhone");
-  eq(e4.log.msgs, ["電話になにかが浮かび上がってきた"]);
+  eq(e4.log.msgs, ["ヒントが見えたっぴ！"]);
   eq(e4.log.image.length, 1);
   eq(e4.state.inventory, ["itemBlackLight"], "ブラックライト(残存)が消えた");
-  eq(tap(setup({ part: 4, view: "viewPhoneStand" }), "spotPhone").log.msgs, ["どうにかぴつじを脱出させたい！"]);
-  eq(tap(setup({ part: 5, view: "viewPhoneStand" }), "spotPhone").log.msgs, ["いいよな黒電話"]);
+  eq(tap(setup({ part: 4, view: "viewPhoneStand" }), "spotPhone").log.msgs, ["今は電話したいところはないっぴ"]);
+  eq(tap(setup({ part: 5, view: "viewPhoneStand" }), "spotPhone").log.msgs, ["今は電話したいところはないっぴ"]);
 });
-test("R-40", "電話台引き出し: 取得後 / PlayPart5以降 / 4でブラックライト", () => {
-  eq(tap(setup({ part: 4, view: "viewPhoneStand", ever: ["itemBlackLight"] }), "spotPhoneStandDrawer").log.msgs, ["もうここには何もないはず"]);
-  eq(tap(setup({ part: 5, view: "viewPhoneStand" }), "spotPhoneStandDrawer").log.msgs, ["脱出に使うはずだったブラックライトが入っている"]);
+test("R-40", "電話台引き出し: PlayPart5以降 / 4で取得後 / 4でブラックライト", () => {
+  eq(tap(setup({ part: 4, view: "viewPhoneStand", ever: ["itemBlackLight"] }), "spotPhoneStandDrawer").log.msgs, ["もうここには何も入れてないっぴ"]);
+  eq(tap(setup({ part: 5, view: "viewPhoneStand" }), "spotPhoneStandDrawer").log.msgs, ["必要なものは何も無いっぴ～"]);
   const e = tap(setup({ part: 4, view: "viewPhoneStand" }), "spotPhoneStandDrawer");
-  eq(e.log.msgs, ["ブラックライトを手に入れた"]);
+  eq(e.log.msgs, ["ブラックライト見つけたっぴ～！"]);
+  eq(e.state.inventory, ["itemBlackLight"]);
 });
 test("R-41", "塩: PlayPart5以降 / 4でブラックライト / 4未選択", () => {
-  eq(tap(setup({ part: 5, view: "viewLowTable" }), "spotSalt").log.msgs, ["お気に入りの美味しい塩だ"]);
+  eq(tap(setup({ part: 5, view: "viewLowTable" }), "spotSalt").log.msgs, ["ゆで卵は塩で食べるのが美味しいんだっぴ～"]);
   const e = tap(setup({ part: 4, view: "viewLowTable", items: ["itemBlackLight"], selected: "itemBlackLight" }), "spotSalt");
-  eq(e.log.msgs, ["塩になにかが浮かび上がってきた"]);
+  eq(e.log.msgs, ["塩にヒントが描いてあるっぴ！"]);
   eq(e.log.image.length, 1);
-  eq(tap(setup({ part: 4, view: "viewLowTable" }), "spotSalt").log.msgs, ["この塩に確かヒントを書いていたはず……"]);
+  eq(tap(setup({ part: 4, view: "viewLowTable" }), "spotSalt").log.msgs, ["ゆで卵にはクレイジーソルトを使うのがお気に入りっぴ！"]);
 });
 test("R-42", "ぴつじ部屋の出口: PlayPart8クリア", () => {
-  eq(tap(setup({ part: 8 }), "spotPitsujiExitDoor").log.story, [8]);
+  const e = tap(setup({ part: 8 }), "spotPitsujiExitDoor");
+  eq(e.log.story, [8]);
+  eq(e.log.se, ["カチャっというドアノブを下げる音"]);
 });
 
 // =====================================================================
-// N: 調査ノート（修正依頼）
+// N: 調査ノート
 // =====================================================================
 function openNote(opt) { return tap(setup({ part: 2, ...opt }), "spotNotebook"); }
 test("NR-01", "ページ送り: 1左→1右→2左→2右、各ページ表示時にメッセージ", () => {
@@ -447,7 +523,7 @@ test("NR-01", "ページ送り: 1左→1右→2左→2右、各ページ表示�
   const ids = [notePageId(e)];
   for (let i = 0; i < 3; i++) { notePageTap(e); ids.push(notePageId(e)); }
   eq(ids, ["note1left", "note1right", "note2left", "note2right"]);
-  eq(e.log.msgs, ["ぴつじはチョコレートが好きと……", "ぴつじはふかふかなものが好きだったな……", "ぴつじの友達を調べたページだっぴ", "ぴつじの友達の調査もしたっぴ"]);
+  eq(e.log.msgs, ["調査によるとぴつじはチョコ好きっぴ", "ぴつじはふかふかも好きらしいっぴ", "ぴつじの友達のぴさぎについても調べたっぴ", "ぴつじの友達のぴぐまについても調べたっぴ"]);
 });
 test("NR-02", "PlayPart2〜6: 2右より先には進まない（何回タップしても）", () => {
   for (const part of [2, 3, 4, 5, 6]) {
@@ -466,7 +542,7 @@ test("NR-03", "PlayPart7: 2右で3回タップすると3左へ進み、写真を
   eq(e.log.msgs, ["貼り付いてて次のページが中々めくれないッピ", "貼り付いてて次のページが中々めくれないッピ"]);
   notePageTap(e);
   eq(notePageId(e), "note3left");
-  eq(e.log.msgs.slice(2), ["次のページがめくれたっぴ！", "ぴつじと仲間達が楽しそうにパーティーしてる写真だっぴ"]);
+  eq(e.log.msgs.slice(2), ["次のページがめくれたっぴ！", "写真が張り付いててめくりにくかったっぴねえ", "パーティーしてる写真を手にいれたっぴ！"]);
   eq(e.state.inventory, ["itemPhoto"]);
 });
 test("NR-04", "3左(最後のページ)ではそれ以上進まず、写真も重複入手しない", () => {
@@ -502,23 +578,22 @@ test("NR-06", "写真入手後に再度ノートを開くと、2右は1回のタ
 });
 
 // =====================================================================
-// P: パート遷移・自動クリア・アイテム消去（修正依頼）
+// P: パート遷移・自動クリア・アイテム消去・ギミック
 // =====================================================================
-test("P-01", "PlayPart6: 名刺→チャットの順でも自動クリア（配信ボタン不要）", () => {
-  const e = setup({ part: 6, view: "viewPhoneStand", items: ["itemPisagiCard", "itemPhotoPitsuji"], selected: "itemPisagiCard" });
-  tap(e, "spotPhone");
-  eq(e.log.autoClear, 0, "チャット前に自動クリア");
+test("P-01", "PlayPart6: 電話→ゲーム画面の順でも自動クリア（配信ボタン不要）", () => {
+  const e = setup({ part: 6, view: "viewPhoneStand" });
+  e.engine.resolveGimmickResult("gimmickPhone", true, "#7*27");
+  eq(e.log.autoClear, 0, "ゲーム画面の前に自動クリア");
   e.engine.resolveGimmickResult("gimmickPcGame", true);
   eq(e.log.autoClear, 1);
   e.engine.runAutoClear();
   eq(e.log.story, [6]);
 });
-test("P-02", "PlayPart6: チャット→名刺の順でも自動クリア", () => {
-  const e = setup({ part: 6, view: "viewDesk", items: ["itemPisagiCard", "itemPhotoPitsuji"] });
+test("P-02", "PlayPart6: ゲーム画面→電話の順でも自動クリア", () => {
+  const e = setup({ part: 6, view: "viewDesk" });
   e.engine.resolveGimmickResult("gimmickPcGame", true);
   eq(e.log.autoClear, 0);
-  e.state.currentView = "viewPhoneStand"; e.ctx.selectedItemId = "itemPisagiCard";
-  tap(e, "spotPhone");
+  e.engine.resolveGimmickResult("gimmickPhone", true, "#7*27");
   eq(e.log.autoClear, 1);
 });
 test("P-03", "PlayPart6以外は自動クリアしない（配信ボタン必須）", () => {
@@ -530,16 +605,17 @@ test("P-03", "PlayPart6以外は自動クリアしない（配信ボタン必須
   tap(e5, "spotPitsujiWindow");
   eq(e5.log.autoClear, 0);
 });
-test("P-04", "チャットギミック成功で ぴつじの写真 が所持品から消え、使用記録が残る", () => {
-  const e = setup({ part: 6, items: ["itemPhotoPitsuji", "itemPisagiCard"] });
+test("P-04", "ギミック: ゲーム画面 成功でフラグ・SE・メッセージ", () => {
+  const e = setup({ part: 6 });
   e.engine.resolveGimmickResult("gimmickPcGame", true);
-  eq(e.state.inventory, ["itemPisagiCard"]);
-  ok((e.state.itemUsageLog.itemPhotoPitsuji || []).length > 0, "使用記録なし");
-  eq(e.log.msgs, ["送信したっぴ！"]);
+  ok(e.state.flags.chatGimmickCleared, "未解除");
+  eq(e.log.se, ["クリア音"]);
+  eq(e.log.msgs, ["これでぴぐまを呼び出せたっぴ～"]);
 });
 test("P-05", "パートクリア時に残存アイテムが破棄され、ノートのページも戻る", () => {
   const e = setup({ part: 3, items: ["itemFrozenBluePaper", "itemToastedBread"], flags: { doorBUnlocked: true }, notePage: 2 });
   tap(e, "spotPcStream");
+  e.engine.runAutoClear();
   eq(e.state.inventory, []);
   eq(e.state.notePage, 0);
 });
@@ -551,22 +627,27 @@ test("P-06", "ギミック: 電子錠B 正解/不正解", () => {
   e.engine.resolveGimmickResult("gimmickLockDoorB", true);
   ok(e.state.flags.doorBUnlocked, "正解で未解除");
 });
-test("P-07", "ギミック: 玄関/写真 成功でフラグ", () => {
+test("P-07", "ギミック: 玄関/写真 成功でフラグ。写真ギミック成功でマラカス・タンバリン入手", () => {
   const e = setup({ part: 4 });
   e.engine.resolveGimmickResult("gimmickLockEntrance", true);
   ok(e.state.flags.doorEntranceUnlocked, "玄関未解除");
   const e7 = setup({ part: 7 });
   e7.engine.resolveGimmickResult("gimmickPhoto", true);
   ok(e7.state.flags.gimmickPhotoCleared, "写真ギミック未解除");
+  eq(e7.state.inventory, ["itemMaracas", "itemTambourine"]);
+  eq(e7.log.msgs, ["これとこれ、買ってきて欲しいっぴ！", "「ぴさぎに任せるっぴー！」って言って玄関から出てったっぴ", "「ただいまっぴ～！」ぴさぎが帰って来たっぴ。", "速いっぴ。瞬足っぴ！", "なかなかやるっぴね！"]);
+  eq(e7.log.se, ["キランという音", "シュンっという音"]);
+  eq(e7.log.image.length, 2);
+  eq(data.gimmicksById.gimmickPhoto.missMessage, "ここじゃないっぴねえ");
 });
 test("P-08", "ストーリーパートの次パート番号が1→2→…→8の順につながっている", () => {
   for (let i = 1; i <= 7; i++) eq(data.storyPartsById[i].nextPlayPart, i + 1, `story${i}`);
   for (let i = 1; i <= 8; i++) eq(data.playPartsById[i].nextStoryPart, i, `play${i}`);
 });
-
 test("P-09", "部屋の色(赤)は操作パートをまたぐと元に戻る", () => {
   const e = setup({ part: 4, flags: { doorEntranceUnlocked: true, roomLightRed: true } });
   tap(e, "spotPcStream");
+  e.engine.runAutoClear();
   eq(e.log.story, [4]);
   ok(!e.state.flags.roomLightRed, "パート切替後も赤いまま");
 });
@@ -575,16 +656,232 @@ test("P-10", "部屋が赤くなるのは部屋B1・B2（tintFlag）", () => {
   eq(tinted, ["roomB1", "roomB2"]);
 });
 test("P-11", "絵のESCAPEは、部屋が赤い状態で部屋B1/B2にいる時だけ見える", () => {
-  const desc = data.itemsById.itemIllust.description;
-  const at = (view, red) => { const e = setup({ part: 4, view, flags: red ? { roomLightRed: true } : {} }); return resolveMessage(desc, e.state, e.ctx)[0]; };
-  ok(at("roomB1", true).includes("ESCAPE"), "B1で見えない");
-  ok(at("roomB2", true).includes("ESCAPE"), "B2で見えない");
-  ok(!at("viewLowTable", true).includes("ESCAPE"), "ローテーブル拡大で見える");
-  ok(!at("roomA1", true).includes("ESCAPE"), "部屋A1で見える");
-  ok(!at("roomB2", false).includes("ESCAPE"), "赤くないのに見える");
+  const item = data.itemsById.itemIllust;
+  const at = (view, red) => { const e = setup({ part: 4, view, flags: red ? { roomLightRed: true } : {} }); return [resolveMessage(item.placeholder, e.state, e.ctx)[0], resolveMessage(item.description, e.state, e.ctx)[0]]; };
+  eq(at("roomB1", true)[1], "これを覚えとくっぴ！");
+  ok(at("roomB1", true)[0].includes("ESCAPE"), "B1で見えない");
+  ok(at("roomB2", true)[0].includes("ESCAPE"), "B2で見えない");
+  ok(!at("viewLowTable", true)[0].includes("ESCAPE"), "ローテーブル拡大で見える");
+  ok(!at("roomA1", true)[0].includes("ESCAPE"), "部屋A1で見える");
+  ok(!at("roomB2", false)[0].includes("ESCAPE"), "赤くないのに見える");
+  eq(at("roomB2", false)[1], "このままだと何もわからないっぴ～");
 });
-test("P-12", "チャット画面の入力欄の見出しは「番地」「部屋番号」", () => {
-  eq(data.gimmicksById.gimmickPcGame.numberFields.map((f) => [f.label, f.answer]), [["番地", "2"], ["部屋番号", "131"]]);
+test("P-12", "ゲーム画面ギミックの正解は A.サーカステント / B.お寺（候補4択）", () => {
+  const g = data.gimmicksById.gimmickPcGame;
+  eq(g.blanks.map((b) => [b.key, b.answer]), [["A", "サーカステント"], ["B", "お寺"]]);
+  eq([...g.options].sort(), ["お寺", "サーカステント", "学校", "高層ビル"].sort());
+  for (const b of g.blanks) ok(g.lines.some((l) => l.includes(`{${b.key}}`)), `文章に{${b.key}}がない`);
+});
+test("P-13", "電話ギミック: #7*27で成功 / 7*27は不在 / その他は存在しない番号", () => {
+  const e = setup({ part: 6 });
+  e.engine.resolveGimmickResult("gimmickPhone", false, "7*27");
+  eq(e.log.msgs, ["ぴさぎは不在みたいだッピ"]);
+  eq(e.log.se, ["電話に出ない音"]);
+  e.log.msgs.length = 0; e.log.se.length = 0;
+  e.engine.resolveGimmickResult("gimmickPhone", false, "1234");
+  eq(e.log.msgs, ["「この番号は存在しない」ってメッセージが流れてるッピ"]);
+  eq(e.log.se, ["電話がつながらない音"]);
+  ok(!e.state.flags.phoneGimmickCleared, "失敗で解除");
+  e.log.msgs.length = 0; e.log.se.length = 0;
+  e.engine.resolveGimmickResult("gimmickPhone", true, "#7*27");
+  ok(e.state.flags.phoneGimmickCleared, "成功で未解除");
+  eq(e.log.msgs, ["ぴつじは預かってるっぴ", "速く助けにくるっぴ", "困ってるっぴ！"]);
+  eq(e.log.se, ["留守番電話を残すピーという電子音"]);
+  eq(data.gimmicksById.gimmickPhone.answer, "#7*27");
+});
+test("P-14", "表情タップ PlayPart7: HAPPY追加前 / 追加後・変更前 / 変更後", () => {
+  const defs = data.playPartsById[7].faceMessage;
+  const pick = (e) => defs.find((d) => evaluate(d.when, e.state, e.ctx)).cycle;
+  eq(pick(setup({ part: 7 })), ["パーティーするっぴ！楽しい雰囲気作るっぴ～！"]);
+  const e2 = setup({ part: 7 }); e2.state.bgmState.unlockedTracks.push("happy");
+  eq(pick(e2), ["さっきの音楽最高だったっぴ～！", "パーティーには楽しい音楽が欠かせないっぴ！"]);
+  eq(pick(setup({ part: 7, bgm: "happy" })), ["これなら賑やかでぴつじも目を覚ますっぴ！", "ぴつじの脱出ゲームが始まるっぴ！"]);
+});
+
+// =====================================================================
+// X: 網羅・ランダム操作（全パート×全クリックポイント×全アイテム選択、異常操作）
+// =====================================================================
+const ALL_ITEMS = Object.keys(data.itemsById);
+const ALL_SPOTS = Object.values(data.spotsById);
+// 操作パートpで移動できる視点（views.json accessCondition）
+const viewsInPart = (p) => Object.values(data.viewsById).filter((v) => v.layoutType === "play" && (!v.accessCondition || evaluate(v.accessCondition, { ...createInitialState(), playPart: p }, {}))).map((v) => v.id);
+// 状態のバリエーション: 何もしていない / 全て済ませた後
+function variantState(p, variant) {
+  const opt = { part: p };
+  if (variant === "done") {
+    const used = {};
+    for (const it of Object.values(data.itemsById)) used[it.id] = [...it.usableOn];
+    Object.assign(opt, {
+      ever: ALL_ITEMS, used,
+      flags: { doorBUnlocked: true, doorEntranceUnlocked: true, pitsujiWindowOpen: true, chatGimmickCleared: true, phoneGimmickCleared: true, gimmickPhotoCleared: true }
+    });
+  }
+  return opt;
+}
+function withWarnCapture(fn) {
+  const warns = [];
+  const orig = console.warn;
+  console.warn = (...a) => warns.push(a.join(" "));
+  try { fn(); } finally { console.warn = orig; }
+  return warns;
+}
+
+test("X-01", "全パート×全視点の全クリックポイント×(未選択+全アイテム選択)×(未進行/進行後): 例外・未知アクション・既定メッセージ・意図しないアイテム消費が無い", () => {
+  const errs = [];
+  let cases = 0;
+  for (let p = 1; p <= 8; p++) {
+    for (const variant of ["fresh", "done"]) {
+      for (const viewId of viewsInPart(p)) {
+        for (const spotId of data.viewsById[viewId].spots) {
+          for (const sel of [null, ...ALL_ITEMS]) {
+            cases++;
+            const base = variantState(p, variant);
+            const e = setup({ ...base, view: viewId, items: sel ? [sel] : [], selected: sel });
+            if (!visible(e, spotId)) continue; // 非表示のクリックポイントはタップできない
+            const before = JSON.stringify(e.state.itemUsageLog);
+            let warns;
+            try {
+              warns = withWarnCapture(() => tap(e, spotId));
+            } catch (ex) {
+              errs.push(`part${p}/${variant}/${spotId}/${sel}: 例外 ${ex.message}`);
+              continue;
+            }
+            if (warns.some((w) => w.includes("未知のアクション"))) errs.push(`part${p}/${spotId}: 未知のアクション`);
+            if (e.log.msgs.some((m) => typeof m !== "string" || !m)) errs.push(`part${p}/${spotId}: 不正なメッセージ`);
+            if (e.log.msgs.includes("今は何も起きない") && !["spotPhoneStandDrawer"].includes(spotId)) errs.push(`part${p}/${variant}/${spotId}: 既定メッセージ(フォールバック)`);
+            if (e.state.phase !== "play") continue; // パートクリア時の残存アイテム破棄は正常動作
+            // アイテムが消費/使用記録された場合、それは選択中アイテムで、かつ使用対象(usableOn)であること
+            const usedChanged = JSON.stringify(e.state.itemUsageLog) !== before;
+            const consumed = sel && !e.state.inventory.includes(sel) && !(data.itemsById[sel].transformsTo && e.state.inventory.includes(data.itemsById[sel].transformsTo));
+            if ((usedChanged || (sel && !e.state.inventory.includes(sel))) && (!sel || !data.itemsById[sel].usableOn.includes(spotId))) errs.push(`part${p}/${variant}/${spotId}: ${sel} が使用対象外なのに使用された`);
+            if (consumed && data.itemsById[sel].persistence === "remainInPart") errs.push(`part${p}/${spotId}: 残存アイテム ${sel} が消えた`);
+            // 選択していたアイテムは、使用されたかどうかに関わらず所持品が重複しない
+            if (new Set(e.state.inventory).size !== e.state.inventory.length) errs.push(`part${p}/${spotId}: 所持品が重複`);
+          }
+        }
+      }
+    }
+  }
+  ok(cases > 3000, `ケース数が少ない: ${cases}`);
+  eq(errs.slice(0, 20), []);
+});
+
+test("X-02", "各アイテムは、入手できる操作パートで使用対象(usableOn)に実際に使える（使えない組合せが無い）", () => {
+  const obtainPart = {
+    itemChocolate: 2, itemBluePaper: 3, itemBread: 3, itemScrewDriver: 5, itemCushion: 5, itemLargeTowel: 5,
+    itemCamera: 6, itemPhoto: 7, itemTambourine: 7, itemMaracas: 7, itemBlackLight: 4
+  };
+  const extra = { spotPitsujiWindow: { flags: { pitsujiWindowOpen: true } } };
+  const errs = [];
+  for (const [item, part] of Object.entries(obtainPart)) {
+    for (const spotId of data.itemsById[item].usableOn) {
+      const e = setup({ part, view: data.spotsById[spotId].viewId, items: [item], selected: item, ...(item !== "itemScrewDriver" ? extra[spotId] || {} : {}) });
+      tap(e, spotId);
+      if (!(e.state.itemUsageLog[item] || []).includes(spotId)) errs.push(`${item} → ${spotId} (part${part}) で使えない`);
+    }
+  }
+  eq(errs, []);
+});
+
+test("X-03", "調査ノートの各ページで、どのアイテムを選択していてもアイテムが消費されない", () => {
+  const errs = [];
+  for (const p of [2, 7]) for (const sel of ALL_ITEMS) {
+    const e = openNote({ part: p, items: [sel] });
+    e.ctx.selectedItemId = sel;
+    for (let i = 0; i < 8; i++) notePageTap(e);
+    if (!e.state.inventory.includes(sel)) errs.push(`part${p}: ${sel}`);
+  }
+  eq(errs, []);
+});
+
+// 簡易乱数（再現性のため固定シード）
+function rng(seed) { let s = seed >>> 0; return () => ((s = (s * 1664525 + 1013904223) >>> 0) / 4294967296); }
+
+test("X-04", "ランダム操作(各パート3000手・デタラメなタップ/アイテム選択/移動/ギミック成否): 例外なし・所持品重複なし・セーブ容量が肥大化しない", () => {
+  const errs = [];
+  let maxSize = 0;
+  for (let p = 1; p <= 8; p++) {
+    const rand = rng(1234 + p);
+    const e = setup({ part: p });
+    for (let step = 0; step < 3000 && e.state.phase === "play"; step++) {
+      const r = rand();
+      const view = data.viewsById[e.state.currentView];
+      try {
+        if (view.layoutType === "note") {
+          if (r < 0.8) notePageTap(e); else { e.state.notePage = 0; e.state.currentView = "viewDesk"; }
+        } else if (r < 0.15) {
+          const moves = data.transitions.filter((t) => t.view === view.id && (!t.condition || evaluate(t.condition, e.state, e.ctx)));
+          if (moves.length) e.state.currentView = moves[Math.floor(rand() * moves.length)].target;
+        } else {
+          const spots = view.spots.filter((s) => visible(e, s));
+          if (!spots.length) continue;
+          e.ctx.selectedItemId = rand() < 0.4 && e.state.inventory.length ? e.state.inventory[Math.floor(rand() * e.state.inventory.length)] : null;
+          e.log.gimmick.length = 0;
+          tap(e, spots[Math.floor(rand() * spots.length)]);
+          for (const g of e.log.gimmick) e.engine.resolveGimmickResult(g, rand() < 0.3, rand() < 0.5 ? "7*27" : "0");
+          if (e.log.autoClear) { e.engine.runAutoClear(); }
+        }
+      } catch (ex) {
+        errs.push(`part${p} step${step}: ${ex.message}`);
+        break;
+      }
+      const s = e.state;
+      if (new Set(s.inventory).size !== s.inventory.length) errs.push(`part${p}: 所持品重複`);
+      if (new Set(s.everObtainedItems).size !== s.everObtainedItems.length) errs.push(`part${p}: 入手履歴重複`);
+      for (const [k, v] of Object.entries(s.itemUsageLog)) if (new Set(v).size !== v.length) errs.push(`part${p}: 使用履歴重複 ${k}`);
+      for (const [k, v] of Object.entries(s.clickCounts)) if (v > 1000) errs.push(`part${p}: クリック回数が増え続ける ${k}=${v}`);
+      maxSize = Math.max(maxSize, JSON.stringify(s).length);
+      if (errs.length) break;
+    }
+  }
+  eq(errs.slice(0, 10), []);
+  ok(maxSize < 4096, `セーブデータが大きすぎる: ${maxSize} bytes`);
+});
+
+test("X-05", "通常パス(エンジン): PlayPart1〜8を設計どおりの手順でクリアでき、セーブ容量も小さい", () => {
+  const e = setup({ part: 1 });
+  const go = (spot, sel = null) => { e.state.currentView = data.spotsById[spot].viewId; e.ctx.selectedItemId = sel; tap(e, spot); };
+  const clear = () => { e.log.autoClear = 0; go("spotPcStream"); if (e.log.autoClear) e.engine.runAutoClear(); };
+  const next = (p) => { eq(e.state.phase, "story", `part${p - 1}がクリアできない`); e.engine.advanceToPlayPart(p); };
+  clear(); next(2);
+  go("spotFridgeCompartment"); go("spotPitsujiDoorGap", "itemChocolate"); clear(); next(3);
+  go("spotWallPaper"); go("spotFreezerCompartment", "itemBluePaper"); go("spotOnTable"); go("spotToaster", "itemBread");
+  eq([...e.state.inventory].sort(), ["itemFrozenBluePaper", "itemToastedBread"]);
+  e.engine.resolveGimmickResult("gimmickLockDoorB", true); clear(); next(4);
+  eq(e.state.inventory, [], "part4開始時に残存アイテムが残る");
+  go("spotPhoneStandDrawer"); go("spotSofa"); go("spotSwitch"); go("spotPhone", "itemBlackLight"); go("spotSalt", "itemBlackLight");
+  e.engine.resolveGimmickResult("gimmickLockEntrance", true); clear(); next(5);
+  go("spotToolbox"); go("spotPitsujiWindow", "itemScrewDriver"); go("spotChair"); go("spotBedmat");
+  go("spotPitsujiWindow", "itemCushion"); go("spotPitsujiWindow", "itemLargeTowel"); clear(); next(6);
+  go("spotBookshelf"); go("spotDrawer"); go("spotCardboardBox"); go("spotCardboardBox");
+  go("spotUnderBed"); go("spotPitsujiWindow", "itemCamera");
+  e.log.autoClear = 0; go("spotPhone"); e.engine.resolveGimmickResult("gimmickPhone", true, "#7*27");
+  eq(e.log.autoClear, 0, "電話だけでクリア");
+  go("spotGame"); e.engine.resolveGimmickResult("gimmickPcGame", true);
+  eq(e.log.autoClear, 1); e.engine.runAutoClear(); next(7);
+  eq(e.state.inventory, [], "part7開始時に所持品が残る");
+  e.state.currentView = "viewDesk"; tap(e, "spotNotebook"); for (let i = 0; i < 6; i++) notePageTap(e);
+  go("spotPisagi", "itemPhoto"); e.engine.resolveGimmickResult("gimmickPhoto", true);
+  go("spotPisagi", "itemTambourine"); go("spotPiguma", "itemMaracas");
+  ok(e.state.bgmState.unlockedTracks.includes("happy"), "HAPPY未追加");
+  e.state.bgmState.currentTrack = "happy"; clear(); next(8);
+  go("spotPitsujiExitDoor");
+  eq(e.state.phase, "story"); eq(e.state.storyPart, 8);
+  e.engine.advanceToPlayPart(null);
+  eq(e.state.phase, "end");
+  ok(JSON.stringify(e.state).length < 3000, `セーブが大きい ${JSON.stringify(e.state).length}`);
+});
+
+test("X-06", "SE: 1回のタップで鳴るSEは多くても2つ（多重SEの防止）/ 視点移動SEはドアのみ", () => {
+  const errs = [];
+  for (const s of ALL_SPOTS) for (const r of s.rules) {
+    const n = r.actions.filter((a) => a.type === "se").length;
+    if (n > 2) errs.push(`${s.id}: ${n}個`);
+    // 同じSEが1つのルールで2回鳴らない
+    const ids = r.actions.filter((a) => a.type === "se").map((a) => a.id);
+    if (new Set(ids).size !== ids.length) errs.push(`${s.id}: 同じSEが重複 ${ids}`);
+  }
+  eq(errs, []);
 });
 
 // =====================================================================
@@ -598,16 +895,20 @@ test("D-01", "全spot/view/gimmick/itemの参照先が存在する", () => {
       if (a.type === "moveTo" && !data.viewsById[a.target]) errs.push(`${where} moveTo ${a.target}`);
       if (a.type === "triggerGimmick" && !data.gimmicksById[a.target]) errs.push(`${where} gimmick ${a.target}`);
       if (["giveItem", "consumeItem"].includes(a.type) && !data.itemsById[a.item]) errs.push(`${where} item ${a.item}`);
+      if (["unlockBgmTrack", "setBgmTrack"].includes(a.type) && !data.bgmById[a.track]) errs.push(`${where} bgm ${a.track}`);
+      if (a.type === "showImageModal" && a.bgm && !data.bgmById[a.bgm]) errs.push(`${where} bgm ${a.bgm}`);
     }
   };
   for (const s of Object.values(data.spotsById)) s.rules.forEach((r) => walk(r.actions, s.id));
-  for (const g of Object.values(data.gimmicksById)) { walk(g.onSuccess, g.id); walk(g.onFail, g.id); }
+  for (const g of Object.values(data.gimmicksById)) { walk(g.onSuccess, g.id); walk(g.onFail, g.id); (g.failCases || []).forEach((c) => walk(c.actions, g.id)); }
   for (const v of Object.values(data.viewsById)) for (const p of v.pages || []) { (p.onShow || []).forEach((r) => walk(r.actions, p.id)); (p.onTap || []).forEach((r) => walk(r.actions, p.id)); }
   for (const t of data.transitions) { if (!data.viewsById[t.view] || !data.viewsById[t.target]) errs.push(`transition ${t.view}→${t.target}`); }
+  for (const i of Object.values(data.itemsById)) for (const s of i.usableOn) if (!data.spotsById[s]) errs.push(`item ${i.id} usableOn ${s}`);
   eq(errs, []);
 });
-test("D-02", "全アイテムに説明文(拡大表示用)がある", () => {
-  eq(Object.values(data.itemsById).filter((i) => !i.description).map((i) => i.id), []);
+test("D-02", "全アイテムに説明文(拡大表示用)がある（名刺は表/裏の2ページ）", () => {
+  eq(Object.values(data.itemsById).filter((i) => !(i.description || (i.zoomPages?.length && i.zoomPages.every((p) => p.text)))).map((i) => i.id), []);
+  eq(data.itemsById.itemPisagiCard.zoomPages.map((p) => p.text), ["ぴさぎは仕事人っぴ！", "留守番電話にメッセージを残してください、ッピ……？"]);
 });
 test("D-03", "全PlayPartに開始時メッセージ、PlayPart1〜7に表情タップ時メッセージがある", () => {
   for (let i = 1; i <= 8; i++) ok(data.playPartsById[i].startMessages.length > 0, `part${i} 開始時メッセージなし`);
@@ -627,6 +928,30 @@ test("D-04", "どのviewからも机拡大(viewDesk)に戻れる(PlayPart7時点
     if (!seen.has("viewDesk")) unreachable.push(v);
   }
   eq(unreachable, []);
+});
+test("D-06", "SE・BGMのキーが全て audio.json に登録されている（ファイル未設定のnullは可）", () => {
+  const audio = load("audio.json");
+  const errs = [];
+  const seKeys = new Set();
+  const collect = (actions) => { for (const a of actions || []) if (a.type === "se") seKeys.add(a.id); };
+  for (const s of Object.values(data.spotsById)) s.rules.forEach((r) => collect(r.actions));
+  for (const g of Object.values(data.gimmicksById)) { collect(g.onSuccess); collect(g.onFail); (g.failCases || []).forEach((c) => collect(c.actions)); }
+  for (const v of Object.values(data.viewsById)) for (const p of v.pages || []) [...(p.onShow || []), ...(p.onTap || [])].forEach((r) => collect(r.actions));
+  for (const s of Object.values(data.storyPartsById)) for (const l of s.lines) if (l.se) seKeys.add(l.se);
+  for (const pp of Object.values(data.playPartsById)) if (pp.clearSE) seKeys.add(pp.clearSE);
+  for (const k of Object.values(audio.ui)) if (k) seKeys.add(k);
+  for (const k of seKeys) if (!(k in audio.se)) errs.push("se " + k);
+  const bgmKeys = new Set();
+  for (const pp of Object.values(data.playPartsById)) if (pp.bgm) bgmKeys.add(pp.bgm);
+  for (const s of Object.values(data.storyPartsById)) for (const l of s.lines) if (l.bgm) bgmKeys.add(l.bgm);
+  for (const b of Object.values(data.bgmById)) if (b.sound) bgmKeys.add(b.sound);
+  for (const k of bgmKeys) if (!(k in audio.bgm)) errs.push("bgm " + k);
+  for (const [k, d] of [...Object.entries(audio.se), ...Object.entries(audio.bgm)]) if (d && d.file && !fs.existsSync(path.join(ROOT, d.file))) errs.push("file無し " + k + ": " + d.file);
+  eq(errs, []);
+});
+test("D-05", "削除済みアイテム(音楽CD・ぴつじの写真)がデータに残っていない", () => {
+  const all = ["items", "spots", "views", "gimmicks", "playParts", "hints"].map((f) => fs.readFileSync(path.join(ROOT, "data", f + ".json"), "utf8")).join("");
+  ok(!/itemCD|itemPhotoPitsuji/.test(all), "参照が残っている");
 });
 
 // ---- 結果 ----

@@ -5,9 +5,16 @@
 
 import { SAVE_VERSION } from "../state/GameState.js";
 
-const SAVE_KEY = "pitsujiEscapeGame_save";
+export const SAVE_KEY = "pitsujiEscapeGame_save";
+
+// 別のタブでゲームが進んだ後は、古い状態で上書きしないよう保存を止める（main.js の storage イベント）。
+let readOnly = false;
+export function setReadOnly(value) {
+  readOnly = !!value;
+}
 
 export function save(state) {
+  if (readOnly) return false;
   try {
     const json = JSON.stringify(state);
     localStorage.setItem(SAVE_KEY, json);

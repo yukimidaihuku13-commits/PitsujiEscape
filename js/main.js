@@ -10,10 +10,12 @@ import * as Navigator from "./nav/Navigator.js";
 import * as SaveManager from "./save/SaveManager.js";
 import * as Renderer from "./ui/Renderer.js";
 import { MessageQueue } from "./ui/DialogueBox.js";
+import * as AudioManager from "./audio/AudioManager.js";
 import { renderNumericCodeGimmick } from "./gimmick/NumericCodeGimmick.js";
 import { renderLetterSelectGimmick } from "./gimmick/LetterSelectGimmick.js";
 import { renderTapRegionsGimmick } from "./gimmick/TapRegionsGimmick.js";
-import { renderChatFormGimmick } from "./gimmick/ChatFormGimmick.js";
+import { renderChatSelectGimmick } from "./gimmick/ChatSelectGimmick.js";
+import { renderPhoneDialGimmick } from "./gimmick/PhoneDialGimmick.js";
 
 const DATA_FILES = {
   itemsById: "data/items.json",
@@ -50,21 +52,43 @@ async function loadAllData() {
   );
   const data = Object.fromEntries(entries);
   data.transitions = await fetchJson("data/transitions.json");
+  data.audio = await fetchJson("data/audio.json");
+  data.credits = await fetchJson("data/credits.json");
   return data;
 }
 
 // 古いセーブデータ(項目追加前のもの・削除済みのviewを指しているもの)を読み込んでも
 // 画面が真っ白にならないよう、足りない項目を初期値で補い、存在しないviewは
 // そのパートの開始視点へ戻す。
+// 手で書き換えられた等で型が壊れているセーブは、進行位置が不正なら破棄(null)し、
+// 個々の項目が壊れている場合は初期値に置き換える（起動できなくなるのを防ぐ）。
 function normalizeLoadedState(loaded, data) {
-  if (!loaded) return null;
-  const state = { ...createInitialState(), ...loaded };
+  if (!loaded || typeof loaded !== "object" || Array.isArray(loaded)) return null;
+  const init = createInitialState();
+  const state = { ...init, ...loaded };
+  const isObj = (v) => v && typeof v === "object" && !Array.isArray(v);
+  const strArray = (v) => (Array.isArray(v) ? [...new Set(v.filter((x) => typeof x === "string"))] : []);
+  if (!["start", "story", "play", "end"].includes(state.phase)) return null;
+  if (state.phase === "play" && !data.playPartsById[state.playPart]) return null;
+  if (state.phase === "story" && !data.storyPartsById[state.storyPart]) return null;
+  for (const key of ["flags", "clickCounts", "itemUsageLog", "hintRevealCounts"]) if (!isObj(state[key])) state[key] = init[key];
+  for (const [k, v] of Object.entries(state.itemUsageLog)) state.itemUsageLog[k] = strArray(v);
+  state.everObtainedItems = strArray(state.everObtainedItems);
+  if (!isObj(state.bgmState)) state.bgmState = init.bgmState;
+  state.bgmState.unlockedTracks = strArray(state.bgmState.unlockedTracks).filter((id) => data.bgmById[id]);
+  if (!state.bgmState.unlockedTracks.includes("default")) state.bgmState.unlockedTracks.unshift("default");
+  if (!state.bgmState.unlockedTracks.includes(state.bgmState.currentTrack)) state.bgmState.currentTrack = "default";
+  if (!Number.isInteger(state.notePage) || state.notePage < 0) state.notePage = 0;
+  // 削除されたアイテム(音楽CD・ぴつじの写真等)を持ったままのセーブは、そのアイテムを取り除く。
+  state.inventory = strArray(state.inventory).filter((id) => data.itemsById[id]);
   if (state.phase === "play" && !data.viewsById[state.currentView]) {
     const part = data.playPartsById[state.playPart];
     console.warn(`[main] セーブデータのview(${state.currentView})が存在しないため開始視点に戻します`);
     state.currentView = part ? part.startView : null;
     state.notePage = 0;
   }
+  const view = data.viewsById[state.currentView];
+  if (view && view.pages && state.notePage >= view.pages.length) state.notePage = 0;
   return state;
 }
 
@@ -135,10 +159,20 @@ async function main() {
     }
   }
 
+  // メッセージキューには台詞({text})の他に、画像表示({image})・効果音({se})も積める。
+  // 「メッセージ → 画像 → メッセージ」のような演出を、ゲームクリックポイント.txtの記載順どおりに
+  // 1つずつ見せるため。画像は閉じた時点で、効果音は鳴らした時点で次へ進む。
   const msgQueue = new MessageQueue(
     (item) => {
+      if (item && item.se != null) {
+        playSENow(item.se);
+        msgQueue.advance();
+        return;
+      }
       const el = document.getElementById("footer-message");
-      if (el) el.textContent = item ? item.text : "";
+      if (el) el.textContent = (item && item.text) || "";
+      if (item && item.image) openQueuedImage(item);
+      if (item && item.gimmick) openQueuedGimmick(item);
     },
     () => {
       startMessagesPending = false;
@@ -149,6 +183,11 @@ async function main() {
   const storyQueue = new MessageQueue(
     (line) => {
       markScreen("story");
+      if (line && line.bgm) {
+        baseBgm = line.bgm;
+        refreshBgm();
+      }
+      if (line && line.se) AudioManager.playSE(line.se);
       drawStoryLine(line);
     },
     () => {
@@ -224,7 +263,7 @@ async function main() {
 
   function drawPlay() {
     markScreen(`play:${state.currentView}`);
-    const currentText = msgQueue.current ? msgQueue.current.text : "";
+    const currentText = (msgQueue.current && msgQueue.current.text) || "";
     Renderer.renderPlay(root, {
       state,
       ctx,
@@ -243,8 +282,16 @@ async function main() {
 
   const ui = {
     queueMessage,
-    playSE: (id) => console.log(`[SE] ${id}（音声アセット未定）`),
-    openGimmick: (gimmickId) => openGimmick(gimmickId),
+    // メッセージ表示待ちがある間は、その後ろに積んで順番に鳴らす（ギミック表示中は即時）。
+    playSE: (id) => {
+      if (msgQueue.isBusy() && !currentModalStatusEl) msgQueue.enqueue({ se: id });
+      else playSENow(id);
+    },
+    // 先に読むメッセージがある場合は、読み終えてからギミックを開く（資料の記載順: メッセージ → ギミック）
+    openGimmick: (gimmickId) => {
+      if (msgQueue.isBusy() && !currentModalStatusEl) msgQueue.enqueue({ gimmick: gimmickId });
+      else openGimmick(gimmickId);
+    },
     closeGimmick: () => closeGimmick(),
     enterStoryPart: (storyPartId) => enterStoryPart(storyPartId),
     enterPlayPart: (part) => enterPlayPart(part),
@@ -274,6 +321,50 @@ async function main() {
 
   const engine = new Engine(state, data, ctx, ui);
 
+  // 効果音の再生。音声ファイルの割り当ては data/audio.json（未割り当てのキーはログのみ）。
+  function playSENow(id) {
+    AudioManager.playSE(id);
+  }
+
+  // 画面操作(所持品・ヘッダーアイコン)のSE。どの音を使うかは data/audio.json の ui で指定する。
+  function playUiSE(key) {
+    const id = data.audio.ui && data.audio.ui[key];
+    if (id) AudioManager.playSE(id);
+  }
+
+  // ---- BGM ----
+  // 流れるBGMは次の優先順で決まる。
+  //   1. 画像表示中だけ流すBGM(パーティー画像等) … imageBgmTrack (bgm.jsonのid)
+  //   2. オーディオで選んだ曲(「通常」以外)       … state.bgmState.currentTrack
+  //   3. 操作パート/ストーリーのBGM                … baseBgm (audio.jsonのBGMキー)
+  let baseBgm = null;
+  let imageBgmTrack = null;
+
+  function bgmSoundOfTrack(trackId) {
+    const track = data.bgmById[trackId];
+    return track ? track.sound || null : null;
+  }
+
+  // 操作パートのBGM(playParts.json の bgm)。指定が無いパートは直前のパートのBGMを引き継ぐ。
+  function partBgm(partId) {
+    for (let i = partId; i >= 1; i--) {
+      const part = data.playPartsById[i];
+      if (part && part.bgm) return part.bgm;
+    }
+    return null;
+  }
+
+  function refreshBgm() {
+    if (state.phase === "start") {
+      AudioManager.stopBgm();
+      return;
+    }
+    let key = baseBgm;
+    if (imageBgmTrack) key = bgmSoundOfTrack(imageBgmTrack);
+    else if (state.bgmState.currentTrack && state.bgmState.currentTrack !== "default") key = bgmSoundOfTrack(state.bgmState.currentTrack);
+    AudioManager.playBgm(key);
+  }
+
   function onSpotTap(spotId) {
     if (msgQueue.isBusy() || pendingAutoClear) return; // 想定外の連打に対する保険
     const spot = data.spotsById[spotId];
@@ -301,6 +392,7 @@ async function main() {
   function onItemTap(itemId) {
     if (msgQueue.isBusy() || pendingAutoClear) return;
     if (ctx.selectedItemId !== itemId) {
+      playUiSE("itemSelect");
       ctx.selectedItemId = itemId;
       zoomShownItemId = null;
     } else if (zoomShownItemId !== itemId) {
@@ -327,17 +419,56 @@ async function main() {
     name.textContent = item.name;
     box.appendChild(name);
 
-    const placeholder = createModalImagePlaceholder(`${item.name}\n（拡大画像 仮）`);
-    if (item.image) {
-      const img = document.createElement("img");
-      img.className = "item-zoom-image";
-      img.src = item.image;
-      img.alt = item.name;
-      img.addEventListener("error", () => img.replaceWith(placeholder));
-      box.appendChild(img);
-    } else {
-      box.appendChild(placeholder);
+    // 画像部分。実画像(image)が無い間は placeholder の文言(無ければアイテム名)で代用する。
+    let imageEl = null;
+    function drawImage(image, placeholderText) {
+      const placeholder = createModalImagePlaceholder(placeholderText || `${item.name}\n（拡大画像 仮）`);
+      let el = placeholder;
+      if (image) {
+        el = document.createElement("img");
+        el.className = "item-zoom-image";
+        el.src = image;
+        el.alt = item.name;
+        el.addEventListener("error", () => el.replaceWith(placeholder));
+      }
+      if (imageEl && imageEl.isConnected) imageEl.replaceWith(el);
+      else box.appendChild(el);
+      imageEl = el;
     }
+
+    // zoomPages: タップする度に画像と説明文が切り替わるアイテム(ぴさぎの名刺の表/裏)。
+    // 最後のページの次は最初のページに戻る。閉じるボタンは常に表示する。
+    if (Array.isArray(item.zoomPages) && item.zoomPages.length > 0) {
+      let pageIndex = 0;
+      const pageMsgEl = document.createElement("div");
+      pageMsgEl.className = "item-zoom-message";
+      const pageCloseBtn = document.createElement("button");
+      pageCloseBtn.type = "button";
+      pageCloseBtn.className = "item-zoom-close";
+      pageCloseBtn.textContent = "閉じる";
+      pageCloseBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        closeModal(overlay);
+      });
+      const showPage = () => {
+        const page = item.zoomPages[pageIndex];
+        drawImage(page.image, page.placeholder);
+        pageMsgEl.textContent = page.text || "";
+        if (page.text) logMessage(page.text);
+        box.append(pageMsgEl, pageCloseBtn);
+      };
+      showPage();
+      const pageOpenedAt = Date.now();
+      overlay.addEventListener("click", (e) => {
+        if (e.target === pageCloseBtn) return;
+        if (Date.now() - pageOpenedAt < TAP_GUARD_MS) return;
+        pageIndex = (pageIndex + 1) % item.zoomPages.length;
+        showPage();
+      });
+      return;
+    }
+
+    drawImage(item.image, (resolveMessage(item.placeholder, state, ctx) || [])[0]);
 
     const lines = resolveMessage(item.description, state, ctx) || [];
     lines.forEach((t) => logMessage(t));
@@ -378,6 +509,7 @@ async function main() {
   }
 
   function onIconTap(key) {
+    playUiSE("headerIcon");
     if (key === "log") showLogModal();
     else if (key === "hint") showHintModal();
     else if (key === "settings") showSettingsModal();
@@ -432,6 +564,17 @@ async function main() {
     SaveManager.save(state);
   }
 
+  // キューの順番が回ってきたギミックを開く。ギミックより後ろに積まれていたメッセージは
+  // ギミック画面内の表示欄に出す（ギミックを開くとキューは空になるため）。
+  function openQueuedGimmick(item) {
+    const rest = msgQueue.queue.splice(0);
+    openGimmick(item.gimmick);
+    for (const q of rest) {
+      if (q.text) queueMessage(q.text);
+      else if (q.se != null) playSENow(q.se);
+    }
+  }
+
   function openGimmick(gimmickId) {
     const gimmick = data.gimmicksById[gimmickId];
     if (!gimmick) {
@@ -459,15 +602,17 @@ async function main() {
     const gimmickContainer = document.createElement("div");
     box.appendChild(gimmickContainer);
 
-    const onResult = (correct) => engine.resolveGimmickResult(gimmickId, correct);
+    const onResult = (correct, input) => engine.resolveGimmickResult(gimmickId, correct, input);
     if (gimmick.type === "numericCode") {
       renderNumericCodeGimmick(gimmickContainer, gimmick, onResult);
     } else if (gimmick.type === "letterSelect") {
       renderLetterSelectGimmick(gimmickContainer, gimmick, onResult);
     } else if (gimmick.type === "tapRegions") {
       renderTapRegionsGimmick(gimmickContainer, gimmick, onResult);
-    } else if (gimmick.type === "chatForm") {
-      renderChatFormGimmick(gimmickContainer, gimmick, { inventory: state.inventory, itemsById: data.itemsById }, onResult);
+    } else if (gimmick.type === "chatSelect") {
+      renderChatSelectGimmick(gimmickContainer, gimmick, onResult);
+    } else if (gimmick.type === "phoneDial") {
+      renderPhoneDialGimmick(gimmickContainer, gimmick, onResult);
     } else {
       gimmickContainer.textContent = `未実装のギミックtype: ${gimmick.type}`;
     }
@@ -486,7 +631,16 @@ async function main() {
   // 見せる（未準備の画像は適当な文字等で表示、の方針）。
   // 「基本は再クリックで画像を消す」(ゲームクリックポイント.txt)に合わせ、×ボタンに加えて
   // 画面のどこをタップしても閉じる（開いた直後の素早い2打目では閉じない）。
+  // 表示アクションはメッセージキュー経由で順番に出す（前のメッセージを読み終えてから画像が出る）。
   function showImageModal(opts) {
+    msgQueue.enqueue({ image: opts });
+    if (msgQueue.current === null) msgQueue.advance();
+  }
+
+  // キューの順番が回ってきた画像を表示する。閉じたらキューの次へ進む。
+  // opts.text: 画像の下に出す台詞 / opts.bgm: 表示中だけ流すBGM(閉じると元の曲に戻す)
+  function openQueuedImage(item) {
+    const opts = item.image;
     const { overlay, box } = Renderer.renderModalWrap(modalRoot);
     if (opts.image) {
       const img = document.createElement("img");
@@ -500,11 +654,39 @@ async function main() {
     } else {
       box.appendChild(createModalImagePlaceholder(opts.caption));
     }
+    if (opts.text) {
+      const textEl = document.createElement("div");
+      textEl.className = "item-zoom-message";
+      textEl.textContent = opts.text;
+      box.appendChild(textEl);
+      logMessage(opts.text);
+    }
+    if (opts.bgm) {
+      imageBgmTrack = opts.bgm;
+      refreshBgm();
+    }
     addModalCloseButton(box, overlay);
     const openedAt = Date.now();
+    let closed = false;
+    const finish = () => {
+      if (closed) return;
+      closed = true;
+      if (opts.bgm) {
+        imageBgmTrack = null;
+        refreshBgm();
+      }
+      if (msgQueue.current === item) msgQueue.advance();
+    };
     overlay.addEventListener("click", () => {
       if (Date.now() - openedAt >= TAP_GUARD_MS && overlay.isConnected) closeModal(overlay);
     });
+    // 画面タップ・×ボタンのどちらで閉じた場合も、閉じた時点でキューを次へ進める
+    new MutationObserver((_, obs) => {
+      if (!overlay.isConnected) {
+        obs.disconnect();
+        finish();
+      }
+    }).observe(modalRoot, { childList: true });
   }
 
   function createModalImagePlaceholder(caption) {
@@ -532,6 +714,7 @@ async function main() {
       btn.disabled = !unlocked;
       btn.addEventListener("click", () => {
         state.bgmState.currentTrack = track.id;
+        refreshBgm();
         SaveManager.save(state);
         closeModal(overlay);
         drawPlay();
@@ -623,9 +806,53 @@ async function main() {
     title.className = "modal-title";
     title.textContent = "設定";
     box.appendChild(title);
-    const note = document.createElement("div");
-    note.textContent = "音量調整・著作権表示は試作段階では未実装です。";
-    box.appendChild(note);
+    // SE・BGMのON/OFF（ゲームのセーブとは別に保存される）
+    const audioSettings = document.createElement("div");
+    audioSettings.className = "settings-audio";
+    [["se", "効果音(SE)"], ["bgm", "BGM"]].forEach(([kind, label]) => {
+      const row = document.createElement("div");
+      row.className = "settings-row";
+      const name = document.createElement("span");
+      name.textContent = label;
+      const toggle = document.createElement("button");
+      toggle.type = "button";
+      const draw = () => {
+        const on = AudioManager.getSettings()[kind];
+        toggle.textContent = on ? "ON" : "OFF";
+        toggle.className = "settings-toggle" + (on ? " settings-toggle--on" : "");
+      };
+      toggle.addEventListener("click", () => {
+        AudioManager.setEnabled(kind, !AudioManager.getSettings()[kind]);
+        draw();
+      });
+      draw();
+      row.append(name, toggle);
+      audioSettings.appendChild(row);
+    });
+    box.appendChild(audioSettings);
+
+    // 著作権表記（data/credits.json）
+    const credits = document.createElement("div");
+    credits.className = "settings-credits";
+    const creditsTitle = document.createElement("div");
+    creditsTitle.className = "settings-credits-title";
+    creditsTitle.textContent = "著作権表記";
+    credits.appendChild(creditsTitle);
+    (data.credits.lines || []).forEach((c) => {
+      const line = document.createElement("div");
+      line.className = "settings-credits-line";
+      line.textContent = c.text;
+      if (c.url) {
+        const link = document.createElement("a");
+        link.href = c.url;
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+        link.textContent = c.url;
+        line.append(document.createElement("br"), link);
+      }
+      credits.appendChild(line);
+    });
+    box.appendChild(credits);
     if (!saveAvailable) {
       const warn = document.createElement("div");
       warn.className = "save-warning";
@@ -646,8 +873,11 @@ async function main() {
   }
 
   // メッセージをログにだけ積む（直前と全く同じ文言は積まない＝同じスポットの連打対策）。
+  // 長時間同じパートで遊んでもメモリ・ログ画面が肥大化しないよう、古いものから捨てる。
+  const MESSAGE_LOG_MAX = 200;
   function logMessage(text) {
     if (typeof text === "string" && messageLog[messageLog.length - 1] !== text) messageLog.push(text);
+    if (messageLog.length > MESSAGE_LOG_MAX) messageLog.splice(0, messageLog.length - MESSAGE_LOG_MAX);
   }
 
   function addModalCloseButton(box, overlay) {
@@ -676,6 +906,10 @@ async function main() {
       return;
     }
     storyQueue.clear();
+    // ストーリー開始時点では直前の操作パートのBGMを流し続ける（行に bgm があればそこで切り替わる）
+    imageBgmTrack = null;
+    baseBgm = partBgm(storyPartId);
+    refreshBgm();
     story.lines.forEach((line) => storyQueue.enqueue(line));
     storyQueue.advance();
   }
@@ -685,6 +919,9 @@ async function main() {
     messageLog.length = 0;
     zoomShownItemId = null;
     pendingAutoClear = false;
+    imageBgmTrack = null;
+    baseBgm = partBgm(part.id);
+    refreshBgm();
     drawPlay();
     startMessagesPending = part.startMessages.length > 0;
     part.startMessages.forEach((t) => queueMessage(t));
@@ -750,6 +987,7 @@ async function main() {
   }
 
   function renderStartScreen() {
+    AudioManager.stopBgm();
     Renderer.renderStart(root, {
       onStart: startGame,
       onJumpToPlayPart: jumpToPlayPart,
@@ -791,7 +1029,10 @@ async function main() {
       } else if (state.phase === "play" && msgQueue.isBusy()) {
         const actionable =
           e.target.closest && e.target.closest(".spot-btn, .spot-hotspot, .arrow-btn, .inventory-item, .note-page, .note-close-btn");
-        if (actionable) {
+        // 画像表示が控えている間は、スポット等のタップでキューを捨てない（演出・BGM追加の
+        // メッセージを見逃さないよう、通常のメッセージ送りとして扱う）。
+        const hasQueuedImage = msgQueue.queue.some((q) => q.image || q.gimmick);
+        if (actionable && !hasQueuedImage) {
           msgQueue.clear();
           return; // 伝播を止めず、各要素側のクリック処理へそのまま進める
         }
@@ -805,7 +1046,30 @@ async function main() {
     true
   );
 
+  // 同じゲームを複数のタブ/ウィンドウで開いた場合: 別のタブがセーブを書き換えたら、
+  // このタブは古い状態のまま上書きしないよう操作を止め、再読み込みを促す（BGMの二重再生も止める）。
+  window.addEventListener("storage", (e) => {
+    if (e.key !== SaveManager.SAVE_KEY || e.newValue === e.oldValue) return;
+    AudioManager.stopBgm();
+    AudioManager.setSuspended("otherTab", true);
+    closeAllModals();
+    const { box } = Renderer.renderModalWrap(modalRoot);
+    box.classList.add("other-tab-box");
+    const msg = document.createElement("div");
+    msg.textContent = "別のタブ(ウィンドウ)でゲームが進みました。このタブは再読み込みしてください。";
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "item-zoom-close";
+    btn.textContent = "再読み込み";
+    btn.addEventListener("click", () => location.reload());
+    box.append(msg, btn);
+    SaveManager.setReadOnly(true);
+  });
+  // タブが裏に回った(別アプリ・別タブ表示中)間はBGMを止め、戻ったら再開する。
+  document.addEventListener("visibilitychange", () => AudioManager.setSuspended("hidden", document.hidden));
+
   // 初期表示
+  AudioManager.init(data.audio);
   if (state.phase === "start") {
     renderStartScreen();
   } else if (state.phase === "story") {
@@ -813,6 +1077,8 @@ async function main() {
   } else if (state.phase === "end") {
     renderEnding();
   } else if (state.phase === "play") {
+    baseBgm = partBgm(state.playPart);
+    refreshBgm();
     drawPlay();
     // 自動クリア条件を満たした直後(メッセージを読み終える前)にリロードされた場合の救済
     engine.checkAutoClear();

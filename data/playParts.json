@@ -1,6 +1,7 @@
 [
   {
     "id": 1,
+    "clearSE": "Se_StartStream",
     "startView": "viewDesk",
     "startMessages": ["さて……"],
     "clearCondition": {},
@@ -12,6 +13,8 @@
   },
   {
     "id": 2,
+    "bgm": "BGM_Candy Crush",
+    "clearSE": "Se_StartStream",
     "startView": "viewDesk",
     "startMessages": [
       "なんで脱出しないッピ……？",
@@ -20,9 +23,10 @@
       "それでぴつじもやる気出すっぴ！"
     ],
     "clearCondition": { "usedOn": { "item": "itemChocolate", "spot": "spotPitsujiDoorGap" } },
+    "clearMessages": ["始めるっぴ～！"],
     "notYetMessage": [
-      { "when": { "everObtained": "itemChocolate" }, "text": "チョコレートでテンションアップっぴ！" },
-      { "when": {}, "text": "ぴつじのテンションを上げるっぴ！" }
+      { "when": { "everObtained": "itemChocolate" }, "text": "チョコでぴつじのやる気を出すっぴ～" },
+      { "when": {}, "text": "ぴつじのやる気を出して脱出させるっぴ～" }
     ],
     "faceMessage": [
       { "when": { "usedOn": { "item": "itemChocolate", "spot": "spotPitsujiDoorGap" } }, "text": "今度こそ脱出ゲームして貰うっぴ！やり直しっぴ！！" },
@@ -33,43 +37,52 @@
   },
   {
     "id": 3,
+    "bgm": "BGM_Candy Crush",
+    "clearSE": "Se_StartStream",
     "startView": "viewDesk",
     "startMessages": ["ドアの鍵を開けるっぴ！"],
     "clearCondition": { "flag": { "doorBUnlocked": true } },
-    "notYetMessage": "ぴつじを脱出させるっぴ～！！！",
+    "clearMessages": ["今度こそ脱出ゲームっぴ！"],
+    "notYetMessage": "ぴつじを脱出させるっぴ～！！",
     "faceMessage": [
-      { "when": { "flag": { "doorBUnlocked": true } }, "text": "今度こそ脱出ゲームして貰うっぴ！" },
+      { "when": { "flag": { "doorBUnlocked": true } }, "text": "今度こそ脱出して貰うっぴ！三度目の正直っぴ！" },
       { "when": {}, "cycle": ["ドアの鍵開けるっぴ～", "暗証番号忘れたッピ", "この部屋にヒントがあるはずっぴ！"] }
     ],
     "nextStoryPart": 3
   },
   {
     "id": 4,
+    "bgm": "BGM_tie no wa",
+    "clearSE": "Se_StartStream",
     "startView": "viewDesk",
     "startMessages": [
       "こうなったら玄関のドアを開けてやるっぴ！！",
       "ヒントは確か……あっ！！！？チョコレートもヒントだったッピ！",
-      "さっきぴつじに渡しちゃったッピ……"
+      "チョコレートはさっきぴつじに渡しちゃったッピ……"
     ],
     "clearCondition": { "flag": { "doorEntranceUnlocked": true } },
-    "notYetMessage": ["これはぴつじとの勝負っぴ！", "ぴつじを！部屋から！脱出させる！！！"],
+    "clearMessages": ["ぴつじ脱出やるっぴ！！"],
+    "notYetMessage": ["ぴつじとの勝負っぴ！", "部屋から絶対出してみせるっぴ！！！"],
     "faceMessage": [
-      { "when": { "flag": { "doorEntranceUnlocked": true } }, "text": "ぴつじに部屋から出て貰うっぴ！！" },
+      { "when": { "flag": { "doorEntranceUnlocked": true } }, "text": "今度こそ脱出っぴ！やるっぴよー！！" },
       { "when": {}, "cycle": ["玄関の鍵開けるっぴ～", "チョコレートは無くてもどうにかなるはずっぴ", "がんばるっぴ～！"] }
     ],
     "nextStoryPart": 4
   },
   {
     "id": 5,
+    "bgm": "BGM_tie no wa",
+    "clearSE": "Se_StartStream",
     "startView": "viewDesk",
-    "startMessages": ["ぴつじはすっかり落ち込んでるッピ", "元気出そうなもの渡すっぴ"],
+    "startMessages": ["ぴつじは落ち込んでるッピ？", "また元気出そうなもの渡してやる気出すっぴ！", "負けないっぴ！！"],
     "clearCondition": {
       "allOf": [
         { "usedOn": { "item": "itemCushion", "spot": "spotPitsujiWindow" } },
         { "usedOn": { "item": "itemLargeTowel", "spot": "spotPitsujiWindow" } }
       ]
     },
-    "notYetMessage": ["ぴつじなかなか手強いッピ……", "何をしたら出てくるっぴ？！"],
+    "clearMessages": ["嫌な予感がするッピ……"],
+    "notYetMessage": "なかなか手強いッピね……",
     "faceMessage": [
       {
         "when": {
@@ -78,7 +91,7 @@
             { "usedOn": { "item": "itemLargeTowel", "spot": "spotPitsujiWindow" } }
           ]
         },
-        "cycle": ["ぴつじに呼びかけてみるっぴ！！", "そろそろいけるっぴ！！"]
+        "cycle": ["今度こそいけるっぴ！ぴつじ脱出ゲームっぴ！！"]
       },
       { "when": {}, "cycle": ["ぴつじの元気を出すっぴ～", "ぴつじの好きな物は調査済みっぴ～！"] }
     ],
@@ -86,29 +99,35 @@
   },
   {
     "id": 6,
+    "bgm": "BGM_dotabatare-su slow",
+    "clearSE": "Se_StartStream",
     "startView": "viewDesk",
-    "startMessages": ["こうなったらぴつじに詳しい人を呼ぶっぴ！！！"],
+    "startMessages": ["仕方ないッピ～", "ぴつじに詳しい人を呼びだすっぴ！！"],
     "clearCondition": {
       "allOf": [
-        { "usedOn": { "item": "itemPisagiCard", "spot": "spotPhone" } },
+        { "flag": { "phoneGimmickCleared": true } },
         { "flag": { "chatGimmickCleared": true } }
       ]
     },
     "autoClear": true,
-    "notYetMessage": "ぴつじが寝てて今は無理ッピ......",
+    "notYetMessage": "ぴつじが寝てて今は無理ッピ……",
     "faceMessage": [
-      { "when": {}, "text": "ぴつじの友達を呼び出してやるっぴ！" }
+      { "when": {}, "cycle": ["ぴつじの友達を呼び出してやるっぴ！", "友達のことは調査済みっぴ～"] }
     ],
     "nextStoryPart": 6
   },
   {
     "id": 7,
+    "clearSE": "Se_StartStream",
     "startView": "viewDesk",
     "startMessages": ["ぴつじの目が覚めるようなパーティーを開くっぴ！！"],
     "clearCondition": { "bgmTrack": "happy" },
-    "notYetMessage": "脱出させるっぴ！！！！",
+    "clearMessages": ["最後の勝負っぴー！！"],
+    "notYetMessage": "最後の勝負っぴ。ぴつじを部屋から脱出させるっぴ！",
     "faceMessage": [
-      { "when": {}, "text": "ぴつじの目が覚めるようなパーティーを開くっぴ！！" }
+      { "when": { "bgmTrack": "happy" }, "cycle": ["これなら賑やかでぴつじも目を覚ますっぴ！", "ぴつじの脱出ゲームが始まるっぴ！"] },
+      { "when": { "bgmUnlocked": "happy" }, "cycle": ["さっきの音楽最高だったっぴ～！", "パーティーには楽しい音楽が欠かせないっぴ！"] },
+      { "when": {}, "cycle": ["パーティーするっぴ！楽しい雰囲気作るっぴ～！"] }
     ],
     "nextStoryPart": 7
   },
@@ -120,7 +139,7 @@
     "notYetMessage": null,
     "faceCharacter": "ぴつじ",
     "faceMessage": [
-      { "when": {}, "text": "楽しそうな音が聞こえるっぴ" }
+      { "when": {}, "text": "楽しそうな音が聞こえてくるっぴ" }
     ],
     "nextStoryPart": 8
   }

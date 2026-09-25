@@ -1,4 +1,4 @@
 [
-  { "id": "default", "label": "通常" },
-  { "id": "happy", "label": "HAPPY" }
+  { "id": "default", "label": "通常", "sound": null },
+  { "id": "happy", "label": "HAPPY", "sound": "BGM_HAPPY" }
 ]

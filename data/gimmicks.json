@@ -17,6 +17,19 @@
       { "digit": "8", "position": { "x": 55.5, "y": 46.0, "width": 14.0, "height": 8.0 } },
       { "digit": "9", "position": { "x": 73.5, "y": 46.0, "width": 14.0, "height": 8.0 } }
     ],
+    "selector": {
+      "answerOption": "りんご",
+      "options": [
+        { "label": "ぶどう", "layout": "123456789" },
+        { "label": "バナナ", "layout": "357924618" },
+        { "label": "りんご", "layout": "419237865" },
+        { "label": "みかん", "layout": "987615324" },
+        { "label": "桃", "layout": "691582473" }
+      ],
+      "display": { "x": 13.5, "y": 36.5, "width": 19.0, "height": 8.5 },
+      "up": { "x": 17.0, "y": 28.5, "width": 12.0, "height": 6.0 },
+      "down": { "x": 17.0, "y": 47.0, "width": 12.0, "height": 5.5 }
+    },
     "onSuccess": [
       { "type": "setFlag", "flag": "doorBUnlocked", "value": true },
       { "type": "message", "text": "カチッと音がして鍵が開いた" },
@@ -95,8 +108,8 @@
     ],
     "onSuccess": [
       { "type": "setFlag", "flag": "doorEntranceUnlocked", "value": true },
-      { "type": "message", "text": "カチッと音がして鍵が開いた" },
-      { "type": "message", "text": "玄関のロックが解除されたっぴ！" }
+      { "type": "se", "id": "Se_LockOpen" },
+      { "type": "message", "text": "開いたっぴ～" }
     ],
     "onFail": [
       { "type": "message", "text": "違ったッピ……" }
@@ -111,28 +124,89 @@
       { "key": "maracas", "label": "マラカス", "position": { "x": 10, "y": 35, "width": 35, "height": 25 } },
       { "key": "tambourine", "label": "タンバリン", "position": { "x": 55, "y": 35, "width": 35, "height": 25 } }
     ],
+    "missMessage": "ここじゃないっぴねえ",
     "onSuccess": [
       { "type": "setFlag", "flag": "gimmickPhotoCleared", "value": true },
-      { "type": "message", "text": "マラカスとタンバリンを見つけたっぴ！" }
+      { "type": "message", "text": "これとこれ、買ってきて欲しいっぴ！" },
+      { "type": "se", "id": "キランという音" },
+      { "type": "message", "text": "「ぴさぎに任せるっぴー！」って言って玄関から出てったっぴ" },
+      { "type": "showImageModal", "caption": "風のように去るぴさぎ（画像仮）" },
+      { "type": "se", "id": "シュンっという音" },
+      { "type": "message", "text": "「ただいまっぴ～！」ぴさぎが帰って来たっぴ。" },
+      { "type": "message", "text": "速いっぴ。瞬足っぴ！" },
+      { "type": "showImageModal", "caption": "マラカスとタンバリンを持ったぴさぎ（画像仮）" },
+      { "type": "giveItem", "item": "itemMaracas" },
+      { "type": "giveItem", "item": "itemTambourine" },
+      { "type": "message", "text": "なかなかやるっぴね！" }
     ],
     "onFail": []
   },
   {
     "id": "gimmickPcGame",
     "label": "チャット画面",
-    "type": "chatForm",
-    "numberFields": [
-      { "label": "番地", "digits": 1, "answer": "2" },
-      { "label": "部屋番号", "digits": 3, "answer": "131" }
+    "type": "chatSelect",
+    "image": "assets/backgrounds/pic_tmp_gimmickPcGame.webp",
+    "friendLabel": "ぴぐま",
+    "lines": [
+      "ぴつじは預かっている。",
+      "ここの前の道をまっすぐ歩くと{A}があって",
+      "ここからは高層ビルが邪魔で{B}は見えない。",
+      "速くここまで助けに来い。"
     ],
-    "requiredItem": "itemPhotoPitsuji",
-    "wrongNumberMessage": "住所が間違えているみたいだ",
-    "wrongItemMessage": "添付するアイテムが間違えているみたいだ",
+    "blanks": [
+      { "key": "A", "answer": "サーカステント" },
+      { "key": "B", "answer": "お寺" }
+    ],
+    "options": ["お寺", "サーカステント", "学校", "高層ビル"],
+    "attachLabel": "ぴつじの写真",
+    "wrongMessage": "これではこの場所が間違えて伝わってるっぴ",
+    "correctMessages": ["これで良しっぴ", "あとは写真を添付してぴぐまを呼ぶっぴ"],
     "onSuccess": [
       { "type": "setFlag", "flag": "chatGimmickCleared", "value": true },
-      { "type": "consumeItem", "item": "itemPhotoPitsuji" },
-      { "type": "message", "text": "送信したっぴ！" }
+      { "type": "se", "id": "クリア音" },
+      { "type": "message", "text": "これでぴぐまを呼び出せたっぴ～" }
     ],
     "onFail": []
+  },
+  {
+    "id": "gimmickPhone",
+    "label": "電話",
+    "type": "phoneDial",
+    "answer": "#7*27",
+    "maxLength": 12,
+    "image": "assets/backgrounds/pic_tmp_gimmickPhone.webp",
+    "displayPosition": { "x": 35.5, "y": 4.0, "width": 55.0, "height": 13.0 },
+    "keypad": [
+      { "key": "1", "position": { "x": 39.2, "y": 22.0, "width": 11.0, "height": 11.0 } },
+      { "key": "2", "position": { "x": 57.7, "y": 22.0, "width": 11.0, "height": 11.0 } },
+      { "key": "3", "position": { "x": 74.9, "y": 22.0, "width": 11.0, "height": 11.0 } },
+      { "key": "4", "position": { "x": 39.2, "y": 40.5, "width": 11.0, "height": 11.0 } },
+      { "key": "5", "position": { "x": 57.7, "y": 40.5, "width": 11.0, "height": 11.0 } },
+      { "key": "6", "position": { "x": 74.9, "y": 40.5, "width": 11.0, "height": 11.0 } },
+      { "key": "7", "position": { "x": 39.2, "y": 59.0, "width": 11.0, "height": 11.0 } },
+      { "key": "8", "position": { "x": 57.7, "y": 59.0, "width": 11.0, "height": 11.0 } },
+      { "key": "9", "position": { "x": 74.9, "y": 59.0, "width": 11.0, "height": 11.0 } },
+      { "key": "#", "position": { "x": 39.2, "y": 77.5, "width": 11.0, "height": 11.0 } },
+      { "key": "0", "position": { "x": 57.7, "y": 77.5, "width": 11.0, "height": 11.0 } },
+      { "key": "*", "position": { "x": 74.9, "y": 77.5, "width": 11.0, "height": 11.0 } }
+    ],
+    "callPosition": { "x": 13.2, "y": 71.4, "width": 19.8, "height": 19.8 },
+    "onSuccess": [
+      { "type": "setFlag", "flag": "phoneGimmickCleared", "value": true },
+      { "type": "se", "id": "留守番電話を残すピーという電子音" },
+      { "type": "message", "text": "ぴつじは預かってるっぴ" },
+      { "type": "message", "text": "速く助けにくるっぴ" },
+      { "type": "message", "text": "困ってるっぴ！" }
+    ],
+    "failCases": [
+      { "input": "7*27", "actions": [
+        { "type": "se", "id": "電話に出ない音" },
+        { "type": "message", "text": "ぴさぎは不在みたいだッピ" }
+      ] }
+    ],
+    "onFail": [
+      { "type": "se", "id": "電話がつながらない音" },
+      { "type": "message", "text": "「この番号は存在しない」ってメッセージが流れてるッピ" }
+    ]
   }
 ]

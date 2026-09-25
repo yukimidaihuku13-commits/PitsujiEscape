@@ -82,11 +82,17 @@ export class Engine {
       case "showImageModal":
         // 表示: アイテム画像等を見せるアクション。実画像が無い間はcaptionをそのまま
         // プレースホルダーとして見せる（image未指定でも成立する）。
-        this.ui.showImageModal({ image: action.image || null, caption: action.caption || "" });
+        // text: 画像の下に出す台詞 / bgm: 画像表示中だけ流すBGM(閉じると元の曲に戻る)。
+        this.ui.showImageModal({ image: action.image || null, caption: action.caption || "", text: action.text || null, bgm: action.bgm || null });
         break;
       case "unlockBgmTrack": {
         const tracks = this.state.bgmState.unlockedTracks;
-        if (!tracks.includes(action.track)) tracks.push(action.track);
+        if (!tracks.includes(action.track)) {
+          tracks.push(action.track);
+          // 修正依頼3: 新しいBGMが追加されたことをメッセージで知らせる。
+          const label = this.data.bgmById?.[action.track]?.label || action.track;
+          this.ui.queueMessage(`BGM ${label} がオーディオに追加された`);
+        }
         break;
       }
       case "setBgmTrack":
@@ -160,8 +166,14 @@ export class Engine {
       return;
     }
     const ok = evaluate(part.clearCondition, this.state, this.ctx);
-    if (ok) {
-      this.ui.playSE("click");
+    if (ok && part.clearMessages && part.clearMessages.length > 0) {
+      // クリア時の台詞(playParts.json clearMessages)を読み終えてからストーリーへ進む。
+      // 読み終えたタイミングでの遷移は自動クリア(パート6)と同じ仕組みを使う。
+      part.clearMessages.forEach((m) => this.ui.queueMessage(m));
+      if (part.clearSE) this.ui.playSE(part.clearSE); // クリア時SE(playParts.json clearSE)
+      this.ui.scheduleAutoClear();
+    } else if (ok) {
+      if (part.clearSE) this.ui.playSE(part.clearSE); // クリア時SE(playParts.json clearSE)
       this.clearCurrentPart(part);
     } else {
       const msgs = resolveMessage(part.notYetMessage, this.state, this.ctx);
@@ -220,8 +232,17 @@ export class Engine {
     this.ui.enterPlayPart(part);
   }
 
-  resolveGimmickResult(gimmickId, isCorrect) {
+  // input: 入力内容。gimmick.failCases に一致する入力があれば、onFailの代わりにその処理を行う
+  // （電話ギミックで、#を付けずにかけた場合だけ別の失敗メッセージを出す等）。
+  resolveGimmickResult(gimmickId, isCorrect, input) {
     const gimmick = this.data.gimmicksById[gimmickId];
+    if (!isCorrect && input != null) {
+      const failCase = (gimmick.failCases || []).find((c) => c.input === input);
+      if (failCase) {
+        this.runActions(failCase.actions, gimmickId);
+        return;
+      }
+    }
     if (isCorrect) {
       // 先にギミックを閉じてから成功メッセージを流す。閉じる前に流すと、モーダル用の
       // 即時表示(currentModalStatusEl)を素通りしてしまい、後続のメッセージで

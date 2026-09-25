@@ -1,6 +1,6 @@
 // TapRegionsGimmick.js
 // 写真ギミック(gimmickPhoto)用。画像上の正解範囲を全てタップすると解除できる。
-// ・正解位置は一度見つけたら選択解除されない(Gimmick.csv仕様)
+// ・正解位置は一度見つけたら選択解除されない(gimmick.txt仕様)
 // ・正解以外をタップした場合は一時的なメッセージを出す
 // ・実画像(gimmick_Photo等)が未用意の間は、プレースホルダー矩形の上に
 //   ラベル付きホットスポットを重ねて表示する。
@@ -47,7 +47,7 @@ export function renderTapRegionsGimmick(container, gimmickDef, onResult) {
       btn.style.height = `${region.position.height}%`;
       btn.textContent = isFound ? region.label : "?";
       btn.addEventListener("click", () => {
-        // 正解位置は再タップしても選択解除されない(Gimmick.csv仕様)。
+        // 正解位置は再タップしても選択解除されない(gimmick.txt仕様)。
         if (!isFound) found.add(region.key);
         missMessage = "";
         draw();
@@ -59,7 +59,7 @@ export function renderTapRegionsGimmick(container, gimmickDef, onResult) {
     // 画像全体にクリックリスナーを張り、規定のホットスポット以外を拾う。
     wrap.addEventListener("click", (e) => {
       if (e.target === wrap || (gimmickDef.image ? e.target.classList.contains("gimmick-image") : e.target.classList.contains("gimmick-image-placeholder"))) {
-        missMessage = "ここではないようだ";
+        missMessage = gimmickDef.missMessage || "ここではないようだ";
         draw();
       }
     });

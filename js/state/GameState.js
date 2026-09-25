@@ -27,7 +27,7 @@ export function createInitialState() {
     // 段ボール箱などクリック回数を数える箇所
     clickCounts: {},
 
-    // BGM状態。"default"は最初から選べる。"happy"は音楽CD(itemCD)使用で解禁される(PlayPart7)。
+    // BGM状態。"default"は最初から選べる。"happy"はPlayPart7でぴぐま・ぴさぎに楽器を渡し終えると解禁される。
     bgmState: { unlockedTracks: ["default"], currentTrack: "default" },
 
     // ヒントの開封状況。 { playPart: 表示済み行数 } タップ毎に1行ずつ開放していく。

@@ -1,0 +1,67 @@
+{
+  "_説明": [
+    "SE・BGMの一覧（音声ファイルの割り当て表）。spots.json等では左側のキー名で音を指定する。",
+    "・音声ファイルを差し替える: file のパスを書き換える",
+    "・まだ音声が無い: file を null にする（鳴らさず、コンソールに [SE未設定] と出るだけ）",
+    "・音量: volume（0〜1。省略時 1）",
+    "・SEを削除する: spots.json等から { \"type\": \"se\", \"id\": \"キー名\" } の行を消す（ここのキーは残しても害はない）",
+    "・画面操作のSE: ui の itemSelect(所持品アイコン選択) / headerIcon(設定・ヒント・ログ)。null で鳴らさない",
+    "・BGMの流れる場所: 操作パートは playParts.json の bgm、ストーリーは storyParts.json の各行の bgm、オーディオの選曲は bgm.json の sound"
+  ],
+  "ui": {
+    "itemSelect": "Se_ItemIcon",
+    "headerIcon": "Se_SelectIcon"
+  },
+  "se": {
+    "Se_Camerea": { "file": "assets/soundeffect/Se_Camerea.mp3" },
+    "Se_ChangeSelect": { "file": "assets/soundeffect/Se_ChangeSelect.mp3" },
+    "Se_ChocoTrhow": { "file": "assets/soundeffect/Se_ChocoTrhow.mp3" },
+    "Se_DoorOpen1": { "file": "assets/soundeffect/Se_DoorOpen1.mp3" },
+    "Se_ItemIcon": { "file": "assets/soundeffect/Se_ItemIcon.mp3" },
+    "Se_LockOpen": { "file": "assets/soundeffect/Se_LockOpen.mp3" },
+    "SE_MaracasRoll": { "file": "assets/soundeffect/SE_MaracasRoll.mp3" },
+    "Se_Note": { "file": "assets/soundeffect/Se_Note.mp3" },
+    "Se_Refrigeratol": { "file": "assets/soundeffect/Se_Refrigeratol.mp3" },
+    "Se_SelectIcon": { "file": "assets/soundeffect/Se_SelectIcon.mp3" },
+    "Se_Shelf": { "file": "assets/soundeffect/Se_Shelf.mp3" },
+    "Se_StartStream": { "file": "assets/soundeffect/Se_StartStream.mp3" },
+    "Se_Switch": { "file": "assets/soundeffect/Se_Switch.mp3" },
+    "SE_TambourineRoll": { "file": "assets/soundeffect/SE_TambourineRoll.mp3" },
+
+    "ゲーム開始っぽい音": { "file": null },
+    "クリア音": { "file": null },
+    "ガサガサっという探す音": { "file": null },
+    "カチャンっという音": { "file": null },
+    "ガタガタしている音": { "file": null },
+    "焼いている音": { "file": null },
+    "トースターが終わる音": { "file": null },
+    "カチャっというドアノブを下げる音": { "file": null },
+    "キランという音": { "file": null },
+    "シュンっという音": { "file": null },
+    "電話に出ない音": { "file": null },
+    "電話がつながらない音": { "file": null },
+    "留守番電話を残すピーという電子音": { "file": null },
+    "モニターが映る音": { "file": null },
+    "モニターが切れる音": { "file": null },
+    "ぽにょん、と座り込む音": { "file": null },
+    "カチッ": { "file": null },
+    "どんどんパフパフわーわー": { "file": null },
+    "どんっ": { "file": null },
+    "ハッピーな音楽": { "file": null },
+    "ギミック起動音": { "file": null },
+    "袋をがさっと開ける音": { "file": null },
+    "箱をがさがさする音": { "file": null },
+    "ブラックライト点灯音": { "file": null },
+    "ソファをずらす音": { "file": null },
+    "TBD_ベッドマット": { "file": null },
+    "TBD_椅子": { "file": null }
+  },
+  "bgm": {
+    "BGM_bo-tto_hidamari": { "file": "assets/bgm/BGM_bo-tto_hidamari.mp3" },
+    "BGM_Candy Crush": { "file": "assets/bgm/BGM_Candy Crush.mp3" },
+    "BGM_dotabatare-su slow": { "file": "assets/bgm/BGM_dotabatare-su slow.mp3" },
+    "BGM_The Dark Eternal Night": { "file": "assets/bgm/BGM_The Dark Eternal Night.mp3" },
+    "BGM_tie no wa": { "file": "assets/bgm/BGM_tie no wa.mp3" },
+    "BGM_HAPPY": { "file": null }
+  }
+}

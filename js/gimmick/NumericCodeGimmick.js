@@ -5,6 +5,11 @@
 // gimmickDef.image + gimmickDef.keypad が指定されている場合は、実際のギミック画像の上に
 // 数字ホットスポットを重ねて表示する（Renderer.jsのspot-hotspotと同じ「矩形に軽く色を
 // つけて文字を表示」という方針）。指定が無い場合は従来の汎用テンキーにフォールバックする。
+//
+// gimmickDef.selector がある場合（ドアBの電子錠）: 左の▲▼で果物を切り替えると、9マスの数字の並び
+// (options[].layout を左上から右下へ順に割り当て)が変わる。正解は「selector.answerOption の果物を
+// 選んだ状態で answer を入力」した時のみ。他の果物の並びでたまたま同じ数字を押しても不正解。
+// 果物を切り替えると入力中の数字は消える（並びが変わったため）。果物画像は未用意のため文字で表示する。
 
 // 正解をデバッグ表示するかどうか。リリース前にfalseにする（or この行ごと削除する）と
 // デバッグ用の正解表示だけが消える（Renderer.jsのDEBUG_SHOW_HOTSPOT_LABELSと同じ方針）。
@@ -12,6 +17,29 @@ const DEBUG_SHOW_ANSWER = true;
 
 export function renderNumericCodeGimmick(container, gimmickDef, onResult) {
   let input = "";
+  const selector = gimmickDef.selector || null;
+  let optionIndex = 0;
+  const currentOption = () => (selector ? selector.options[optionIndex] : null);
+
+  // マスiに表示する数字（果物の並び。selectorが無い場合はkeypadの数字そのまま）
+  function digitAt(i, keyDef) {
+    const opt = currentOption();
+    return opt ? opt.layout[i] : keyDef.digit;
+  }
+
+  function setPos(el, position) {
+    el.style.left = `${position.x}%`;
+    el.style.top = `${position.y}%`;
+    el.style.width = `${position.width}%`;
+    el.style.height = `${position.height}%`;
+  }
+
+  function changeOption(step) {
+    const n = selector.options.length;
+    optionIndex = (optionIndex + step + n) % n;
+    input = "";
+    draw();
+  }
 
   function appendDigit(digit) {
     if (input.length < gimmickDef.digits) {
@@ -33,18 +61,34 @@ export function renderNumericCodeGimmick(container, gimmickDef, onResult) {
     });
     wrap.appendChild(img);
 
-    gimmickDef.keypad.forEach(({ digit, position }) => {
+    gimmickDef.keypad.forEach((keyDef, i) => {
+      const digit = digitAt(i, keyDef);
       const btn = document.createElement("button");
       btn.type = "button";
       btn.className = "gimmick-key-hotspot";
-      btn.style.left = `${position.x}%`;
-      btn.style.top = `${position.y}%`;
-      btn.style.width = `${position.width}%`;
-      btn.style.height = `${position.height}%`;
+      setPos(btn, keyDef.position);
       btn.textContent = digit;
       btn.addEventListener("click", () => appendDigit(digit));
       wrap.appendChild(btn);
     });
+
+    if (selector) {
+      const display = document.createElement("div");
+      display.className = "gimmick-key-hotspot gimmick-key-hotspot--result gimmick-selector-display";
+      setPos(display, selector.display);
+      display.textContent = currentOption().label;
+      wrap.appendChild(display);
+      for (const [dir, step, mark] of [["up", -1, "▲"], ["down", 1, "▼"]]) {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "gimmick-key-hotspot gimmick-selector-btn";
+        btn.dataset.dir = dir;
+        setPos(btn, selector[dir]);
+        btn.textContent = mark;
+        btn.addEventListener("click", () => changeOption(step));
+        wrap.appendChild(btn);
+      }
+    }
 
     parent.appendChild(wrap);
   }
@@ -99,7 +143,7 @@ export function renderNumericCodeGimmick(container, gimmickDef, onResult) {
     submitBtn.textContent = "決定";
     submitBtn.disabled = input.length !== gimmickDef.digits;
     submitBtn.addEventListener("click", () => {
-      const correct = input === gimmickDef.answer;
+      const correct = input === gimmickDef.answer && (!selector || currentOption().label === selector.answerOption);
       onResult(correct);
       input = "";
       draw();
@@ -111,7 +155,7 @@ export function renderNumericCodeGimmick(container, gimmickDef, onResult) {
     if (DEBUG_SHOW_ANSWER) {
       const debugAnswer = document.createElement("div");
       debugAnswer.className = "gimmick-debug-answer";
-      debugAnswer.textContent = `[DEBUG] 正解: ${gimmickDef.answer}`;
+      debugAnswer.textContent = `[DEBUG] 正解: ${selector ? selector.answerOption + " で " : ""}${gimmickDef.answer}`;
       container.appendChild(debugAnswer);
     }
   }

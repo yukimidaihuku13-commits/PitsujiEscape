@@ -535,6 +535,7 @@ html, body {
 }
 .modal-image-placeholder {
   width: 100%;
+  white-space: pre-line;
 }
 
 /* --- BGM選択モーダル --- */
@@ -653,32 +654,44 @@ html, body {
 .gimmick-chat-note {
   margin-bottom: 14px;
 }
-.gimmick-chat-fields {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 14px;
+.gimmick-chat-map {
+  max-height: 38vh;
+  object-fit: contain;
 }
-.gimmick-chat-field {
-  flex: 1;
-  border: 1px solid #999;
+.gimmick-chat-lines {
+  border: 1px solid #b0bec5;
   border-radius: 8px;
-  background: #f5f5f5;
-  padding: 8px 4px;
-  text-align: center;
+  background: #fafafa;
+  padding: 8px;
+  font-size: 0.85rem;
+  line-height: 1.9;
+  margin-bottom: 10px;
 }
-.gimmick-chat-field--focused {
-  border-color: #607d8b;
-  background: #eceff1;
+.gimmick-chat-blank {
+  border: 1px solid #999;
+  border-radius: 6px;
+  background: #fff;
+  padding: 0 6px;
+  margin: 0 2px;
+  font-size: 0.85rem;
 }
-.gimmick-chat-field-label {
-  font-size: 0.7rem;
-  color: #666;
-  margin-bottom: 4px;
+.gimmick-chat-blank--focused {
+  border-color: #ff5722;
+  background: #fff3e0;
 }
-.gimmick-chat-field-value {
+.gimmick-chat-attached {
+  color: #37474f;
+  font-size: 0.8rem;
+}
+.gimmick-status--ok {
+  color: #2e7d32;
+  white-space: pre-line;
+}
+.gimmick-phone-display {
   font-family: monospace;
-  font-size: 1.1rem;
   letter-spacing: 2px;
+  font-size: 1.1rem;
+  line-height: 1;
 }
 .gimmick-chat-items {
   display: flex;
@@ -715,4 +728,42 @@ html, body {
 }
 .gimmick-controls button:disabled {
   opacity: 0.4;
+}
+
+/* --- 設定モーダル: SE/BGMのON/OFF・著作権表記 --- */
+.settings-audio {
+  margin: 8px 0 14px;
+}
+.settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 0;
+  border-bottom: 1px solid #e0e0e0;
+}
+.settings-toggle {
+  min-width: 64px;
+  padding: 6px 10px;
+  border-radius: 16px;
+  border: 1px solid #999;
+  background: #eee;
+  color: #555;
+}
+.settings-toggle--on {
+  background: #4caf50;
+  border-color: #388e3c;
+  color: #fff;
+}
+.settings-credits {
+  margin: 10px 0 14px;
+  font-size: 0.8rem;
+  color: #555;
+}
+.settings-credits-title {
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+.settings-credits-line {
+  margin-bottom: 6px;
+  word-break: break-all;
 }

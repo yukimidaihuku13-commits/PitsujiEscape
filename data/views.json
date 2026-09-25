@@ -25,10 +25,10 @@
         "label": "調査ノート 1ページ左",
         "image": "assets/note/note_1left.webp",
         "onShow": [
-          { "when": {}, "actions": [{ "type": "message", "text": "ぴつじはチョコレートが好きと……" }] }
+          { "when": {}, "actions": [{ "type": "message", "text": "調査によるとぴつじはチョコ好きっぴ" }] }
         ],
         "onTap": [
-          { "when": {}, "actions": [{ "type": "notePageNext" }] }
+          { "when": {}, "actions": [{ "type": "se", "id": "Se_Note" }, { "type": "notePageNext" }] }
         ]
       },
       {
@@ -36,10 +36,10 @@
         "label": "調査ノート 1ページ右",
         "image": "assets/note/note_1right.webp",
         "onShow": [
-          { "when": {}, "actions": [{ "type": "message", "text": "ぴつじはふかふかなものが好きだったな……" }] }
+          { "when": {}, "actions": [{ "type": "message", "text": "ぴつじはふかふかも好きらしいっぴ" }] }
         ],
         "onTap": [
-          { "when": {}, "actions": [{ "type": "notePageNext" }] }
+          { "when": {}, "actions": [{ "type": "se", "id": "Se_Note" }, { "type": "notePageNext" }] }
         ]
       },
       {
@@ -47,10 +47,10 @@
         "label": "調査ノート 2ページ左",
         "image": "assets/note/note_2left.webp",
         "onShow": [
-          { "when": {}, "actions": [{ "type": "message", "text": "ぴつじの友達を調べたページだっぴ" }] }
+          { "when": {}, "actions": [{ "type": "message", "text": "ぴつじの友達のぴさぎについても調べたっぴ" }] }
         ],
         "onTap": [
-          { "when": {}, "actions": [{ "type": "notePageNext" }] }
+          { "when": {}, "actions": [{ "type": "se", "id": "Se_Note" }, { "type": "notePageNext" }] }
         ]
       },
       {
@@ -58,19 +58,20 @@
         "label": "調査ノート 2ページ右",
         "image": "assets/note/note_2right.webp",
         "onShow": [
-          { "when": {}, "actions": [{ "type": "message", "text": "ぴつじの友達の調査もしたっぴ" }] }
+          { "when": {}, "actions": [{ "type": "message", "text": "ぴつじの友達のぴぐまについても調べたっぴ" }] }
         ],
         "onTap": [
-          { "when": { "playPart": 7, "everObtained": "itemPhoto" }, "actions": [{ "type": "notePageNext" }] },
+          { "when": { "playPart": 7, "everObtained": "itemPhoto" }, "actions": [{ "type": "se", "id": "Se_Note" }, { "type": "notePageNext" }] },
           { "when": { "playPart": 7, "clickCount": { "spot": "note2right", "gte": 2 } }, "actions": [
             { "type": "message", "text": "次のページがめくれたっぴ！" },
+            { "type": "message", "text": "写真が張り付いててめくりにくかったっぴねえ" },
             { "type": "notePageNext" }
           ] },
           { "when": { "playPart": 7 }, "actions": [
             { "type": "clickCountIncrement" },
             { "type": "message", "text": "貼り付いてて次のページが中々めくれないッピ" }
           ] },
-          { "when": {}, "actions": [{ "type": "message", "text": "ぴつじの友達の調査もしたっぴ" }] }
+          { "when": {}, "actions": [{ "type": "message", "text": "ぴつじの友達のぴぐまについても調べたっぴ" }] }
         ]
       },
       {
@@ -81,7 +82,7 @@
           { "when": { "everObtained": "itemPhoto" }, "actions": [{ "type": "message", "text": "ぴぐまとぴさぎはパーティーで楽器担当だっぴ" }] },
           { "when": {}, "actions": [
             { "type": "giveItem", "item": "itemPhoto" },
-            { "type": "message", "text": "ぴつじと仲間達が楽しそうにパーティーしてる写真だっぴ" }
+            { "type": "message", "text": "パーティーしてる写真を手にいれたっぴ！" }
           ] }
         ],
         "onTap": [

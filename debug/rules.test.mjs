@@ -52,7 +52,7 @@ function setup({ part = 2, view = null, items = [], ever = [], used = {}, flags 
   state.notePage = notePage;
   if (bgm) { state.bgmState.unlockedTracks.push(bgm); state.bgmState.currentTrack = bgm; }
   const ctx = { selectedItemId: selected };
-  const log = { msgs: [], se: [], gimmick: [], image: [], imageOpts: [], story: [], bgmMenu: 0, autoClear: 0, seq: [] };
+  const log = { msgs: [], se: [], gimmick: [], image: [], imageOpts: [], obtained: [], story: [], bgmMenu: 0, autoClear: 0, seq: [] };
   const ui = {
     queueMessage: (t) => { log.msgs.push(t); log.seq.push("msg:" + t); },
     playSE: (id) => { log.se.push(id); log.seq.push("se:" + id); },
@@ -63,6 +63,7 @@ function setup({ part = 2, view = null, items = [], ever = [], used = {}, flags 
     enterPlayPart: () => {},
     enterEnding: () => log.story.push("end"),
     showImageModal: (o) => { log.image.push(o.caption); log.imageOpts.push(o); },
+    showObtainedItem: (id) => { log.obtained.push(id); log.seq.push("obtain:" + id); },
     openBgmMenu: () => log.bgmMenu++,
     requestRender: () => {},
     scheduleAutoClear: () => log.autoClear++
@@ -271,7 +272,8 @@ test("R-14", "ベッド下: カメラ取得後 / PlayPart6で入手 / その他"
   const e2 = tap(setup({ part: 2, view: "viewBed", items: ["itemChocolate"], selected: "itemChocolate" }), "spotUnderBed");
   eq(e2.log.seq, ["se:Se_ChocoTrhow", "msg:あ！チョコが下に落ちたッピ！！", "se:ガーンみたいな音", "se:ガサガサっという探す音", "msg:ふう、取れたっぴ。一安心っぴ～"]);
   eq(e2.state.inventory, ["itemChocolate"], "チョコが消えた");
-  for (const p of [2, 3, 4]) eq(tap(setup({ part: p, view: "viewBed" }), "spotUnderBed").log.msgs, ["今は使わないものが置いてあるっぴ"], `part${p}`);
+  eq(tap(setup({ part: 2, view: "viewBed" }), "spotUnderBed").log.msgs, ["今は使わないものが置いてあるっぴ"], "part2");
+  for (const p of [3, 4]) eq(tap(setup({ part: p, view: "viewBed" }), "spotUnderBed").log.msgs, ["今は使わないものを収納してあるっぴ～"], `part${p}`);
 });
 test("R-15", "ドアB: PlayPart4以降は部屋B1へ / 3の解除前後 / 2", () => {
   const e4 = tap(setup({ part: 4, view: "roomA1" }), "spotDoorB");
@@ -302,7 +304,8 @@ test("R-17", "冷蔵庫/トースター/テーブル/棚/ぴつじ部屋ドア/�
   eq(tap(setup({ part: 4, view: "roomB1" }), "spotDoorA").log.se, ["Se_DoorOpen1"], "ドアAのSE");
 });
 test("R-18", "テーブルの上: PlayPart4以降 / 3で取得後 / 3で食パン(SE) / その他", () => {
-  eq(tap(setup({ part: 4, view: "viewTable" }), "spotOnTable").log.msgs, ["朝ごはんは食パン派っぴ～"]);
+  for (const p of [4, 6, 7]) eq(tap(setup({ part: p, view: "viewTable" }), "spotOnTable").log.msgs, ["朝ごはんは食パン派っぴ～"], `part${p}`);
+  eq(tap(setup({ part: 5, view: "viewTable" }), "spotOnTable").log.msgs, ["ぴつじはご飯派って顔してるっぴ", "食パンでは満足しないっぴねぇ"]);
   eq(tap(setup({ part: 3, view: "viewTable", ever: ["itemBread"] }), "spotOnTable").log.msgs, ["少しお腹がすいてきたッピ……"]);
   const e = tap(setup({ part: 3, view: "viewTable" }), "spotOnTable");
   eq(e.log.msgs, ["食べたいけどこれは謎のヒントっぴ～"]);
@@ -342,15 +345,20 @@ test("R-21", "壁の貼り紙: PlayPart4以降 / 3で取得後 / 3で青い紙 /
   eq(tap(setup({ part: 2, view: "roomA2" }), "spotWallPaper").log.msgs, ["あからさまにヒントを壁に貼っておいたっぴ"]);
 });
 test("R-22", "冷蔵庫(冷蔵部): 取得後 / PlayPart2でチョコ / その他", () => {
-  eq(tap(setup({ part: 2, view: "viewRefrigerator", ever: ["itemChocolate"] }), "spotFridgeCompartment").log.msgs, ["つい開けてしまうっぴ……何もないッピ"]);
-  for (const p of [4, 7]) eq(tap(setup({ part: p, view: "viewRefrigerator", ever: ["itemChocolate"] }), "spotFridgeCompartment").log.msgs, ["何も入ってないっぴ～"], `part${p}`);
+  eq(tap(setup({ part: 2, view: "viewRefrigerator", ever: ["itemChocolate"] }), "spotFridgeCompartment").log.msgs, ["つい開けてしまうっぴ……何も入ってないッピ"]);
+  for (const p of [6, 7]) eq(tap(setup({ part: p, view: "viewRefrigerator", ever: ["itemChocolate"] }), "spotFridgeCompartment").log.msgs, ["冷蔵庫は空っぽだっぴ～"], `part${p}`);
+  eq(tap(setup({ part: 5, view: "viewRefrigerator" }), "spotFridgeCompartment").log.msgs, ["もうチョコはないッピね"]);
+  eq(tap(setup({ part: 4, view: "viewRefrigerator", flags: { doorEntranceUnlocked: true } }), "spotFridgeCompartment").log.msgs, ["チョコレート無くてもなったっぴねぇ"]);
+  eq(tap(setup({ part: 4, view: "viewRefrigerator" }), "spotFridgeCompartment").log.msgs, ["チョコレートあげちゃったの失敗だったッピ！", "でも無くても何とかなったはずっぴ！"]);
+  for (const p of [2, 4, 5, 6, 7]) eq(tap(setup({ part: p, view: "viewRefrigerator", ever: ["itemChocolate"] }), "spotFridgeCompartment").log.se, ["Se_Refrigeratol"], `part${p} SE`);
   const e = tap(setup({ part: 2, view: "viewRefrigerator" }), "spotFridgeCompartment");
   eq(e.log.msgs, ["ぴつじの好きなチョコレートっぴ！", "これをぴつじに渡すっぴ！"]);
   eq(e.state.inventory, ["itemChocolate"]);
   eq(tap(setup({ part: 3, view: "viewRefrigerator" }), "spotFridgeCompartment").log.msgs, ["ヒント用のチョコレートっぴ"]);
 });
 test("R-23", "冷凍庫: PlayPart4以降 / 取得後 / 3で青い紙→冷凍後の青い紙 / 3で未選択 / その他", () => {
-  eq(tap(setup({ part: 4, view: "viewRefrigerator" }), "spotFreezerCompartment").log.msgs, ["アイス入れておけば良かったッピ～"]);
+  for (const p of [4, 6, 7]) eq(tap(setup({ part: p, view: "viewRefrigerator" }), "spotFreezerCompartment").log.msgs, ["アイスでも入れておけば良かったッピ～"], `part${p}`);
+  eq(tap(setup({ part: 5, view: "viewRefrigerator" }), "spotFreezerCompartment").log.msgs, ["ぴつじが好きそうなものは何もないッピ"]);
   eq(tap(setup({ part: 3, view: "viewRefrigerator", ever: ["itemFrozenBluePaper"] }), "spotFreezerCompartment").log.msgs, ["アイス入れておけば良かったッピ～"]);
   const e = tap(setup({ part: 3, view: "viewRefrigerator", items: ["itemBluePaper"], selected: "itemBluePaper" }), "spotFreezerCompartment");
   eq(e.log.msgs, ["この紙は冷やすと文字が出てくるっぴ！"]);
@@ -375,14 +383,14 @@ test("R-25", "トースター: PlayPart4以降 / 3で焼いたパン選択・取
   eq(tap(setup({ part: 3, view: "viewToaster" }), "spotToaster").log.msgs, ["このトースターはすごく美味しく焼けるっぴ！"]);
   eq(tap(setup({ part: 2, view: "viewToaster" }), "spotToaster").log.msgs, ["美味しいパンが焼けるトースターっぴ～"]);
   const ec = tap(setup({ part: 2, view: "viewToaster", items: ["itemChocolate"], selected: "itemChocolate" }), "spotToaster");
-  eq(ec.log.msgs, ["焼きチョコ美味しいけどぴつじが好きなのは板チョコっぴ"]);
+  eq(ec.log.msgs, ["焼きチョコにするっぴ～？", "違うッピ！！ぴつじに渡すチョコっぴ！"]);
   eq(ec.state.inventory, ["itemChocolate"], "チョコが消えた");
 });
 test("R-26", "ぴつじ部屋ドアノブ: PlayPart3以降 / 2でチョコ使用後・チョコ選択中・その他", () => {
   for (const p of [3, 7]) eq(tap(setup({ part: p, view: "viewPitsujiDoor" }), "spotPitsujiDoorKnob").log.msgs, ["絶対ぴつじを部屋から出してみせるっぴ～！"], `part${p}`);
   eq(tap(setup({ part: 2, view: "viewPitsujiDoor", used: { itemChocolate: ["spotPitsujiDoorGap"] } }), "spotPitsujiDoorKnob").log.msgs, ["部屋に戻って脱出ゲーム再開するっぴ～"]);
   const ec = tap(setup({ part: 2, view: "viewPitsujiDoor", items: ["itemChocolate"], selected: "itemChocolate" }), "spotPitsujiDoorKnob");
-  eq(ec.log.msgs, ["ドア開け渡したらばれちゃうっぴ", "ばれないようにチョコ渡すっぴ"]);
+  eq(ec.log.msgs, ["ドア開け渡したらばれちゃうっぴ", "ばれないようにチョコを渡す方法を考えるっぴ"]);
   eq(ec.state.inventory, ["itemChocolate"], "チョコが消えた");
   eq(tap(setup({ part: 2, view: "viewPitsujiDoor" }), "spotPitsujiDoorKnob").log.msgs, ["ぴつじを脱出させるっぴ～"]);
 });
@@ -423,14 +431,26 @@ test("R-29", "ドア小窓 PlayPart4以前 / 7以降", () => {
   const e = tap(setup({ part: 3, view: "viewPitsujiDoor" }), "spotPitsujiWindow");
   eq(e.log.msgs, ["あんまりガタガタさせると気付かれるッピ"]);
   eq(e.log.se, ["ガタガタしている音"]);
-  eq(tap(setup({ part: 7, view: "viewPitsujiDoor" }), "spotPitsujiWindow").log.msgs, ["気持ちよさそうに寝てるッピ"]);
+  eq(tap(setup({ part: 7, view: "viewPitsujiDoor" }), "spotPitsujiWindow").log.msgs, ["気持ちよさそうに寝てるッピねぇ"]);
 });
 test("R-30", "ドア下隙間: PlayPart2でチョコ使用 / 2で未選択 / 3以降", () => {
   const e = tap(setup({ part: 2, view: "viewPitsujiDoor", items: ["itemChocolate"], selected: "itemChocolate" }), "spotPitsujiDoorGap");
   eq(e.log.seq, ["msg:ここからシュッと入れるっぴ！", "se:Se_ChocoTrhow", "msg:チョコレートに釣られて動いた気配がするっぴ～！", "msg:部屋に戻ってぴつじに脱出させるっぴ！"]);
   eq(e.state.inventory, []);
-  eq(tap(setup({ part: 2, view: "viewPitsujiDoor" }), "spotPitsujiDoorGap").log.msgs, ["狭いけどチョコなら通りそうっぴ"]);
-  eq(tap(setup({ part: 3, view: "viewPitsujiDoor" }), "spotPitsujiDoorGap").log.msgs, ["この隙間はチョコしか通らないッピ"]);
+  eq(tap(setup({ part: 2, view: "viewPitsujiDoor" }), "spotPitsujiDoorGap").log.msgs, ["板チョコのような薄いものなら通りそうっぴねぇ"]);
+  eq(tap(setup({ part: 2, view: "viewPitsujiDoor", used: { itemChocolate: ["spotPitsujiDoorGap"] } }), "spotPitsujiDoorGap").log.msgs, ["ぴつじがチョコ食べてる気配がするっぴ", "今なら脱出しそうだっぴ！"]);
+  for (const p of [3, 4]) eq(tap(setup({ part: p, view: "viewPitsujiDoor" }), "spotPitsujiDoorGap").log.msgs, ["チョコ作戦は失敗だったっぴ～"], `part${p}`);
+  for (const p of [6, 7]) eq(tap(setup({ part: p, view: "viewPitsujiDoor" }), "spotPitsujiDoorGap").log.msgs, ["この隙間はもう使えないっぴ～"], `part${p}`);
+  // PlayPart5: 選択中アイテム毎のメッセージ。いずれも消費しない
+  for (const [item, m] of [["itemCushion", "ここからクッションは通らないっぴねえ"], ["itemLargeTowel", "ここからタオルケットは通らないっぴねえ"], ["itemScrewDriver", "間違えて部屋の中に落とさないようにするっぴ"]]) {
+    for (const flags of [{}, { pitsujiWindowOpen: true }]) {
+      const e5 = tap(setup({ part: 5, view: "viewPitsujiDoor", items: [item], selected: item, flags }), "spotPitsujiDoorGap");
+      eq(e5.log.msgs, [m], item);
+      eq(e5.state.inventory, [item], `${item} が消えた`);
+    }
+  }
+  eq(tap(setup({ part: 5, view: "viewPitsujiDoor", flags: { pitsujiWindowOpen: true } }), "spotPitsujiDoorGap").log.msgs, ["この隙間はもう使えないっぴ～"]);
+  eq(tap(setup({ part: 5, view: "viewPitsujiDoor" }), "spotPitsujiDoorGap").log.msgs, ["こんな狭い隙間じゃだめッピ", "もっと広いところを探すっぴ！"]);
 });
 test("R-31", "引き出し: PlayPart6で電話の説明書 / 取得後 / その他（毎回SE）", () => {
   const e = tap(setup({ part: 6, view: "viewShelf" }), "spotDrawer");
@@ -438,7 +458,7 @@ test("R-31", "引き出し: PlayPart6で電話の説明書 / 取得後 / その�
   eq(e.log.se, ["Se_Shelf"]);
   eq(e.state.inventory, ["itemPhoneManual"]);
   eq(tap(setup({ part: 6, view: "viewShelf", ever: ["itemPhoneManual"] }), "spotDrawer").log.msgs, ["もうここには何もないっぴ～"]);
-  for (const [p, m] of [[3, "今必要なものは何も無いっぴ"], [7, "もうここには何もないっぴ～"]]) {
+  for (const [p, m] of [[3, "今必要なものは何も無いッピ"], [7, "もうここには何もないっぴ～"]]) {
     const o = tap(setup({ part: p, view: "viewShelf" }), "spotDrawer");
     eq(o.log.msgs, [m], `part${p}`);
     eq(o.log.se, ["Se_Shelf"], `part${p} SE`);
@@ -538,8 +558,8 @@ test("R-39", "電話: PlayPart7以降 / 6でギミック / 6クリア後 / 4で�
   eq(e4.log.msgs, ["ヒントが見えたっぴ！"]);
   eq(e4.log.image.length, 1);
   eq(e4.state.inventory, ["itemBlackLight"], "ブラックライト(残存)が消えた");
-  eq(tap(setup({ part: 4, view: "viewPhoneStand" }), "spotPhone").log.msgs, ["今は電話したいところはないっぴ"]);
-  eq(tap(setup({ part: 5, view: "viewPhoneStand" }), "spotPhone").log.msgs, ["今は電話よりぴつじのことっぴ～！"]);
+  eq(tap(setup({ part: 4, view: "viewPhoneStand" }), "spotPhone").log.msgs, ["電話にも仕掛けをしてたっぴ～"]);
+  eq(tap(setup({ part: 5, view: "viewPhoneStand" }), "spotPhone").log.msgs, ["今は電話したいところはないっぴ～", "そんなことよりぴつじッピ！"]);
 });
 test("R-40", "電話台引き出し: PlayPart5以降 / 4で取得後 / 4でブラックライト", () => {
   eq(tap(setup({ part: 4, view: "viewPhoneStand", ever: ["itemBlackLight"] }), "spotPhoneStandDrawer").log.msgs, ["もうここには何も入れてないっぴ"]);
@@ -593,10 +613,10 @@ test("NR-03", "PlayPart7: 2右で3回タップすると3左へ進み、写真を
   e.log.msgs.length = 0;
   notePageTap(e); notePageTap(e);
   eq(notePageId(e), "note2right", "2回で進んでしまった");
-  eq(e.log.msgs, ["貼り付いてて次のページが中々めくれないッピ", "貼り付いてて次のページが中々めくれないッピ"]);
+  eq(e.log.msgs, ["ん？", "次のページが貼り付いてるッピ？", "貼り付いてて次のページが中々めくれないッピ"]);
   notePageTap(e);
   eq(notePageId(e), "note3left");
-  eq(e.log.msgs.slice(2), ["次のページがめくれたっぴ！", "写真が張り付いててめくりにくかったっぴねえ", "パーティーしてる写真を手にいれたっぴ！"]);
+  eq(e.log.msgs.slice(3), ["次のページがめくれたっぴ！", "写真が張り付いててめくりにくかったっぴねえ", "パーティーしてる写真を手にいれたっぴ！"]);
   eq(e.state.inventory, ["itemPhoto"]);
 });
 test("NR-04", "3左(最後のページ)ではそれ以上進まず、写真も重複入手しない", () => {
@@ -1038,6 +1058,140 @@ test("X-06", "SE: メッセージを挟まずに続けて鳴るSEは多くても
 // =====================================================================
 // D: データ整合性
 // =====================================================================
+// =====================================================================
+// I: アイテム入手時の拡大画像（修正依頼: 入手時に拡大画像を表示し、タップで閉じる）
+// =====================================================================
+test("I-01", "入手時に拡大画像を表示する: 資料の「取得」の位置(メッセージ・SEとの順番)で1回だけ", () => {
+  const ef = tap(setup({ part: 2, view: "viewRefrigerator" }), "spotFridgeCompartment");
+  eq(ef.log.seq, ["se:Se_Refrigeratol", "obtain:itemChocolate", "msg:ぴつじの好きなチョコレートっぴ！", "msg:これをぴつじに渡すっぴ！"]);
+  const eb = tap(setup({ part: 5, view: "viewBed" }), "spotBedmat");
+  eq(eb.log.seq, ["se:TBD_ベッドマット", "msg:ふわふわタオルケット。これは気にいるっぴ", "obtain:itemLargeTowel"]);
+  const ek = tap(setup({ part: 6, view: "roomPiguma" }), "spotBookshelf");
+  eq(ek.log.seq.filter((s) => s.startsWith("obtain:")), ["obtain:itemPisagiCard"]);
+  eq(ek.log.image.length, 1, "しおりの本の画像");
+  // 取得済みの再タップでは表示しない
+  eq(tap(setup({ part: 2, view: "viewRefrigerator", ever: ["itemChocolate"] }), "spotFridgeCompartment").log.obtained, []);
+});
+test("I-02", "変化するアイテムは変化後のアイテムを入手として表示（冷凍後の青い紙 / 焼かれた食パンは焼き上がりの後）", () => {
+  const ez = tap(setup({ part: 3, view: "viewRefrigerator", items: ["itemBluePaper"], selected: "itemBluePaper" }), "spotFreezerCompartment");
+  eq(ez.log.seq, ["se:Se_Refrigeratol", "obtain:itemFrozenBluePaper", "msg:この紙は冷やすと文字が出てくるっぴ！"]);
+  const et = tap(setup({ part: 3, view: "viewToaster", items: ["itemBread"], selected: "itemBread" }), "spotToaster");
+  eq(et.log.seq, ["msg:パンを焼くっぴ～", "se:焼いている音", "se:トースターが終わる音", "obtain:itemToastedBread", "msg:お腹空いたけど食べる前にヒント見るっぴ！", "msg:後で美味しくいただくっぴ～！"]);
+  // 消失アイテムの使用では入手表示を出さない
+  eq(tap(setup({ part: 2, view: "viewPitsujiDoor", items: ["itemChocolate"], selected: "itemChocolate" }), "spotPitsujiDoorGap").log.obtained, []);
+});
+test("I-03", "ギミック成功・調査ノートでの入手も表示（マラカス・タンバリン / 写真）", () => {
+  const eg = setup({ part: 7, view: "roomB1" });
+  eg.engine.resolveGimmickResult("gimmickPhoto", true);
+  eq(eg.log.obtained, ["itemMaracas", "itemTambourine"]);
+  const en = openNote({ part: 7 });
+  for (let i = 0; i < 6; i++) notePageTap(en);
+  eq(en.log.obtained, ["itemPhoto"]);
+});
+test("I-04", "全ての入手箇所(giveItem・変化)で、入手したアイテムと同じものが1回ずつ表示される（通しプレイ）", () => {
+  const errs = [];
+  for (let p = 1; p <= 8; p++) {
+    for (const viewId of viewsInPart(p)) {
+      for (const spotId of data.viewsById[viewId].spots) {
+        for (const sel of [null, ...ALL_ITEMS]) {
+          const e = setup({ part: p, view: viewId, items: sel ? [sel] : [], selected: sel, flags: { pitsujiWindowOpen: true } });
+          if (!visible(e, spotId)) continue;
+          const before = [...e.state.inventory];
+          tap(e, spotId);
+          const added = e.state.inventory.filter((id) => !before.includes(id));
+          if (JSON.stringify(added) !== JSON.stringify(e.log.obtained)) errs.push(`part${p}/${spotId}/${sel}: 入手${JSON.stringify(added)} 表示${JSON.stringify(e.log.obtained)}`);
+        }
+      }
+    }
+  }
+  eq(errs.slice(0, 10), []);
+});
+
+// =====================================================================
+// W: 不正解位置でのアイテム使用（修正依頼: 正解位置以外では消費しない）
+// =====================================================================
+// 各アイテムの正解位置（ゲームクリックポイント.txt の「使用」）。ここに無い場所は全て不正解位置。
+const CORRECT_USE = {
+  itemChocolate: ["spotPitsujiDoorGap"],
+  itemBluePaper: ["spotFreezerCompartment"],
+  itemBread: ["spotToaster"],
+  itemBlackLight: ["spotPhone", "spotSalt"],
+  itemScrewDriver: ["spotPitsujiWindow"],
+  itemCushion: ["spotPitsujiWindow"],
+  itemLargeTowel: ["spotPitsujiWindow"],
+  itemCamera: ["spotPitsujiWindow"],
+  itemPhoto: ["spotPisagi"],
+  itemTambourine: ["spotPisagi"],
+  itemMaracas: ["spotPiguma"],
+  itemFrozenBluePaper: [], itemToastedBread: [], itemIllust: [], itemPisagiCard: [], itemPhoneManual: []
+};
+test("W-01", "正解位置の一覧が items.json の usableOn と一致し、使用(consumeSelectedItem)は正解位置の選択中アイテムにしか設定されていない", () => {
+  const errs = [];
+  for (const id of ALL_ITEMS) {
+    if (JSON.stringify([...(CORRECT_USE[id] || ["(一覧に無い)"])].sort()) !== JSON.stringify([...data.itemsById[id].usableOn].sort())) errs.push(`${id}: usableOn ${JSON.stringify(data.itemsById[id].usableOn)}`);
+  }
+  // 条件式に含まれる selectedItem を全て集める（allOf/anyOf の中も）
+  const selectedIn = (w) => !w || typeof w !== "object" ? [] : [...(w.selectedItem ? [w.selectedItem] : []), ...[...(w.allOf || []), ...(w.anyOf || [])].flatMap(selectedIn)];
+  const ruleSets = [
+    ...Object.values(data.spotsById).map((s) => [s.id, s.rules]),
+    ...Object.values(data.viewsById).flatMap((v) => (v.pages || []).flatMap((pg) => [[pg.id, pg.onShow || []], [pg.id, pg.onTap || []]]))
+  ];
+  for (const [where, rules] of ruleSets) {
+    for (const r of rules) {
+      if (!r.actions.some((a) => a.type === "consumeSelectedItem")) continue;
+      const sels = selectedIn(r.when);
+      if (sels.length !== 1) errs.push(`${where}: 使用するアイテムが条件で1つに決まっていない`);
+      for (const it of sels) if (!(CORRECT_USE[it] || []).includes(where)) errs.push(`${where}: ${it} は正解位置ではないのに使用する`);
+    }
+  }
+  for (const g of Object.values(data.gimmicksById)) {
+    for (const a of [...(g.onSuccess || []), ...(g.onFail || []), ...(g.failCases || []).flatMap((c) => c.actions)]) {
+      if (a.type === "consumeSelectedItem") errs.push(`${g.id}: ギミックで選択中アイテムを使用する`);
+    }
+  }
+  eq(errs, []);
+});
+test("W-02", "不正解位置: 全アイテム×正解位置以外の全クリックポイント×全パート×(未進行/進行後)で、消費も使用記録もされない", () => {
+  const errs = [];
+  let cases = 0;
+  for (let p = 1; p <= 8; p++) {
+    for (const variant of ["fresh", "done"]) {
+      for (const viewId of viewsInPart(p)) {
+        for (const spotId of data.viewsById[viewId].spots) {
+          for (const sel of ALL_ITEMS) {
+            if (CORRECT_USE[sel].includes(spotId)) continue;
+            const base = variantState(p, variant);
+            for (const flags of [base.flags || {}, { ...(base.flags || {}), pitsujiWindowOpen: true }]) {
+              const e = setup({ ...base, flags, view: viewId, items: [sel], selected: sel });
+              if (!visible(e, spotId)) continue;
+              cases++;
+              const usedBefore = JSON.stringify(e.state.itemUsageLog);
+              tap(e, spotId);
+              if (e.state.phase !== "play") continue; // パートクリア時の残存アイテム破棄は正常動作
+              if (!e.state.inventory.includes(sel)) errs.push(`part${p}/${variant}/${spotId}: ${sel} が消費された`);
+              if (JSON.stringify(e.state.itemUsageLog) !== usedBefore) errs.push(`part${p}/${variant}/${spotId}: ${sel} が使用記録された`);
+            }
+          }
+        }
+      }
+    }
+  }
+  ok(cases > 2000, `ケース数が少ない: ${cases}`);
+  eq(errs.slice(0, 20), []);
+});
+test("W-03", "データの設定ミスで不正解位置に使用処理が走っても、アイテムは消費されず選択も残る（Inventoryの安全策）", () => {
+  const e = setup({ part: 3, view: "viewToaster", items: ["itemChocolate"], selected: "itemChocolate" });
+  const origError = console.error;
+  const errors = [];
+  console.error = (...a) => errors.push(a.join(" "));
+  try { e.engine.runActions([{ type: "consumeSelectedItem" }], "spotToaster"); } finally { console.error = origError; }
+  eq(e.state.inventory, ["itemChocolate"]);
+  eq(e.state.itemUsageLog, {});
+  eq(e.ctx.selectedItemId, "itemChocolate");
+  eq(e.log.obtained, []);
+  ok(errors.some((m) => m.includes("itemChocolate")), "コンソールに設定ミスが出ていない");
+});
+
 test("D-01", "全spot/view/gimmick/itemの参照先が存在する", () => {
   const errs = [];
   for (const v of Object.values(data.viewsById)) for (const s of v.spots) if (!data.spotsById[s]) errs.push(`view ${v.id} → spot ${s}`);

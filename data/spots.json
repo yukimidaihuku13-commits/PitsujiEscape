@@ -237,7 +237,8 @@
         { "type": "se", "id": "ガサガサっという探す音" },
         { "type": "message", "text": "ふう、取れたっぴ。一安心っぴ～" }
       ] },
-      { "when": { }, "actions": [{ "type": "message", "text": "今は使わないものが置いてあるっぴ" }] }
+      { "when": { "playPart": 2 }, "actions": [{ "type": "message", "text": "今は使わないものが置いてあるっぴ" }] },
+      { "when": { }, "actions": [{ "type": "message", "text": "今は使わないものを収納してあるっぴ～" }] }
     ]
   },
   {
@@ -365,10 +366,20 @@
     "label": "冷蔵庫",
     "position": { "x": 29, "y": 31, "width": 42, "height": 23 },
     "rules": [
-      { "when": { "playPart": { "gt": 3 } }, "actions": [{ "type": "se", "id": "Se_Refrigeratol" }, { "type": "message", "text": "何も入ってないっぴ～" }] },
+      { "when": { "playPart": { "gt": 5 } }, "actions": [{ "type": "se", "id": "Se_Refrigeratol" }, { "type": "message", "text": "冷蔵庫は空っぽだっぴ～" }] },
+      { "when": { "playPart": 5 }, "actions": [{ "type": "se", "id": "Se_Refrigeratol" }, { "type": "message", "text": "もうチョコはないッピね" }] },
+      { "when": { "playPart": 4, "flag": { "doorEntranceUnlocked": true } }, "actions": [
+        { "type": "se", "id": "Se_Refrigeratol" },
+        { "type": "message", "text": "チョコレート無くてもなったっぴねぇ" }
+      ] },
+      { "when": { "playPart": 4 }, "actions": [
+        { "type": "se", "id": "Se_Refrigeratol" },
+        { "type": "message", "text": "チョコレートあげちゃったの失敗だったッピ！" },
+        { "type": "message", "text": "でも無くても何とかなったはずっぴ！" }
+      ] },
       { "when": { "playPart": 2, "everObtained": "itemChocolate" }, "actions": [
         { "type": "se", "id": "Se_Refrigeratol" },
-        { "type": "message", "text": "つい開けてしまうっぴ……何もないッピ" }
+        { "type": "message", "text": "つい開けてしまうっぴ……何も入ってないッピ" }
       ] },
       { "when": { "playPart": 2 }, "actions": [
         { "type": "se", "id": "Se_Refrigeratol" },
@@ -385,8 +396,9 @@
     "label": "冷凍庫",
     "position": { "x": 29, "y": 54, "width": 42, "height": 20 },
     "rules": [
-      { "when": { "playPart": { "gte": 4 } }, "actions": [{ "type": "se", "id": "Se_Refrigeratol" }, { "type": "message", "text": "アイス入れておけば良かったッピ～" }] },
-      { "when": { "everObtained": "itemFrozenBluePaper" }, "actions": [
+      { "when": { "playPart": 5 }, "actions": [{ "type": "se", "id": "Se_Refrigeratol" }, { "type": "message", "text": "ぴつじが好きそうなものは何もないッピ" }] },
+      { "when": { "playPart": { "gt": 3 } }, "actions": [{ "type": "se", "id": "Se_Refrigeratol" }, { "type": "message", "text": "アイスでも入れておけば良かったッピ～" }] },
+      { "when": { "playPart": 3, "everObtained": "itemFrozenBluePaper" }, "actions": [
         { "type": "se", "id": "Se_Refrigeratol" },
         { "type": "message", "text": "アイス入れておけば良かったッピ～" }
       ] },
@@ -409,15 +421,18 @@
       { "when": { "playPart": 3, "selectedItem": "itemToastedBread" }, "actions": [{ "type": "message", "text": "これ以上焼いたら焦げちゃうッピー！" }] },
       { "when": { "playPart": 3, "everObtained": "itemToastedBread" }, "actions": [{ "type": "message", "text": "美味しく焼けたっぴ～" }] },
       { "when": { "playPart": 3, "selectedItem": "itemBread" }, "actions": [
-        { "type": "consumeSelectedItem" },
         { "type": "message", "text": "パンを焼くっぴ～" },
         { "type": "se", "id": "焼いている音" },
         { "type": "se", "id": "トースターが終わる音" },
+        { "type": "consumeSelectedItem" },
         { "type": "message", "text": "お腹空いたけど食べる前にヒント見るっぴ！" },
         { "type": "message", "text": "後で美味しくいただくっぴ～！" }
       ] },
       { "when": { "playPart": 3 }, "actions": [{ "type": "message", "text": "このトースターはすごく美味しく焼けるっぴ！" }] },
-      { "when": { "selectedItem": "itemChocolate" }, "actions": [{ "type": "message", "text": "焼きチョコ美味しいけどぴつじが好きなのは板チョコっぴ" }] },
+      { "when": { "selectedItem": "itemChocolate" }, "actions": [
+        { "type": "message", "text": "焼きチョコにするっぴ～？" },
+        { "type": "message", "text": "違うッピ！！ぴつじに渡すチョコっぴ！" }
+      ] },
       { "when": { }, "actions": [{ "type": "message", "text": "美味しいパンが焼けるトースターっぴ～" }] }
     ]
   },
@@ -431,7 +446,7 @@
       { "when": { "usedOn": { "item": "itemChocolate", "spot": "spotPitsujiDoorGap" } }, "actions": [{ "type": "message", "text": "部屋に戻って脱出ゲーム再開するっぴ～" }] },
       { "when": { "selectedItem": "itemChocolate" }, "actions": [
         { "type": "message", "text": "ドア開け渡したらばれちゃうっぴ" },
-        { "type": "message", "text": "ばれないようにチョコ渡すっぴ" }
+        { "type": "message", "text": "ばれないようにチョコを渡す方法を考えるっぴ" }
       ] },
       { "when": { }, "actions": [{ "type": "message", "text": "ぴつじを脱出させるっぴ～" }] }
     ]
@@ -442,7 +457,7 @@
     "label": "ドア小窓",
     "position": { "x": 49.1, "y": 31.8, "width": 27.3, "height": 14.1 },
     "rules": [
-      { "when": { "playPart": { "gt": 6 } }, "actions": [{ "type": "message", "text": "気持ちよさそうに寝てるッピ" }] },
+      { "when": { "playPart": { "gt": 6 } }, "actions": [{ "type": "message", "text": "気持ちよさそうに寝てるッピねぇ" }] },
       { "when": { "playPart": 6, "usedOn": { "item": "itemCamera", "spot": "spotPitsujiWindow" } }, "actions": [
         { "type": "message", "text": "気持ちよさそうに熟睡しているッピ……" },
         { "type": "message", "text": "少しの音では起きなさそうッピ……" }
@@ -483,7 +498,20 @@
     "label": "ドア下隙間",
     "position": { "x": 40.8, "y": 71.1, "width": 44.6, "height": 3.3 },
     "rules": [
-      { "when": { "playPart": { "gt": 2 } }, "actions": [{ "type": "message", "text": "この隙間はチョコしか通らないッピ" }] },
+      { "when": { "playPart": { "gt": 5 } }, "actions": [{ "type": "message", "text": "この隙間はもう使えないっぴ～" }] },
+      { "when": { "playPart": 5, "selectedItem": "itemCushion" }, "actions": [{ "type": "message", "text": "ここからクッションは通らないっぴねえ" }] },
+      { "when": { "playPart": 5, "selectedItem": "itemLargeTowel" }, "actions": [{ "type": "message", "text": "ここからタオルケットは通らないっぴねえ" }] },
+      { "when": { "playPart": 5, "selectedItem": "itemScrewDriver" }, "actions": [{ "type": "message", "text": "間違えて部屋の中に落とさないようにするっぴ" }] },
+      { "when": { "playPart": 5, "flag": { "pitsujiWindowOpen": true } }, "actions": [{ "type": "message", "text": "この隙間はもう使えないっぴ～" }] },
+      { "when": { "playPart": 5 }, "actions": [
+        { "type": "message", "text": "こんな狭い隙間じゃだめッピ" },
+        { "type": "message", "text": "もっと広いところを探すっぴ！" }
+      ] },
+      { "when": { "playPart": { "gt": 2 } }, "actions": [{ "type": "message", "text": "チョコ作戦は失敗だったっぴ～" }] },
+      { "when": { "usedOn": { "item": "itemChocolate", "spot": "spotPitsujiDoorGap" } }, "actions": [
+        { "type": "message", "text": "ぴつじがチョコ食べてる気配がするっぴ" },
+        { "type": "message", "text": "今なら脱出しそうだっぴ！" }
+      ] },
       { "when": { "selectedItem": "itemChocolate" }, "actions": [
         { "type": "message", "text": "ここからシュッと入れるっぴ！" },
         { "type": "consumeSelectedItem" },
@@ -491,7 +519,7 @@
         { "type": "message", "text": "チョコレートに釣られて動いた気配がするっぴ～！" },
         { "type": "message", "text": "部屋に戻ってぴつじに脱出させるっぴ！" }
       ] },
-      { "when": { }, "actions": [{ "type": "message", "text": "狭いけどチョコなら通りそうっぴ" }] }
+      { "when": { }, "actions": [{ "type": "message", "text": "板チョコのような薄いものなら通りそうっぴねぇ" }] }
     ]
   },
   {
@@ -510,7 +538,7 @@
         { "type": "message", "text": "電話の説明書を読むっぴ～" },
         { "type": "giveItem", "item": "itemPhoneManual" }
       ] },
-      { "when": { }, "actions": [{ "type": "se", "id": "Se_Shelf" }, { "type": "message", "text": "今必要なものは何も無いっぴ" }] }
+      { "when": { }, "actions": [{ "type": "se", "id": "Se_Shelf" }, { "type": "message", "text": "今必要なものは何も無いッピ" }] }
     ]
   },
   {
@@ -542,6 +570,10 @@
     "label": "テーブルの上",
     "position": { "x": 40.4, "y": 42.1, "width": 19.2, "height": 11.1 },
     "rules": [
+      { "when": { "playPart": 5 }, "actions": [
+        { "type": "message", "text": "ぴつじはご飯派って顔してるっぴ" },
+        { "type": "message", "text": "食パンでは満足しないっぴねぇ" }
+      ] },
       { "when": { "playPart": { "gt": 3 } }, "actions": [{ "type": "message", "text": "朝ごはんは食パン派っぴ～" }] },
       { "when": { "playPart": 3, "everObtained": "itemBread" }, "actions": [{ "type": "message", "text": "少しお腹がすいてきたッピ……" }] },
       { "when": { "playPart": 3 }, "actions": [
@@ -753,14 +785,17 @@
         { "type": "triggerGimmick", "target": "gimmickPhone" },
         { "type": "message", "text": "ぴさぎを呼び出すっぴ！" }
       ] },
-      { "when": { "playPart": 5 }, "actions": [{ "type": "message", "text": "今は電話よりぴつじのことっぴ～！" }] },
+      { "when": { "playPart": 5 }, "actions": [
+        { "type": "message", "text": "今は電話したいところはないっぴ～" },
+        { "type": "message", "text": "そんなことよりぴつじッピ！" }
+      ] },
       { "when": { "playPart": 4, "selectedItem": "itemBlackLight" }, "actions": [
         { "type": "se", "id": "ブラックライト点灯音" },
         { "type": "consumeSelectedItem" },
         { "type": "message", "text": "ヒントが見えたっぴ！" },
         { "type": "showImageModal", "caption": "PHONEの踊る人形文字（画像仮）" }
       ] },
-      { "when": { "playPart": 4 }, "actions": [{ "type": "message", "text": "今は電話したいところはないっぴ" }] },
+      { "when": { "playPart": 4 }, "actions": [{ "type": "message", "text": "電話にも仕掛けをしてたっぴ～" }] },
       { "when": { }, "actions": [{ "type": "message", "text": "今は電話したいところはないっぴ～" }] }
     ]
   },

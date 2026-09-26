@@ -14,7 +14,7 @@ export class Engine {
    * @param {object} state GameState（可変オブジェクト）
    * @param {object} data { itemsById, viewsById, spotsById, playPartsById, storyPartsById, gimmicksById, transitions }
    * @param {object} ctx { selectedItemId }
-   * @param {object} ui  { queueMessage, playSE, setFlagInOrder, openGimmick, closeGimmick, enterStoryPart, enterPlayPart, requestRender, scheduleAutoClear, enterEnding }
+   * @param {object} ui  { queueMessage, playSE, setFlagInOrder, openGimmick, closeGimmick, enterStoryPart, enterPlayPart, requestRender, scheduleAutoClear, enterEnding, showImageModal, showObtainedItem, openBgmMenu }
    */
   constructor(state, data, ctx, ui) {
     this.state = state;
@@ -57,10 +57,11 @@ export class Engine {
         this.ui.setFlagInOrder(action.flag, action.value);
         break;
       case "giveItem":
-        Inventory.giveItem(this.state, action.item);
+        this.withObtainedItemZoom(() => Inventory.giveItem(this.state, action.item));
         break;
       case "consumeSelectedItem":
-        Inventory.consumeSelectedItem(this.state, this.ctx, this.data.itemsById, currentSpotId);
+        // 変化するアイテム(食パン→焼かれた食パン等)は、変化後のアイテムの入手として拡大画像を出す。
+        this.withObtainedItemZoom(() => Inventory.consumeSelectedItem(this.state, this.ctx, this.data.itemsById, currentSpotId));
         break;
       case "consumeItem":
         // 選択操作を介さずに特定アイテムを使用済みにする（例: チャット画面ギミックに添付した写真）。
@@ -114,6 +115,16 @@ export class Engine {
         break;
       default:
         console.warn("[Engine] 未知のアクションtype:", action.type, action);
+    }
+  }
+
+  // アイテム入手時は、その場でアイテムの拡大画像を表示する（タップで閉じる）。
+  // 所持品に新しく加わったアイテムを検出するので、取得済みアイテムの再取得では表示しない。
+  withObtainedItemZoom(fn) {
+    const before = new Set(this.state.inventory);
+    fn();
+    for (const id of this.state.inventory) {
+      if (!before.has(id)) this.ui.showObtainedItem(id);
     }
   }
 

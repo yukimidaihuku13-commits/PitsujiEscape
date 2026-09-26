@@ -67,9 +67,14 @@
             { "type": "message", "text": "写真が張り付いててめくりにくかったっぴねえ" },
             { "type": "notePageNext" }
           ] },
-          { "when": { "playPart": 7 }, "actions": [
+          { "when": { "playPart": 7, "clickCount": { "spot": "note2right", "gte": 1 } }, "actions": [
             { "type": "clickCountIncrement" },
             { "type": "message", "text": "貼り付いてて次のページが中々めくれないッピ" }
+          ] },
+          { "when": { "playPart": 7 }, "actions": [
+            { "type": "clickCountIncrement" },
+            { "type": "message", "text": "ん？" },
+            { "type": "message", "text": "次のページが貼り付いてるッピ？" }
           ] },
           { "when": {}, "actions": [{ "type": "message", "text": "ぴつじの友達のぴぐまについても調べたっぴ" }] }
         ]

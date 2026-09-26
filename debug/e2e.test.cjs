@@ -87,7 +87,19 @@ function helpers(page) {
       await page.waitForSelector(".header-icons, .start-screen, .story-footer");
       await page.waitForTimeout(WAIT);
     },
-    async click(locator) { await locator.click({ timeout: 3000 }); await page.waitForTimeout(WAIT); },
+    // アイテム入手時の拡大画像(.item-get-box)は、既存テストの流れを変えないよう既定で自動的に閉じる。
+    // 入手画像そのものを確かめるテストでは h.autoCloseGet = false にする。閉じたアイテム名は h.gotItems に記録。
+    autoCloseGet: true,
+    gotItems: [],
+    async closeGet() {
+      for (let i = 0; i < 5 && (await page.locator(".item-get-box").count()); i++) {
+        h.gotItems.push(((await page.textContent(".item-get-box .item-zoom-name")) || "").trim());
+        await page.waitForTimeout(WAIT);
+        await page.mouse.click(20, 80);
+        await page.waitForTimeout(WAIT);
+      }
+    },
+    async click(locator) { await locator.click({ timeout: 3000 }); await page.waitForTimeout(WAIT); if (h.autoCloseGet) await h.closeGet(); },
     spot: (label) => page.locator(".spot-hotspot, .spot-btn").filter({ hasText: new RegExp(`^${label}$`) }),
     item: (name) => page.locator(".inventory-bar .inventory-item").filter({ hasText: new RegExp(`^${name}$`) }),
     async tapSpot(label) { await h.click(h.spot(label)); },
@@ -98,6 +110,7 @@ function helpers(page) {
     async readAll(max = 20) {
       const out = [];
       for (let i = 0; i < max; i++) {
+        if (h.autoCloseGet && (await page.locator(".item-get-box").count())) { await h.closeGet(); continue; }
         if (await h.modalCount()) break;
         const t = await h.msg();
         if (!t) break;
@@ -111,6 +124,7 @@ function helpers(page) {
     async readThrough(max = 30) {
       const out = [];
       for (let i = 0; i < max; i++) {
+        if (h.autoCloseGet && (await page.locator(".item-get-box").count())) { await h.closeGet(); continue; }
         if (await h.modalCount()) {
           const cap = (await page.textContent(".modal-box")).replace("×", "").trim();
           out.push(`[画像]${cap}`);
@@ -342,6 +356,66 @@ function ok(c, label) { if (!c) throw new Error(label); }
       if (await page.locator(".item-zoom-message").count() && !(await page.locator(".item-zoom-close").count())) { await page.mouse.click(30, 120); await page.waitForTimeout(WAIT); }
       await h.click(page.locator(".item-zoom-close"));
       await h.tapItem(it.name); // 選択解除
+    }
+  });
+
+  // ===================== I-20〜: アイテム入手時の拡大画像・不正解位置での使用 =====================
+  await test("I-20", "入手時: 拡大画像(アイテム名＋仮枠)が出て、タップで閉じると続きのメッセージへ進む", async (page, h) => {
+    h.autoCloseGet = false;
+    await h.load(baseState({ playPart: 3, currentView: "viewTable" }));
+    await h.tapSpot("テーブルの上");
+    eq(await page.locator(".item-get-box").count(), 1, "入手画像が出ない");
+    eq((await page.textContent(".item-get-box .item-zoom-name")).trim(), "食パン");
+    ok((await page.textContent(".item-get-box .modal-image-placeholder")).includes("食パン"), "仮枠にアイテム名が無い");
+    eq(await h.msg(), "", "入手画像の表示中に次のメッセージが出ている");
+    eq(await h.inv(), ["食パン"], "所持品に入っていない");
+    await h.shot("I-20_item_get");
+    await page.mouse.click(200, 700); await page.waitForTimeout(WAIT);
+    eq(await h.modalCount(), 0, "タップで閉じない");
+    eq(await h.readAll(), ["食べたいけどこれは謎のヒントっぴ～"]);
+    eq(await h.selected(), [], "入手で選択状態になった");
+  });
+  await test("I-21", "入手画像: 開いた直後の素早いタップでは閉じない / ×でも閉じる / 取得済みの再タップでは出ない", async (page, h) => {
+    h.autoCloseGet = false;
+    await h.load(baseState({ playPart: 2, currentView: "viewRefrigerator" }));
+    await h.spot("冷蔵庫").click();
+    await page.mouse.click(200, 700);
+    eq(await page.locator(".item-get-box").count(), 1, "開いた直後のタップで閉じた");
+    await page.waitForTimeout(WAIT);
+    await h.click(page.locator(".item-get-box .modal-close-btn"));
+    eq(await h.modalCount(), 0, "×で閉じない");
+    eq(await h.readAll(), ["ぴつじの好きなチョコレートっぴ！", "これをぴつじに渡すっぴ！"]);
+    await h.tapSpot("冷蔵庫");
+    eq(await h.modalCount(), 0, "取得済みなのに入手画像が出た");
+    eq(await h.readAll(), ["つい開けてしまうっぴ……何も入ってないッピ"]);
+  });
+  await test("I-22", "変化アイテム: 食パンをトースターで使うと、焼き上がりの後に「焼かれた食パン」の入手画像", async (page, h) => {
+    h.autoCloseGet = false;
+    await h.load(baseState({ playPart: 3, currentView: "viewToaster", inventory: ["itemBread"], everObtainedItems: ["itemBread"] }));
+    await h.useItem("食パン", "トースター");
+    eq(await h.msg(), "パンを焼くっぴ～");
+    await page.locator("#footer-message").click(); await page.waitForTimeout(WAIT);
+    eq((await page.textContent(".item-get-box .item-zoom-name")).trim(), "焼かれた食パン");
+    await page.mouse.click(200, 700); await page.waitForTimeout(WAIT);
+    eq(await h.readAll(), ["お腹空いたけど食べる前にヒント見るっぴ！", "後で美味しくいただくっぴ～！"]);
+    eq(await h.inv(), ["焼かれた食パン"]);
+  });
+  await test("I-23", "不正解位置: 選択中アイテムを正解位置以外で使っても消費されず、選択も外れない", async (page, h) => {
+    const cases = [
+      { st: { playPart: 2, currentView: "viewToaster", inventory: ["itemChocolate"] }, item: "チョコレート", spot: "トースター", id: "itemChocolate" },
+      { st: { playPart: 2, currentView: "viewPitsujiDoor", inventory: ["itemChocolate"] }, item: "チョコレート", spot: "ドアノブ", id: "itemChocolate" },
+      { st: { playPart: 3, currentView: "viewRefrigerator", inventory: ["itemBread"] }, item: "食パン", spot: "冷凍庫", id: "itemBread" },
+      { st: { playPart: 5, currentView: "viewPitsujiDoor", inventory: ["itemCushion"] }, item: "クッション", spot: "ドア下隙間", id: "itemCushion" },
+      { st: { playPart: 5, currentView: "viewBed", inventory: ["itemLargeTowel"] }, item: "タオルケット", spot: "ベッド下", id: "itemLargeTowel" },
+      { st: { playPart: 7, currentView: "roomPiguma", inventory: ["itemTambourine"] }, item: "タンバリン", spot: "ぴぐま", id: "itemTambourine" }
+    ];
+    for (const c of cases) {
+      await h.load(baseState({ ...c.st, everObtainedItems: [...c.st.inventory] }));
+      await h.useItem(c.item, c.spot);
+      await h.readAll();
+      eq(await h.inv(), [c.item], `${c.spot}で${c.item}が消費された`);
+      eq((await h.save()).itemUsageLog[c.id] || [], [], `${c.spot}で${c.item}が使用記録された`);
+      eq(await h.selected(), [c.item], `${c.spot}で${c.item}の選択が外れた`);
     }
   });
 
@@ -729,6 +803,7 @@ function ok(c, label) { if (!c) throw new Error(label); }
       "[画像]マラカスとタンバリンを持ったぴさぎ（画像仮）",
       "なかなかやるっぴね！"
     ]);
+    eq(h.gotItems, ["マラカス", "タンバリン"], "入手画像");
     eq(await h.inv(), ["マラカス", "タンバリン"]);
     await h.tapSpot("ぴさぎ");
     eq(await h.readAll(), ["ぴさぎがやる気に満ちた目で見てくるっぴ"]);
@@ -1378,7 +1453,10 @@ function ok(c, label) { if (!c) throw new Error(label); }
     for (let i = 0; i < 10; i++) await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
     eq(await h.inv(), ["チョコレート"]);
     eq((await h.save()).inventory, ["itemChocolate"]);
+    ok((await h.modalCount()) <= 1, "入手画像が複数開いた");
+    await h.closeGet();
     ok((await h.msg()).length > 0, "メッセージが空");
+    eq(h.gotItems.length <= 1, true, "入手画像が2回以上出た");
   });
   await test("E-14", "連打: 電子錠Bの決定を連打しても成功処理は1回", async (page, h) => {
     await h.load(baseState({ playPart: 3, currentView: "roomA1" }));

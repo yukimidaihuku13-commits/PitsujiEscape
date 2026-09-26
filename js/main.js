@@ -316,6 +316,7 @@ async function main() {
     enterPlayPart: (part) => enterPlayPart(part),
     enterEnding: () => renderEnding(),
     showImageModal: (opts) => showImageModal(opts),
+    showObtainedItem: (itemId) => showObtainedItem(itemId),
     openBgmMenu: () => openBgmMenu(),
     requestRender: () => {
       if (state.phase === "play") drawPlay();
@@ -684,11 +685,31 @@ async function main() {
     if (msgQueue.current === null) msgQueue.advance();
   }
 
+  // アイテム入手時の拡大画像。取得した順番(資料の「取得」の位置)で、他の画像表示と同じく
+  // メッセージキュー経由で出し、画面のどこかをタップすると閉じる。
+  // 拡大画像が未用意の間は、所持品の拡大表示と同じプレースホルダー文言で代用する。
+  function showObtainedItem(itemId) {
+    const item = data.itemsById[itemId];
+    if (!item) return;
+    const firstPage = Array.isArray(item.zoomPages) && item.zoomPages.length > 0 ? item.zoomPages[0] : null;
+    const image = firstPage ? firstPage.image : item.image;
+    const placeholder = firstPage ? firstPage.placeholder : (resolveMessage(item.placeholder, state, ctx) || [])[0];
+    showImageModal({ image: image || null, caption: placeholder || `${item.name}\n（拡大画像 仮）`, title: item.name, obtained: true });
+  }
+
   // キューの順番が回ってきた画像を表示する。閉じたらキューの次へ進む。
   // opts.text: 画像の下に出す台詞 / opts.bgm: 表示中だけ流すBGM(閉じると元の曲に戻す)
+  // opts.title: 画像の上に出す名前(アイテム入手時) / opts.obtained: アイテム入手時の拡大画像
   function openQueuedImage(item) {
     const opts = item.image;
     const { overlay, box } = Renderer.renderModalWrap(modalRoot);
+    if (opts.obtained) box.classList.add("item-zoom-box", "item-get-box");
+    if (opts.title) {
+      const titleEl = document.createElement("div");
+      titleEl.className = "item-zoom-name";
+      titleEl.textContent = opts.title;
+      box.appendChild(titleEl);
+    }
     if (opts.image) {
       const img = document.createElement("img");
       img.className = "modal-image";

@@ -14,12 +14,19 @@ export function removeItem(state, itemId) {
 /**
  * 選択中アイテムを、現在タップしているspotに対して使用する。
  * persistence の値に応じて消失/変化/残存の挙動を自動で切り替える。
+ * 使える場所(items.json の usableOn)以外では使用しない（消費しない・選択も解除しない）。
+ * 使用したらtrueを返す。
  */
 export function consumeSelectedItem(state, ctx, itemsById, currentSpotId) {
   const itemId = ctx.selectedItemId;
-  if (!itemId) return; // 想定外の呼び出し（未選択）に対する安全策
+  if (!itemId) return false; // 想定外の呼び出し（未選択）に対する安全策
   const item = itemsById[itemId];
-  if (!item) return;
+  if (!item) return false;
+  // 不正解位置での誤消費を防ぐ最後の砦。データ(spots.json)の設定ミスでここに来た場合もアイテムは残す。
+  if (!(item.usableOn || []).includes(currentSpotId)) {
+    console.error(`[Inventory] ${itemId} は ${currentSpotId} では使えません（items.json の usableOn を確認）`);
+    return false;
+  }
 
   if (!state.itemUsageLog[itemId]) state.itemUsageLog[itemId] = [];
   if (!state.itemUsageLog[itemId].includes(currentSpotId)) {
@@ -35,6 +42,7 @@ export function consumeSelectedItem(state, ctx, itemsById, currentSpotId) {
   // "remainInPart" の場合はここでは何もしない（パート切替時にまとめて破棄）
 
   ctx.selectedItemId = null;
+  return true;
 }
 
 /**

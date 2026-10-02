@@ -4,9 +4,12 @@
     "・音声ファイルを差し替える: file のパスを書き換える",
     "・まだ音声が無い: file を null にする（鳴らさず、コンソールに [SE未設定] と出るだけ）",
     "・音量: volume = 設定が「中」の時の音量（0〜1。省略時 0.6）。大は1.5倍(最大1)、小は0.5倍、消は0。音声ごとに元の音の大きさが違う場合はここで揃える",
+    "・SEが鳴っている途中に同じSEを鳴らした時: overlap を \"restart\"(省略時。頭から鳴らし直す) / \"wait\"(鳴り終わるまで鳴らさない。長めのSE向け) で指定。例: \"Se_Gimick\": { \"file\": \"...\", \"overlap\": \"wait\" }",
+    "・SEは起動時に全て読み込み、ファイル先頭の無音は自動で飛ばして鳴らす",
     "・SEを削除する: spots.json等から { \"type\": \"se\", \"id\": \"キー名\" } の行を消す（ここのキーは残しても害はない）",
     "・画面操作のSE: ui の itemSelect(所持品アイコン選択) / headerIcon(設定・ヒント・ログ)。null で鳴らさない",
     "・BGMの流れる場所: 操作パートは playParts.json の bgm、ストーリーは storyParts.json の各行の bgm、オーディオの選曲は bgm.json の sound",
+    "・BGMに重ねて流す音: layer に file と volume(「中」の時の音量。省略時 0.05。BGMの大中小消に連動)。そのBGMが流れている間だけ一緒にループする(例: BGM_Streaming のノイズ)",
     "・BGM名: bgm の name（オーディオの選曲画面・「BGM 〇〇 がオーディオに追加された」に表示）。null の間はキー名から BGM_ を除いた先頭6文字"
   ],
   "ui": {
@@ -18,6 +21,7 @@
     "Se_ChangeSelect": { "file": "assets/soundeffect/Se_ChangeSelect.mp3" },
     "Se_ChocoTrhow": { "file": "assets/soundeffect/Se_ChocoTrhow.mp3" },
     "Se_DoorOpen1": { "file": "assets/soundeffect/Se_DoorOpen1.mp3" },
+    "Se_Gimick": { "file": "assets/soundeffect/Se_Gimick.mp3" },
     "Se_ItemIcon": { "file": "assets/soundeffect/Se_ItemIcon.mp3" },
     "Se_LockOpen": { "file": "assets/soundeffect/Se_LockOpen.mp3" },
     "SE_MaracasRoll": { "file": "assets/soundeffect/SE_MaracasRoll.mp3" },
@@ -25,9 +29,10 @@
     "Se_Refrigeratol": { "file": "assets/soundeffect/Se_Refrigeratol.mp3" },
     "Se_SelectIcon": { "file": "assets/soundeffect/Se_SelectIcon.mp3" },
     "Se_Shelf": { "file": "assets/soundeffect/Se_Shelf.mp3" },
-    "Se_StartStream": { "file": "assets/soundeffect/Se_StartStream.mp3" },
     "Se_Switch": { "file": "assets/soundeffect/Se_Switch.mp3" },
     "SE_TambourineRoll": { "file": "assets/soundeffect/SE_TambourineRoll.mp3" },
+    "SE_TurnOFF": { "file": "assets/soundeffect/SE_TurnOFF.mp3" },
+    "SE_TurnON": { "file": "assets/soundeffect/SE_TurnON.mp3" },
 
     "ゲーム開始っぽい音": { "file": null },
     "クリア音": { "file": null },
@@ -42,8 +47,6 @@
     "電話に出ない音": { "file": null },
     "電話がつながらない音": { "file": null },
     "留守番電話を残すピーという電子音": { "file": null },
-    "モニターが映る音": { "file": null },
-    "モニターが切れる音": { "file": null },
     "ぽにょん、と座り込む音": { "file": null },
     "カチッ": { "file": null },
     "どんどんパフパフわーわー": { "file": null },
@@ -63,8 +66,12 @@
     "BGM_bo-tto_hidamari": { "file": "assets/bgm/BGM_bo-tto_hidamari.mp3", "name": null },
     "BGM_Candy Crush": { "file": "assets/bgm/BGM_Candy Crush.mp3", "name": null },
     "BGM_dotabatare-su slow": { "file": "assets/bgm/BGM_dotabatare-su slow.mp3", "name": null },
-    "BGM_The Dark Eternal Night": { "file": "assets/bgm/BGM_The Dark Eternal Night.mp3", "name": null },
     "BGM_tie no wa": { "file": "assets/bgm/BGM_tie no wa.mp3", "name": null },
-    "BGM_HAPPY": { "file": null, "name": "HAPPY" }
+    "BGM_HAPPY": { "file": "assets/bgm/BGM_Happy.mp3", "name": "HAPPY" },
+    "BGM_Streaming": { "file": "assets/bgm/BGM_Streaming.mp3", "name": null, "layer": { "file": "assets/bgm/BGM_Stream_Noise.mp3", "volume": 0.05 } },
+    "BGM_KuropigumaAseru": { "file": "assets/bgm/BGM_KuropigumaAseru.mp3", "name": null },
+    "BGM_KuropigumaAseru2": { "file": "assets/bgm/BGM_KuropigumaAseru2.mp3", "name": null },
+    "BGM_KuropigumaKomaru": { "file": "assets/bgm/BGM_KuropigumaKomaru.mp3", "name": null },
+    "BGM_Talking": { "file": "assets/bgm/BGM_Talking.mp3", "name": null }
   }
 }

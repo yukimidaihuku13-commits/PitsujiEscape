@@ -2,6 +2,8 @@
   "_説明": "設定画面に表示する著作権表記（assets/著作権表記.txt の「以下著作権表記」の内容）。サイト名のみを記載し、外部サイトへのリンクは行わない。行を追加・削除するだけで反映される。",
   "lines": [
     { "text": "SE：効果音ラボ　様" },
-    { "text": "BGM：OtoLogic　様" }
+    { "text": "SE：OtoLogic　様" },
+    { "text": "BGM：OtoLogic　様" },
+    { "text": "BGM：BGMer　様" }
   ]
 }

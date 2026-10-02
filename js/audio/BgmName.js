@@ -6,7 +6,7 @@
 
 const PROVISIONAL_NAME_LENGTH = 6;
 
-/** audio.json の bgm キー(例: "BGM_The Dark Eternal Night")から表示名を返す */
+/** audio.json の bgm キー(例: "BGM_Streaming")から表示名を返す */
 export function bgmSoundName(soundKey, audioDefs) {
   const def = audioDefs && audioDefs.bgm && audioDefs.bgm[soundKey];
   if (def && def.name) return def.name;

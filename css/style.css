@@ -110,6 +110,10 @@ html, body {
   padding: 8px 10px;
   border-bottom: 1px solid #ccc;
   flex-shrink: 0;
+  /* 下のメッセージ欄まで続けて描く背景画像(scene-main--extend-bg)が上にはみ出しても隠れるように */
+  position: relative;
+  z-index: 5;
+  background: #fff;
 }
 /* ヘッダー左側のゲームタイトル。幅が足りない端末では2行に折り返す */
 .header-title {
@@ -156,6 +160,17 @@ html, body {
   background: #fff;
   font-size: 0.85rem;
   flex-shrink: 0;
+}
+.inventory-item--icon {
+  width: 44px;
+  height: 44px;
+  padding: 3px;
+}
+.inventory-item-icon {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 .inventory-item.selected {
   background: #ffe08a;
@@ -206,6 +221,15 @@ html, body {
 }
 .scene-bg-img--error {
   display: none;
+}
+/* 背景画像をメッセージ欄(吹き出し)の後ろまで続けて描く（Renderer.js の extendBackgroundBelow）。
+   画像の大きさ・位置は Renderer.js が cover と同じ計算で指定し、下へはみ出した部分を見せる */
+.scene-main--extend-bg {
+  overflow: visible;
+}
+.scene-layer--fitted {
+  inset: auto;
+  object-fit: fill;
 }
 
 /* 電気スイッチ等、専用の差分画像を用意していない「部屋の色が変わる」演出を
@@ -274,6 +298,7 @@ html, body {
   color: #fff;
   justify-content: center;
   align-items: center;
+  overflow: hidden; /* 立ち絵を下端に合わせてずらした分でスクロールが出ないように */
 }
 .story-main .scene-label {
   color: #cfd8dc;
@@ -290,24 +315,54 @@ html, body {
 .story-main--black {
   background: #000;
 }
-/* 立ち絵。背景画像(scene-bg-img)より手前に表示する */
+
+/* 配信画面をつける/消す演出（ブラウン管風）。Renderer.js の applyScreenFx で付ける */
+.scene-bg-img.fx-crt-off {
+  transform-origin: center;
+  animation: crt-off 0.5s ease-in forwards; /* 長さを変える時は Renderer.js の SCREEN_FX_OFF_MS も合わせる */
+}
+.scene-bg-img.fx-crt-on {
+  transform-origin: center;
+  animation: crt-on 0.55s ease-out forwards;
+}
+/* 消す: 上下に縮んで白い横線 → 点 → 消える */
+@keyframes crt-off {
+  0%   { transform: scale(1, 1);         filter: brightness(1); opacity: 1; }
+  45%  { transform: scale(1, 0.006);     filter: brightness(4); opacity: 1; }
+  75%  { transform: scale(0.15, 0.006);  filter: brightness(6); opacity: 1; }
+  100% { transform: scale(0, 0);         filter: brightness(6); opacity: 0; }
+}
+/* つける: 中央に光る点 → 横線 → 上下に広がる */
+@keyframes crt-on {
+  0%   { transform: scale(0, 0.006);     filter: brightness(6); opacity: 1; }
+  30%  { transform: scale(1, 0.006);     filter: brightness(5); opacity: 1; }
+  70%  { transform: scale(1, 1);         filter: brightness(1.5); opacity: 1; }
+  100% { transform: scale(1, 1);         filter: brightness(1); opacity: 1; }
+}
+.story-portraits--hidden {
+  visibility: hidden;
+}
+@media (prefers-reduced-motion: reduce) {
+  .scene-bg-img.fx-crt-off,
+  .scene-bg-img.fx-crt-on {
+    animation: none;
+  }
+}
+/* 立ち絵。背景画像(scene-bg-img)より手前に表示する。
+   位置・大きさは data/portraitLayouts.json で決め、Renderer.js がこの要素に直接指定する */
 .story-portraits {
-  position: relative;
+  position: absolute;
+  left: 0;
+  right: 0;
   z-index: 1;
   display: flex;
   justify-content: center;
   align-items: flex-end;
   gap: 8px;
-  width: 100%;
-  margin-top: 14px;
 }
 .portrait-img {
-  max-width: 60%;
-  max-height: 38vh;
+  min-width: 0;
   object-fit: contain;
-}
-.story-portraits--multi .portrait-img {
-  max-width: 45%;
 }
 
 /* --- 矢印 ---
@@ -340,20 +395,28 @@ html, body {
   opacity: 0.6;
 }
 
-/* --- フッター(メッセージ) --- */
+/* --- フッター(メッセージ) ---
+   操作画面: 左にキャラクターのアイコン、右にメッセージの吹き出し。
+   背景画像がこの後ろまで続いて見える（.scene-main--extend-bg）。メッセージが無い時の吹き出しは半透明 */
 .footer-row {
+  position: relative;
+  z-index: 2; /* はみ出して描いた背景画像より手前に出す */
   display: flex;
-  border-top: 1px solid #ccc;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 10px;
   flex-shrink: 0;
   min-height: 72px;
+  background: transparent;
 }
 .face-box {
-  width: 72px;
+  width: 56px;
+  height: 56px;
   flex-shrink: 0;
-  border: none;
-  border-right: 1px solid #ccc;
-  border-radius: 0;
-  background: none;
+  padding: 0;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.85);
   font-family: inherit;
   display: flex;
   align-items: center;
@@ -362,9 +425,21 @@ html, body {
   white-space: pre-wrap;
   text-align: center;
   color: #999;
+  overflow: hidden;
+}
+.face-box--icon {
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+}
+.face-icon {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 .face-box:active {
-  background: #eee;
+  opacity: 0.7;
 }
 .footer-message {
   flex: 1;
@@ -373,6 +448,47 @@ html, body {
   line-height: 1.4;
   display: flex;
   align-items: center;
+}
+/* 吹き出し本体。左側の三角(しっぽ)はアイコンの方を向く */
+.footer-row .footer-message {
+  position: relative;
+  min-height: 52px; /* 吹き出し(枠線込み56px)＋上下の余白16px ＝ 以前のメッセージ欄と同じ72px。背景の範囲を変えないため */
+  padding: 10px 14px;
+  border: 2px solid #8d6e63;
+  border-radius: 16px;
+  background: #fff;
+  color: #333;
+}
+.footer-row .footer-message::before,
+.footer-row .footer-message::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  border-style: solid;
+  transform: translateY(-50%);
+}
+/* しっぽの枠線 */
+.footer-row .footer-message::before {
+  left: -12px;
+  border-width: 9px 12px 9px 0;
+  border-color: transparent #8d6e63 transparent transparent;
+}
+/* しっぽの中身(吹き出しと同じ色) */
+.footer-row .footer-message::after {
+  left: -8px;
+  border-width: 7px 9px 7px 0;
+  border-color: transparent #fff transparent transparent;
+}
+/* メッセージが無い時: 半透明にして後ろの背景を少し見せる */
+.footer-row .footer-message:empty {
+  background: rgba(255, 255, 255, 0.35);
+  border-color: rgba(141, 110, 99, 0.45);
+}
+.footer-row .footer-message:empty::before {
+  border-color: transparent rgba(141, 110, 99, 0.45) transparent transparent;
+}
+.footer-row .footer-message:empty::after {
+  border-color: transparent rgba(255, 255, 255, 0.35) transparent transparent;
 }
 .story-footer {
   flex-direction: column;
@@ -549,6 +665,20 @@ html, body {
   display: block;
   width: 100%;
   border-radius: 6px;
+}
+/* 仮画像の下に添える謎解きの手がかり文字（items.json の imageNote） */
+.item-image-wrap {
+  width: 100%;
+}
+.item-image-note {
+  margin-top: 6px;
+  padding: 6px 10px;
+  border: 1px dashed #999;
+  border-radius: 6px;
+  background: #fffbe6;
+  font-weight: bold;
+  text-align: center;
+  white-space: pre-line;
 }
 .modal-image-placeholder {
   width: 100%;

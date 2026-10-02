@@ -1,6 +1,10 @@
 [
   { "id": "default", "label": "通常", "sound": null },
   { "id": "happy", "sound": "BGM_HAPPY" },
-  { "id": "darkEternalNight", "sound": "BGM_The Dark Eternal Night" },
-  { "id": "hidamari", "sound": "BGM_bo-tto_hidamari" }
+  { "id": "streaming", "sound": "BGM_Streaming" },
+  { "id": "hidamari", "sound": "BGM_bo-tto_hidamari" },
+  { "id": "kuropigumaAseru", "sound": "BGM_KuropigumaAseru" },
+  { "id": "kuropigumaAseru2", "sound": "BGM_KuropigumaAseru2" },
+  { "id": "kuropigumaKomaru", "sound": "BGM_KuropigumaKomaru" },
+  { "id": "talking", "sound": "BGM_Talking" }
 ]

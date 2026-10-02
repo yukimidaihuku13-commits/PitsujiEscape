@@ -3,9 +3,9 @@
     "id": 1,
     "nextPlayPart": 2,
     "lines": [
-      {"bgm": "BGM_The Dark Eternal Night", "speaker": "ぴつじ", "text": "ここは……？", "portraitImage": "assets/characters/eto_remake_hitsuji.webp"},
+      {"stopBgm": true, "speaker": "ぴつじ", "text": "ここは……？", "portraitImage": "assets/characters/eto_remake_hitsuji.webp"},
       {"speaker": "ぴつじ", "text": "さっきまで木陰でお昼寝してたような……", "bgImage": "assets/backgrounds/bg_pitsujiRoom1.webp", "portraitImage": "assets/characters/eto_remake_hitsuji.webp"},
-      {"se": "モニターが映る音", "speaker": "黒ぴぐま", "text": "おはよう。気分はどうかな？", "bgImage": "assets/backgrounds/bg_storyStream.webp", "noPortrait": true},
+      {"bgm": "BGM_Streaming", "se": "SE_TurnON", "speaker": "黒ぴぐま", "text": "おはよう。気分はどうかな？", "bgImage": "assets/backgrounds/bg_storyStream.webp", "noPortrait": true},
       {"speaker": "ぴつじ", "text": "･･････。", "bgImage": "assets/backgrounds/bg_storyStream.webp", "portraitImage": "assets/characters/eto_remake_hitsuji.webp"},
       {"speaker": "黒ぴぐま", "text": "今から君には脱出ゲームをして貰う。", "bgImage": "assets/backgrounds/bg_storyStream.webp", "noPortrait": true},
       {"speaker": "黒ぴぐま", "text": "さあ、この部屋を出たら脱出ゲームのスタートだ！", "bgImage": "assets/backgrounds/bg_storyStream.webp", "noPortrait": true},
@@ -13,7 +13,7 @@
       {"stopBgm": true, "se": "ぽにょん、と座り込む音", "speaker": "黒ぴぐま", "text": "え！？", "bgImage": "assets/backgrounds/bg_pitsujiRoom1.webp", "noPortrait": true},
       {"speaker": "ぴつじ", "text": "･･････。", "bgImage": "assets/backgrounds/bg_pitsujiRoom1.webp", "portraitImage": "assets/characters/eto_hitsuji_sleep.webp"},
       {"speaker": "黒ぴぐま", "text": "えっとっピ……", "bgImage": "assets/backgrounds/bg_pitsujiRoom1.webp", "noPortrait": true},
-      {"bgm": "BGM_The Dark Eternal Night", "speaker": "黒ぴぐま", "text": "お、おはよう。気分はどうかな？", "bgImage": "assets/backgrounds/bg_storyStream.webp", "noPortrait": true},
+      {"bgm": "BGM_Streaming", "speaker": "黒ぴぐま", "text": "お、おはよう。気分はどうかな？", "bgImage": "assets/backgrounds/bg_storyStream.webp", "noPortrait": true},
       {"speaker": "黒ぴぐま", "text": "今から君には脱出ゲームを……", "bgImage": "assets/backgrounds/bg_storyStream.webp", "noPortrait": true},
       {"bgm": "BGM_bo-tto_hidamari", "speaker": "ぴつじ", "text": "･･････脱出しない", "bgImage": "assets/backgrounds/bg_storyStream.webp", "portraitImage": "assets/characters/eto_hitsuji_sleep.webp"},
       {"speaker": "黒ぴぐま", "text": "え！？", "bgImage": "assets/backgrounds/bg_storyStream.webp", "noPortrait": true},
@@ -21,8 +21,8 @@
       {"speaker": "黒ぴぐま", "text": "え？？！？", "bgImage": "assets/backgrounds/bg_storyStream.webp", "noPortrait": true},
       {"speaker": "ぴつじ", "text": "･･････。", "bgImage": "assets/backgrounds/bg_pitsujiRoom1.webp", "portraitImage": "assets/characters/eto_hitsuji_sleep.webp"},
       {"speaker": "黒ぴぐま", "text": "･･････。", "bgImage": "assets/backgrounds/bg_pitsujiRoom1.webp", "noPortrait": true},
-      {"se": "モニターが切れる音", "speaker": "黒ぴぐま", "text": "え･･････？！", "bg": "黒画面", "portraitImage": "assets/characters/char_kuropiguma1.webp"},
-      {"speaker": "黒ぴぐま", "text": "脱出ゲームは、始まったら脱出するものだっぴ！？！", "bgImage": "assets/backgrounds/bg_viewDesk.webp", "portraitImage": "assets/characters/char_kuropiguma1.webp"},
+      {"ffStop": true, "stopBgm": true, "se": "SE_TurnOFF", "speaker": "黒ぴぐま", "text": "え･･････？！", "bg": "黒画面", "portraitImage": "assets/characters/char_kuropiguma1.webp"},
+      {"bgm": "BGM_KuropigumaAseru", "speaker": "黒ぴぐま", "text": "脱出ゲームは、始まったら脱出するものだっぴ！？！", "bgImage": "assets/backgrounds/bg_viewDesk.webp", "portraitImage": "assets/characters/char_kuropiguma1.webp"},
       {"speaker": "黒ぴぐま", "text": "皆脱出したいものじゃないッピ？？！", "bgImage": "assets/backgrounds/bg_viewDesk.webp", "portraitImage": "assets/characters/char_kuropiguma1.webp"},
       {"speaker": "黒ぴぐま", "text": "･･････", "bgImage": "assets/backgrounds/bg_viewDesk.webp", "portraitImage": "assets/characters/char_kuropiguma1.webp"},
       {"speaker": "黒ぴぐま", "text": "よーし！絶対ぴつじを脱出させてやるっぴよー！！", "bgImage": "assets/backgrounds/bg_viewDesk.webp", "portraitImage": "assets/characters/char_kuropiguma2.webp"}
@@ -32,7 +32,7 @@
     "id": 2,
     "nextPlayPart": 3,
     "lines": [
-      {"bgm": "BGM_The Dark Eternal Night", "se": "モニターが映る音", "speaker": "黒ぴぐま", "text": "ふふふ、チョコのお味はどうかな？", "bgImage": "assets/backgrounds/bg_storyStream.webp", "noPortrait": true},
+      {"bgm": "BGM_Streaming", "se": "SE_TurnON", "speaker": "黒ぴぐま", "text": "ふふふ、チョコのお味はどうかな？", "bgImage": "assets/backgrounds/bg_storyStream.webp", "noPortrait": true},
       {"speaker": "ぴつじ", "text": "･･････チョコ美味しいっぴ", "bg": "チョコをもしゃもしゃ食べるぴつじ", "bgImage": "assets/backgrounds/bg_pitsujiRoom1.webp", "portraitImage": "assets/characters/eto_remake_hitsuji.webp"},
       {"speaker": "黒ぴぐま", "text": "ふふふ、そうだろうそうだろう", "bg": "チョコをもしゃもしゃ食べるぴつじ", "bgImage": "assets/backgrounds/bg_pitsujiRoom1.webp", "noPortrait": true},
       {"speaker": "黒ぴぐま", "text": "それは隣町のスーパーまでわざわざ買いに行った一品だからな", "bg": "チョコをもしゃもしゃ食べるぴつじ", "bgImage": "assets/backgrounds/bg_pitsujiRoom1.webp", "noPortrait": true},
@@ -43,8 +43,8 @@
       {"bgm": "BGM_bo-tto_hidamari", "speaker": "ぴつじ", "text": "脱出したくないっぴ", "bgImage": "assets/backgrounds/bg_pitsujiRoom1.webp", "portraitImage": "assets/characters/eto_hitsuji_sleep.webp"},
       {"speaker": "黒ぴぐま", "text": "･･････。", "bgImage": "assets/backgrounds/bg_pitsujiRoom1.webp", "noPortrait": true},
       {"speaker": "黒ぴぐま", "text": "･･････。", "bgImage": "assets/backgrounds/bg_pitsujiRoom1.webp", "noPortrait": true},
-      {"se": "モニターが切れる音", "speaker": "黒ぴぐま", "text": "駄目ッピか……", "bg": "黒画面", "portraitImage": "assets/characters/char_kuropiguma1.webp"},
-      {"speaker": "黒ぴぐま", "text": "難しいッピか……？", "bgImage": "assets/backgrounds/bg_viewDesk.webp", "portraitImage": "assets/characters/char_kuropiguma1.webp"},
+      {"ffStop": true, "stopBgm": true, "se": "SE_TurnOFF", "speaker": "黒ぴぐま", "text": "駄目ッピか……", "bg": "黒画面", "portraitImage": "assets/characters/char_kuropiguma1.webp"},
+      {"bgm": "BGM_KuropigumaAseru", "speaker": "黒ぴぐま", "text": "難しいッピか……？", "bgImage": "assets/backgrounds/bg_viewDesk.webp", "portraitImage": "assets/characters/char_kuropiguma1.webp"},
       {"speaker": "黒ぴぐま", "text": "よし、ちょっと減らすっぴ！", "bgImage": "assets/backgrounds/bg_viewDesk.webp", "portraitImage": "assets/characters/char_kuropiguma1.webp"},
       {"speaker": "黒ぴぐま", "text": "隣の部屋まで行けるようになったらきっと脱出するっぴ！", "bgImage": "assets/backgrounds/bg_viewDesk.webp", "portraitImage": "assets/characters/char_kuropiguma1.webp"},
       {"speaker": "黒ぴぐま", "text": "やってやるっぴー！！", "bgImage": "assets/backgrounds/bg_viewDesk.webp", "portraitImage": "assets/characters/char_kuropiguma2.webp"}
@@ -54,7 +54,7 @@
     "id": 3,
     "nextPlayPart": 4,
     "lines": [
-      {"bgm": "BGM_The Dark Eternal Night", "se": "モニターが映る音", "speaker": "黒ぴぐま", "text": "ご機嫌はどうかな、ぴつじくん", "bgImage": "assets/backgrounds/bg_storyStream.webp", "noPortrait": true},
+      {"bgm": "BGM_Streaming", "se": "SE_TurnON", "speaker": "黒ぴぐま", "text": "ご機嫌はどうかな、ぴつじくん", "bgImage": "assets/backgrounds/bg_storyStream.webp", "noPortrait": true},
       {"speaker": "ぴつじ", "text": "･･････。", "bgImage": "assets/backgrounds/bg_storyStream.webp", "portraitImage": "assets/characters/eto_hitsuji_sleep.webp"},
       {"speaker": "黒ぴぐま", "text": "今から君には脱出ゲームをしてもらう", "bgImage": "assets/backgrounds/bg_storyStream.webp", "noPortrait": true},
       {"speaker": "ぴつじ", "text": "･･････。", "bgImage": "assets/backgrounds/bg_storyStream.webp", "portraitImage": "assets/characters/eto_hitsuji_sleep.webp"},
@@ -67,8 +67,8 @@
       {"speaker": "黒ぴぐま", "text": "出るっぴ！！", "bgImage": "assets/backgrounds/bg_pitsujiRoom1.webp", "noPortrait": true},
       {"speaker": "ぴつじ", "text": "･･････。", "bgImage": "assets/backgrounds/bg_pitsujiRoom1.webp", "portraitImage": "assets/characters/eto_hitsuji_sleep.webp"},
       {"speaker": "黒ぴぐま", "text": "･･････。", "bgImage": "assets/backgrounds/bg_pitsujiRoom1.webp", "noPortrait": true},
-      {"se": "モニターが切れる音", "speaker": "黒ぴぐま", "text": "だめッピ！！", "bg": "黒画面", "portraitImage": "assets/characters/char_kuropiguma1.webp"},
-      {"speaker": "黒ぴぐま", "text": "絶対にぴつじを部屋から出してやるっぴ！！", "bgImage": "assets/backgrounds/bg_viewDesk.webp", "portraitImage": "assets/characters/char_kuropiguma1.webp"},
+      {"ffStop": true, "stopBgm": true, "se": "SE_TurnOFF", "speaker": "黒ぴぐま", "text": "だめッピ！！", "bg": "黒画面", "portraitImage": "assets/characters/char_kuropiguma1.webp"},
+      {"bgm": "BGM_KuropigumaAseru", "speaker": "黒ぴぐま", "text": "絶対にぴつじを部屋から出してやるっぴ！！", "bgImage": "assets/backgrounds/bg_viewDesk.webp", "portraitImage": "assets/characters/char_kuropiguma1.webp"},
       {"speaker": "黒ぴぐま", "text": "ぴつじとの根比べっぴ！！！", "bgImage": "assets/backgrounds/bg_viewDesk.webp", "portraitImage": "assets/characters/char_kuropiguma1.webp"}
     ]
   },
@@ -76,7 +76,7 @@
     "id": 4,
     "nextPlayPart": 5,
     "lines": [
-      {"bgm": "BGM_The Dark Eternal Night", "se": "モニターが映る音", "speaker": "黒ぴぐま", "text": "今から君には脱出ゲーム", "bgImage": "assets/backgrounds/bg_storyStream.webp", "noPortrait": true},
+      {"bgm": "BGM_Streaming", "se": "SE_TurnON", "speaker": "黒ぴぐま", "text": "今から君には脱出ゲーム", "bgImage": "assets/backgrounds/bg_storyStream.webp", "noPortrait": true},
       {"bgm": "BGM_bo-tto_hidamari", "speaker": "ぴつじ", "text": "しないっぴ", "bgImage": "assets/backgrounds/bg_pitsujiRoom1.webp", "portraitImage": "assets/characters/eto_hitsuji_sleep.webp"},
       {"speaker": "黒ぴぐま", "text": "もうドアの鍵は全部あいて", "bgImage": "assets/backgrounds/bg_pitsujiRoom1.webp", "noPortrait": true},
       {"speaker": "ぴつじ", "text": "出ないっぴ", "bgImage": "assets/backgrounds/bg_pitsujiRoom1.webp", "portraitImage": "assets/characters/eto_hitsuji_sleep.webp"},
@@ -87,8 +87,8 @@
       {"speaker": "ぴつじ", "text": "元気出ないッピ･･････", "bgImage": "assets/backgrounds/bg_pitsujiRoom1.webp", "portraitImage": "assets/characters/eto_hitsuji_sleep.webp"},
       {"speaker": "黒ぴぐま", "text": "･･････。", "bgImage": "assets/backgrounds/bg_pitsujiRoom1.webp", "noPortrait": true},
       {"speaker": "ぴつじ", "text": "･･････。", "bgImage": "assets/backgrounds/bg_pitsujiRoom1.webp", "portraitImage": "assets/characters/eto_hitsuji_sleep.webp"},
-      {"se": "モニターが切れる音", "speaker": "黒ぴぐま", "text": "なんでっぴ？！！", "bg": "黒画面", "portraitImage": "assets/characters/char_kuropiguma1.webp"},
-      {"speaker": "黒ぴぐま", "text": "元気出ないとだめッピ？！", "bgImage": "assets/backgrounds/bg_viewDesk.webp", "portraitImage": "assets/characters/char_kuropiguma1.webp"},
+      {"ffStop": true, "stopBgm": true, "se": "SE_TurnOFF", "speaker": "黒ぴぐま", "text": "なんでっぴ？！！", "bg": "黒画面", "portraitImage": "assets/characters/char_kuropiguma1.webp"},
+      {"bgm": "BGM_KuropigumaAseru", "speaker": "黒ぴぐま", "text": "元気出ないとだめッピ？！", "bgImage": "assets/backgrounds/bg_viewDesk.webp", "portraitImage": "assets/characters/char_kuropiguma1.webp"},
       {"speaker": "黒ぴぐま", "text": "仕方ないッピ！元気出すっぴ！", "bgImage": "assets/backgrounds/bg_viewDesk.webp", "portraitImage": "assets/characters/char_kuropiguma1.webp"},
       {"speaker": "黒ぴぐま", "text": "ぴつじには負けないっぴー！！", "bgImage": "assets/backgrounds/bg_viewDesk.webp", "portraitImage": "assets/characters/char_kuropiguma1.webp"}
     ]
@@ -97,14 +97,14 @@
     "id": 5,
     "nextPlayPart": 6,
     "lines": [
-      {"bgm": "BGM_bo-tto_hidamari", "speaker": "黒ぴぐま", "text": "･･････", "bgImage": "assets/backgrounds/bg_storyStream.webp", "noPortrait": true},
+      {"bgm": "BGM_KuropigumaAseru2", "se": "SE_TurnON", "speaker": "黒ぴぐま", "text": "･･････", "bgImage": "assets/backgrounds/bg_storyStream.webp", "noPortrait": true},
       {"speaker": "黒ぴぐま", "text": "寝てるっぴ･･････", "bgImage": "assets/backgrounds/bg_storyStream.webp", "noPortrait": true},
       {"speaker": "黒ぴぐま", "text": "･･････", "bgImage": "assets/backgrounds/bg_storyStream.webp", "noPortrait": true},
       {"speaker": "黒ぴぐま", "text": "おーい", "bgImage": "assets/backgrounds/bg_storyStream.webp", "noPortrait": true},
       {"speaker": "黒ぴぐま", "text": "起きるっぴー？", "bgImage": "assets/backgrounds/bg_storyStream.webp", "noPortrait": true},
       {"speaker": "黒ぴぐま", "text": "･･････", "bgImage": "assets/backgrounds/bg_storyStream.webp", "noPortrait": true},
-      {"se": "モニターが切れる音", "speaker": "黒ぴぐま", "text": "全然起きないッピ･･････", "bg": "黒画面", "portraitImage": "assets/characters/char_kuropiguma1.webp"},
-      {"speaker": "黒ぴぐま", "text": "困ったッピ･･････", "bgImage": "assets/backgrounds/bg_viewDesk.webp", "portraitImage": "assets/characters/char_kuropiguma1.webp"},
+      {"ffStop": true, "stopBgm": true, "se": "SE_TurnOFF", "speaker": "黒ぴぐま", "text": "全然起きないッピ･･････", "bg": "黒画面", "portraitImage": "assets/characters/char_kuropiguma1.webp"},
+      {"bgm": "BGM_KuropigumaKomaru", "speaker": "黒ぴぐま", "text": "困ったッピ･･････", "bgImage": "assets/backgrounds/bg_viewDesk.webp", "portraitImage": "assets/characters/char_kuropiguma1.webp"},
       {"speaker": "黒ぴぐま", "text": "起こし方が分からないッピ", "bgImage": "assets/backgrounds/bg_viewDesk.webp", "portraitImage": "assets/characters/char_kuropiguma1.webp"},
       {"speaker": "黒ぴぐま", "text": "どうするッピ･･････", "bgImage": "assets/backgrounds/bg_viewDesk.webp", "portraitImage": "assets/characters/char_kuropiguma1.webp"}
     ]
@@ -113,7 +113,7 @@
     "id": 6,
     "nextPlayPart": 7,
     "lines": [
-      {"bgm": "BGM_bo-tto_hidamari", "speaker": "黒ぴぐま", "text": "という訳だっぴ", "bg": "部屋で話している3人", "portraitImage": "assets/characters/char_kuropiguma1.webp"},
+      {"bgm": "BGM_Talking", "speaker": "黒ぴぐま", "text": "という訳だっぴ", "bg": "部屋で話している3人", "portraitImage": "assets/characters/char_kuropiguma1.webp"},
       {"speaker": "黒ぴぐま", "text": "ぴつじを脱出させるっぴ", "bg": "部屋で話している3人", "portraitImage": "assets/characters/char_kuropiguma1.webp"},
       {"speaker": "黒ぴぐま", "text": "起こし方を教えるっぴ！", "bg": "部屋で話している3人", "portraitImage": "assets/characters/char_kuropiguma1.webp"},
       {"speaker": "ぴさぎ", "text": "ちょっとの事じゃ起きないっぴ", "bg": "部屋で話している3人"},
@@ -142,10 +142,10 @@
     "id": 7,
     "nextPlayPart": 8,
     "lines": [
-      {"bgm": "BGM_The Dark Eternal Night", "se": "モニターが映る音", "speaker": "黒ぴぐま", "text": "今から君には脱出ゲームをしてもらう！", "bgImage": "assets/backgrounds/bg_storyStream.webp", "noPortrait": true},
-      {"bgm": "BGM_HAPPY", "speaker": "黒ぴぐま", "text": "･･････", "bg": "目を覚ますぴつじ", "bgImage": "assets/backgrounds/bg_pitsujiRoom1.webp", "noPortrait": true},
+      {"bgm": "BGM_Streaming", "se": "SE_TurnON", "speaker": "黒ぴぐま", "text": "今から君には脱出ゲームをしてもらう！", "bgImage": "assets/backgrounds/bg_storyStream.webp", "noPortrait": true},
+      {"bgm": "BGM_HAPPY", "se": ["SE_TambourineRoll", "SE_MaracasRoll"], "speaker": "黒ぴぐま", "text": "･･････", "bg": "目を覚ますぴつじ", "bgImage": "assets/backgrounds/bg_pitsujiRoom1.webp", "noPortrait": true},
       {"speaker": "ぴつじ", "text": "･･････", "bg": "目を覚ますぴつじ", "bgImage": "assets/backgrounds/bg_pitsujiRoom1.webp", "portraitImage": "assets/characters/eto_remake_hitsuji.webp"},
-      {"speaker": "ぴつじ", "text": "･･････楽しそうな音が聞こえるっぴ？", "bgImage": "assets/backgrounds/bg_pitsujiRoom1.webp", "portraitImage": "assets/characters/eto_remake_hitsuji.webp"},
+      {"se": ["SE_TambourineRoll", "SE_MaracasRoll"], "speaker": "ぴつじ", "text": "･･････楽しそうな音が聞こえるっぴ？", "bgImage": "assets/backgrounds/bg_pitsujiRoom1.webp", "portraitImage": "assets/characters/eto_remake_hitsuji.webp"},
       {"speaker": "黒ぴぐま", "text": "起きたっぴ！！？", "bgImage": "assets/backgrounds/bg_pitsujiRoom1.webp", "noPortrait": true},
       {"speaker": "ぴつじ", "text": "外が楽しそうだっぴ！", "bgImage": "assets/backgrounds/bg_pitsujiRoom1.webp", "portraitImage": "assets/characters/eto_hitsuji_dance.webp"},
       {"speaker": "ぴつじ", "text": "パーティーっぴー！", "bgImage": "assets/backgrounds/bg_pitsujiRoom1.webp", "portraitImage": "assets/characters/eto_hitsuji_dance.webp"},
@@ -158,9 +158,9 @@
     "id": 8,
     "nextPlayPart": null,
     "lines": [
-      {"se": "Se_DoorOpen1", "speaker": "ぴつじ", "text": "パーティーっぴー！", "bg": "部屋から顔を出すぴつじ", "portraitImage": "assets/characters/eto_hitsuji_dance.webp"},
-      {"speaker": "ぴぐま", "text": "いっぇえっぴぃぃぇぇい！", "bg": "部屋から顔を出すぴつじ"},
-      {"speaker": "ぴさぎ", "text": "やっぴー！！！", "bg": "部屋から顔を出すぴつじ"},
+      {"bgm": "BGM_HAPPY", "se": "Se_DoorOpen1", "speaker": "ぴつじ", "text": "パーティーっぴー！", "bg": "部屋から顔を出すぴつじ", "portraitImage": "assets/characters/eto_hitsuji_dance.webp"},
+      {"se": "SE_MaracasRoll", "speaker": "ぴぐま", "text": "いっぇえっぴぃぃぇぇい！", "bg": "部屋から顔を出すぴつじ"},
+      {"se": "SE_TambourineRoll", "speaker": "ぴさぎ", "text": "やっぴー！！！", "bg": "部屋から顔を出すぴつじ"},
       {"speaker": "ぴつじ", "text": "はっぴー！", "bg": "ノリノリで踊り出すぴつじとぴぐまとぴさぎ", "portraitImage": "assets/characters/eto_hitsuji_dance.webp"},
       {"speaker": "黒ぴぐま", "text": "やったっぴー！", "bg": "部屋から喜んで出てくる黒ぴぐま", "portraitImage": "assets/characters/char_kuropiguma2.webp"},
       {"speaker": "黒ぴぐま", "text": "ついにぴつじが部屋から出たっぴ！！", "bg": "部屋から喜んで出てくる黒ぴぐま", "portraitImage": "assets/characters/char_kuropiguma2.webp"},
@@ -170,12 +170,12 @@
       {"speaker": "黒ぴぐま", "text": "･･････踊るッピ？", "bg": "部屋から喜んで出てくる黒ぴぐま", "portraitImage": ["assets/characters/char_kuropiguma1.webp", "assets/characters/eto_hitsuji_dance.webp"]},
       {"speaker": "ぴつじ", "text": "パーティーは皆で楽しむっぴ！", "bg": "部屋から喜んで出てくる黒ぴぐま", "portraitImage": ["assets/characters/char_kuropiguma1.webp", "assets/characters/eto_hitsuji_dance.webp"]},
       {"speaker": "ぴさぎ", "text": "楽しいっぴ！", "bg": "部屋から喜んで出てくる黒ぴぐま"},
-      {"speaker": "ぴぐま", "text": "これ使うっぴ！！", "bg": "部屋から喜んで出てくる黒ぴぐま"},
+      {"se": "SE_MaracasRoll", "speaker": "ぴぐま", "text": "これ使うっぴ！！", "bg": "部屋から喜んで出てくる黒ぴぐま"},
       {"speaker": "黒ぴぐま", "text": "踊るっぴー！！", "bg": "マラカスを片方渡されるぴぐま", "portraitImage": "assets/characters/char_kuropiguma2.webp"},
-      {"speaker": "ぴつじ", "text": "いぇぇぇっぴー！！", "bg": "マラカスを片方渡されるぴぐま", "portraitImage": "assets/characters/eto_hitsuji_dance.webp"},
-      {"speaker": "黒ぴぐま", "text": "楽しいっぴー！", "bg": "マラカスを片方渡されるぴぐま", "portraitImage": "assets/characters/char_kuropiguma2.webp"},
+      {"speaker": "ぴさぎ", "text": "いぇぇぇっぴー！！", "bg": "マラカスを片方渡されるぴぐま"},
+      {"se": "SE_MaracasRoll", "speaker": "黒ぴぐま", "text": "楽しいっぴー！", "bg": "マラカスを片方渡されるぴぐま", "portraitImage": "assets/characters/char_kuropiguma2.webp"},
       {"speaker": "ぴつじ", "text": "これならゲームも楽しいっぴ！", "bg": "マラカスを片方渡されるぴぐま", "portraitImage": "assets/characters/eto_hitsuji_dance.webp"},
-      {"speaker": "黒ぴぐま・ぴつじ", "text": "いぇぇぇっぴー！！", "bg": "マラカスを片方渡されるぴぐま", "portraitImage": ["assets/characters/char_kuropiguma2.webp", "assets/characters/eto_hitsuji_dance.webp"]},
+      {"se": "SE_MaracasRoll", "speaker": "黒ぴぐま・ぴつじ", "text": "いぇぇぇっぴー！！", "bg": "マラカスを片方渡されるぴぐま", "portraitImage": ["assets/characters/char_kuropiguma2.webp", "assets/characters/eto_hitsuji_dance.webp"]},
       {"speaker": null, "text": null, "bg": "のりのりで踊る4人"}
     ]
   }

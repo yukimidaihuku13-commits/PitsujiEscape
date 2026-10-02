@@ -1,0 +1,33 @@
+{
+  "_説明": [
+    "ストーリーの立ち絵の位置・大きさ。数値はすべて、ストーリーの画面(背景が表示される部分)に対する % 。",
+    "・rules: 上から順に when を確かめ、最初に当てはまった layout を使う",
+    "    background   : 背景画像のファイル名にこの文字が含まれる時",
+    "    allPortraits : 表示する立ち絵が全てこの文字を含むファイル名の時",
+    "    minCount     : 立ち絵がこの枚数以上の時",
+    "    {}           : いつでも（最後に置く）",
+    "・storyParts.json の行に \"portraitLayout\": \"配置名\" を書くと、rules より優先してその行だけ指定の配置にする",
+    "・layouts: 配置ごとの設定",
+    "    height    : 立ち絵の高さ(画面の高さに対する%)。大きくしたい時はここを増やす",
+    "    vertical  : \"bottom\"(下揃え。bottom で下からの位置) / \"middle\"(画面の上下中央)",
+    "    bottom    : 下からの位置(画面の高さに対する%)。vertical が bottom の時のみ",
+    "    align     : \"left\"(左寄せ) / \"center\"(中央) / \"right\"(右寄せ)",
+    "    left/right: 左右の余白(画面の幅に対する%)。center の時は left を増やすと右に、right を増やすと左に寄る",
+    "    maxWidth  : 立ち絵1枚の最大の幅(画面の幅に対する%)。横長の画像は高さよりこちらで大きさが決まる",
+    "    shiftDown : 画像ごとに下へずらす量(画像の高さに対する%)。キーは画像ファイル名に含まれる文字、\"*\" はその他全て。画像の下側の余白の分ずらして足元を合わせる時に使う"
+  ],
+  "rules": [
+    { "when": { "background": "bg_storyStream" }, "layout": "stream" },
+    { "when": { "allPortraits": "char_kuropiguma" }, "layout": "kuropiguma" },
+    { "when": { "allPortraits": "eto_hitsuji_sleep" }, "layout": "sleepInRoom" },
+    { "when": { "minCount": 2 }, "layout": "multi" },
+    { "when": {}, "layout": "default" }
+  ],
+  "layouts": {
+    "default": { "height": 62, "vertical": "bottom", "bottom": 2, "align": "center", "left": 12, "right": 0, "maxWidth": 55 },
+    "multi": { "height": 62, "vertical": "bottom", "bottom": 2, "align": "center", "left": 6, "right": 0, "maxWidth": 45 },
+    "stream": { "height": 42, "vertical": "bottom", "bottom": 1, "align": "right", "left": 0, "right": 3, "maxWidth": 55, "shiftDown": { "eto_hitsuji_sleep": 15, "*": 6 } },
+    "kuropiguma": { "height": 62, "vertical": "bottom", "bottom": 0, "align": "left", "left": 4, "right": 0, "maxWidth": 55, "shiftDown": { "*": 4 } },
+    "sleepInRoom": { "height": 62, "vertical": "middle", "align": "center", "left": 0, "right": 0, "maxWidth": 57.5, "shiftDown": { "*": 3.5 } }
+  }
+}

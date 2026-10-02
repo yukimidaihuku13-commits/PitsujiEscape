@@ -366,7 +366,8 @@
     "label": "冷蔵庫",
     "position": { "x": 29, "y": 31, "width": 42, "height": 23 },
     "rules": [
-      { "when": { "playPart": { "gt": 5 } }, "actions": [{ "type": "se", "id": "Se_Refrigeratol" }, { "type": "message", "text": "冷蔵庫は空っぽだっぴ～" }] },
+      { "when": { "playPart": 7 }, "actions": [{ "type": "se", "id": "Se_Refrigeratol" }, { "type": "message", "text": "さっきぴぐまも冷蔵庫開けてたっぴ" }, { "type": "message", "text": "みんな冷蔵庫の中確認したくなるっぴ！" }] },
+      { "when": { "playPart": 6 }, "actions": [{ "type": "se", "id": "Se_Refrigeratol" }, { "type": "message", "text": "冷蔵庫は空っぽだっぴ～" }, { "type": "message", "text": "わかってるけど開けたくなるっぴ！" }] },
       { "when": { "playPart": 5 }, "actions": [{ "type": "se", "id": "Se_Refrigeratol" }, { "type": "message", "text": "もうチョコはないッピね" }] },
       { "when": { "playPart": 4, "flag": { "doorEntranceUnlocked": true } }, "actions": [
         { "type": "se", "id": "Se_Refrigeratol" },
@@ -396,6 +397,7 @@
     "label": "冷凍庫",
     "position": { "x": 29, "y": 54, "width": 42, "height": 20 },
     "rules": [
+      { "when": { "playPart": { "gt": 5 } }, "actions": [{ "type": "se", "id": "Se_Refrigeratol" }, { "type": "message", "text": "何も入れてないッピ" }] },
       { "when": { "playPart": 5 }, "actions": [{ "type": "se", "id": "Se_Refrigeratol" }, { "type": "message", "text": "ぴつじが好きそうなものは何もないッピ" }] },
       { "when": { "playPart": { "gt": 3 } }, "actions": [{ "type": "se", "id": "Se_Refrigeratol" }, { "type": "message", "text": "アイスでも入れておけば良かったッピ～" }] },
       { "when": { "playPart": 3, "everObtained": "itemFrozenBluePaper" }, "actions": [
@@ -417,7 +419,10 @@
     "label": "トースター",
     "position": { "x": 14, "y": 39, "width": 75, "height": 33 },
     "rules": [
-      { "when": { "playPart": { "gt": 3 } }, "actions": [{ "type": "message", "text": "なんでも美味しく焼けるトースターっぴ～" }] },
+      { "when": { "playPart": 7 }, "actions": [{ "type": "message", "text": "さっきぴぐまが余ってる食パン焼いて食べてたっぴ！" }] },
+      { "when": { "playPart": 6 }, "actions": [{ "type": "message", "text": "なんでも美味しく焼けるトースターっぴ～" }] },
+      { "when": { "playPart": 5 }, "actions": [{ "type": "message", "text": "ぴつじもトースト食べればいいのにッピ～" }] },
+      { "when": { "playPart": 4 }, "actions": [{ "type": "message", "text": "さっき使ったからまだちょっと温かいっぴ" }] },
       { "when": { "playPart": 3, "selectedItem": "itemToastedBread" }, "actions": [{ "type": "message", "text": "これ以上焼いたら焦げちゃうッピー！" }] },
       { "when": { "playPart": 3, "everObtained": "itemToastedBread" }, "actions": [{ "type": "message", "text": "美味しく焼けたっぴ～" }] },
       { "when": { "playPart": 3, "selectedItem": "itemBread" }, "actions": [
@@ -501,13 +506,17 @@
       { "when": { "playPart": { "gt": 5 } }, "actions": [{ "type": "message", "text": "この隙間はもう使えないっぴ～" }] },
       { "when": { "playPart": 5, "selectedItem": "itemCushion" }, "actions": [{ "type": "message", "text": "ここからクッションは通らないっぴねえ" }] },
       { "when": { "playPart": 5, "selectedItem": "itemLargeTowel" }, "actions": [{ "type": "message", "text": "ここからタオルケットは通らないっぴねえ" }] },
-      { "when": { "playPart": 5, "selectedItem": "itemScrewDriver" }, "actions": [{ "type": "message", "text": "間違えて部屋の中に落とさないようにするっぴ" }] },
+      { "when": { "playPart": 5, "selectedItem": "itemScrewDriver" }, "actions": [{ "type": "message", "text": "間違えて部屋の中に転がさないようにするっぴ" }] },
       { "when": { "playPart": 5, "flag": { "pitsujiWindowOpen": true } }, "actions": [{ "type": "message", "text": "この隙間はもう使えないっぴ～" }] },
       { "when": { "playPart": 5 }, "actions": [
         { "type": "message", "text": "こんな狭い隙間じゃだめッピ" },
         { "type": "message", "text": "もっと広いところを探すっぴ！" }
       ] },
-      { "when": { "playPart": { "gt": 2 } }, "actions": [{ "type": "message", "text": "チョコ作戦は失敗だったっぴ～" }] },
+      { "when": { "playPart": 4 }, "actions": [{ "type": "message", "text": "ここからは中の様子は見えないっぴ" }] },
+      { "when": { "playPart": 3 }, "actions": [
+        { "type": "message", "text": "チョコ作戦は失敗だったッピ" },
+        { "type": "message", "text": "次の作戦考えるッピ！" }
+      ] },
       { "when": { "usedOn": { "item": "itemChocolate", "spot": "spotPitsujiDoorGap" } }, "actions": [
         { "type": "message", "text": "ぴつじがチョコ食べてる気配がするっぴ" },
         { "type": "message", "text": "今なら脱出しそうだっぴ！" }
@@ -638,7 +647,7 @@
     "label": "玄関ドア",
     "position": { "x": 18, "y": 37, "width": 20, "height": 21 },
     "rules": [
-      { "when": { "playPart": { "gt": 4 } }, "actions": [{ "type": "message", "text": "鍵開いてるのにぴつじはなんで脱出しないッピ……？" }] },
+      { "when": { "playPart": { "gt": 4 } }, "actions": [{ "type": "message", "text": "鍵も開いてるのにぴつじはなんで脱出しないッピ……？" }, { "type": "message", "text": "謎すぎるッピ！" }] },
       { "when": { "playPart": 4, "flag": { "doorEntranceUnlocked": true } }, "actions": [
         { "type": "message", "text": "ぴつじも楽々出られるっぴ！" },
         { "type": "message", "text": "今度こそ脱出っぴ～！" }

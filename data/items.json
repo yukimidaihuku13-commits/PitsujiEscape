@@ -5,6 +5,8 @@
     "persistence": "consumed",
     "transformsTo": null,
     "usableOn": ["spotPitsujiDoorGap"],
+    "icon": "assets/item/Chocolate_tmp.webp",
+    "image": "assets/item/Chocolate_tmp.webp",
     "description": "定番の板チョコっぴ"
   },
   {
@@ -13,6 +15,8 @@
     "persistence": "transform",
     "transformsTo": "itemFrozenBluePaper",
     "usableOn": ["spotFreezerCompartment"],
+    "icon": "assets/item/BluePaper_tmp.webp",
+    "image": "assets/item/BluePaper_tmp.webp",
     "description": "このままではただの紙っぴ"
   },
   {
@@ -21,6 +25,9 @@
     "persistence": "remainInPart",
     "transformsTo": null,
     "usableOn": [],
+    "icon": "assets/item/FrozenBluePaper_tmp.webp",
+    "image": "assets/item/FrozenBluePaper_tmp.webp",
+    "imageNote": "「3952」",
     "placeholder": "冷凍後の青い紙\n「3952」\n（拡大画像 仮）",
     "description": "数字が書かれているっぴ！"
   },
@@ -30,6 +37,8 @@
     "persistence": "transform",
     "transformsTo": "itemToastedBread",
     "usableOn": ["spotToaster"],
+    "icon": "assets/item/Bread_tmp.webp",
+    "image": "assets/item/Bread_tmp.webp",
     "description": "ふわふわの食パンだっぴ～"
   },
   {
@@ -38,6 +47,9 @@
     "persistence": "remainInPart",
     "transformsTo": null,
     "usableOn": [],
+    "icon": "assets/item/ToastedBread_tmp.webp",
+    "image": "assets/item/ToastedBread_tmp.webp",
+    "imageNote": "（りんごの記号）",
     "placeholder": "焼かれた食パン\n（りんごの記号）\n（拡大画像 仮）",
     "description": "模様が出てきたっぴ！"
   },
@@ -47,6 +59,8 @@
     "persistence": "remainInPart",
     "transformsTo": null,
     "usableOn": ["spotPhone", "spotSalt"],
+    "icon": "assets/item/BlackLight_tmp.webp",
+    "image": "assets/item/BlackLight_tmp.webp",
     "description": "脱出ゲームの定番アイテムっぴ～"
   },
   {
@@ -70,6 +84,8 @@
     "persistence": "consumed",
     "transformsTo": null,
     "usableOn": ["spotPitsujiWindow"],
+    "icon": "assets/item/ScrewDriver_tmp.webp",
+    "image": "assets/item/ScrewDriver_tmp.webp",
     "description": "ねじ外すっぴ～"
   },
   {
@@ -78,6 +94,8 @@
     "persistence": "consumed",
     "transformsTo": null,
     "usableOn": ["spotPitsujiWindow"],
+    "icon": "assets/item/Cushion_tmp.webp",
+    "image": "assets/item/Cushion_tmp.webp",
     "description": "ふわふわクッションぴ～"
   },
   {
@@ -86,6 +104,8 @@
     "persistence": "consumed",
     "transformsTo": null,
     "usableOn": ["spotPitsujiWindow"],
+    "icon": "assets/item/LargeTowel_tmp.webp",
+    "image": "assets/item/LargeTowel_tmp.webp",
     "description": "もこもこタオルケットぴ～"
   },
   {
@@ -94,9 +114,10 @@
     "persistence": "remainInPart",
     "transformsTo": null,
     "usableOn": [],
+    "icon": "assets/item/PisagiCard_tmp.webp",
     "zoomPages": [
-      { "placeholder": "ぴさぎの名刺（表）\n電話番号 7*27\n（拡大画像 仮）", "text": "ぴさぎは仕事人っぴ！" },
-      { "placeholder": "ぴさぎの名刺（裏）\n急ぎの場合は留守番電話に\nメッセージを残してください\n（拡大画像 仮）", "text": "留守番電話にメッセージを残してください、ッピ……？" }
+      { "image": "assets/item/PisagiCard_tmp.webp", "imageNote": "電話番号 7*27", "placeholder": "ぴさぎの名刺（表）\n電話番号 7*27\n（拡大画像 仮）", "text": "ぴさぎは仕事人っぴ！" },
+      { "image": "assets/item/PisagiCard_tmp.webp", "imageNote": "急ぎの場合は留守番電話に\nメッセージを残してください", "placeholder": "ぴさぎの名刺（裏）\n急ぎの場合は留守番電話に\nメッセージを残してください\n（拡大画像 仮）", "text": "留守番電話にメッセージを残してください、ッピ……？" }
     ]
   },
   {
@@ -105,6 +126,9 @@
     "persistence": "remainInPart",
     "transformsTo": null,
     "usableOn": [],
+    "icon": "assets/item/PhoneManual_tmp.webp",
+    "image": "assets/item/PhoneManual_tmp.webp",
+    "imageNote": "留守番電話：先頭に#をつける",
     "placeholder": "電話の説明書\n留守番電話：先頭に#をつける\n（拡大画像 仮）",
     "description": "電話のかけ方が書いてあるっぴ"
   },
@@ -114,6 +138,8 @@
     "persistence": "consumed",
     "transformsTo": null,
     "usableOn": ["spotPitsujiWindow"],
+    "icon": "assets/item/Camera_tmp.webp",
+    "image": "assets/item/Camera_tmp.webp",
     "description": "撮った写真がパソコンに転送される優れものっぴ"
   },
   {
@@ -130,6 +156,8 @@
     "persistence": "consumed",
     "transformsTo": null,
     "usableOn": ["spotPisagi"],
+    "icon": "assets/item/Tambourine_tmp.webp",
+    "image": "assets/item/Tambourine_tmp.webp",
     "description": "パーティーに必須の楽器っぴ！"
   },
   {
@@ -138,6 +166,8 @@
     "persistence": "consumed",
     "transformsTo": null,
     "usableOn": ["spotPiguma"],
+    "icon": "assets/item/Maracas_tmp.webp",
+    "image": "assets/item/Maracas_tmp.webp",
     "description": "パーティーに必須の楽器っぴ！"
   }
 ]

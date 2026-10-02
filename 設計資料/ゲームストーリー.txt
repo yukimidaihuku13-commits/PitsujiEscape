@@ -9,11 +9,14 @@
 #配信画面を切った後の台詞にはキャラ画像が必要です。
 
 [StoryPart == 1]
-[BGM:BGM_The Dark Eternal Night]
+[BGM:無音]
 ぴつじ「ここは……？」
 [BG:bg_pitsujiRoom1]
 ぴつじ「さっきまで木陰でお昼寝してたような……」
-[SE:モニターが映る音]
+[BG：黒画面] // 配信つける
+[SE:SE_TurnON.mp3]
+[BGM:BGM_Stream_Noise.mp3] // [BGM:BGM_Streaming]と一緒にすごく小さい音で鳴らす
+[BGM:BGM_Streaming]
 [BG:bg_storyStream]
 黒ぴぐま「おはよう。気分はどうかな？」
 ぴつじ「･･････。」
@@ -27,7 +30,7 @@
 ぴつじ「･･････。」
 黒ぴぐま「えっとっピ……」
 [BG:bg_storyStream]
-[BGM:BGM_The Dark Eternal Night]
+[BGM:BGM_Streaming]
 黒ぴぐま「お、おはよう。気分はどうかな？」
 黒ぴぐま「今から君には脱出ゲームを……」
 [BGM:BGM_bo-tto_hidamari.mp3]
@@ -38,10 +41,14 @@
 [BG:bg_pitsujiRoom1]
 ぴつじ「･･････。」
 黒ぴぐま「･･････。」
-[SE：モニターが切れる音]
+// 
+[SE：SE_TurnOFF.mp3]
 [BG：黒画面]
+// 早送り一旦ここで止める
+[BGM:止める]
 黒ぴぐま「え･･････？！」
 [BG:viewDesk] // 暫定処置 縦サイズをそれまでと変えないため、サイズが大きすぎるところは表示しなくて良い
+[BGM:BGM_KuropigumaAseru.mp3]
 [立ち絵:黒ぴぐま] //黒ぴぐまの立ち絵を、背景の前に表示する
 黒ぴぐま「脱出ゲームは、始まったら脱出するものだっぴ！？！」
 黒ぴぐま「皆脱出したいものじゃないッピ？？！」
@@ -53,11 +60,11 @@
  * 操作パート2で、チョコを渡してドアをノックする
  * ドアを開けようとするが、開かないことが分かる
  */
-
 [StoryPart == 2]
+[SE:SE_TurnON.mp3]
 [BG：黒背景]
-[BGM:BGM_The Dark Eternal Night]
-[SE:モニターが映る音]
+[BGM:BGM_Stream_Noise.mp3] // [BGM:BGM_Streaming]と一緒にすごく小さい音で鳴らす
+[BGM:BGM_Streaming]
 [BG:bg_storyStream]
 黒ぴぐま「ふふふ、チョコのお味はどうかな？」
 [BG:bg_pitsujiRoom1]
@@ -74,9 +81,12 @@
 ぴつじ「脱出したくないっぴ」
 黒ぴぐま「･･････。」
 黒ぴぐま「･･････。」
-[SE：モニターが切れる音]
+[SE：SE_TurnOFF.mp3]
 [BG：黒画面]
+// 早送り一旦ここで止める
+[BGM:止める]
 黒ぴぐま「駄目ッピか……」
+[BGM:BGM_KuropigumaAseru.mp3]
 [BG:viewDesk]
 [黒ぴぐまの立ち絵]
 黒ぴぐま「難しいッピか……？」
@@ -90,9 +100,10 @@
  * /
 [StoryPart == 3]
 [BG：黒背景]
-[SE:モニターが映る音]
+[SE:SE_TurnON.mp3]
 [BG:bg_storyStream]
-[BGM:BGM_The Dark Eternal Night]
+[BGM:BGM_Stream_Noise.mp3] // [BGM:BGM_Streaming]と一緒にすごく小さい音で鳴らす
+[BGM:BGM_Streaming]
 黒ぴぐま「ご機嫌はどうかな、ぴつじくん」
 ぴつじ「･･････。」
 黒ぴぐま「今から君には脱出ゲームをしてもらう」
@@ -108,9 +119,12 @@
 黒ぴぐま「出るっぴ！！」
 ぴつじ「･･････。」
 黒ぴぐま「･･････。」
-[SE：モニターが切れる音]
+[SE：SE_TurnOFF.mp3]
 [BG：黒画面]
+// 早送り一旦ここで止める
+[BGM:止める]
 黒ぴぐま「だめッピ！！」
+[BGM:BGM_KuropigumaAseru.mp3]
 [BG:viewDesk]
 [黒ぴぐまの立ち絵]
 黒ぴぐま「絶対にぴつじを部屋から出してやるっぴ！！」
@@ -124,9 +138,10 @@
 
 [StoryPart == 4]
 [BG：黒背景]
-[SE:モニターが映る音]
+[SE:SE_TurnON.mp3]
 [BG:bg_storyStream]
-[BGM:BGM_The Dark Eternal Night]
+[BGM:BGM_Stream_Noise.mp3] // [BGM:BGM_Streaming]と一緒にすごく小さい音で鳴らす
+[BGM:BGM_Streaming]
 黒ぴぐま「今から君には脱出ゲーム」
 [BG:bg_pitsujiRoom1]
 [BGM:BGM_bo-tto_hidamari.mp3]
@@ -140,9 +155,12 @@
 ぴつじ「元気出ないッピ･･････」
 黒ぴぐま「･･････。」
 ぴつじ「･･････。」
-[SE：モニターが切れる音]
+[SE：SE_TurnOFF.mp3]
 [BG：黒画面]
+// 早送り一旦ここで止める
+[BGM:止める]
 黒ぴぐま「なんでっぴ？！！」
+[BGM:BGM_KuropigumaAseru.mp3]
 [BG:viewDesk]
 [黒ぴぐまの立ち絵]
 黒ぴぐま「元気出ないとだめッピ？！」
@@ -156,18 +174,22 @@
 
 [StoryPart == 5]
 [BG：黒背景]
+[SE:SE_TurnON.mp3]
 [BG:bg_storyStream]
 [BG:壁掛けモニターに黒ぴぐまが映った姿。]
-[BGM:BGM_bo-tto_hidamari.mp3]
+[BGM:BGM_KuropigumaAseru2.mp3]
 黒ぴぐま「･･････」
 黒ぴぐま「寝てるっぴ･･････」
 黒ぴぐま「･･････」
 黒ぴぐま「おーい」
 黒ぴぐま「起きるっぴー？」
 黒ぴぐま「･･････」
-[SE：モニターが切れる音]
+[SE：SE_TurnOFF.mp3]
 [BG：黒画面]
+// 早送り一旦ここで止める
+[BGM:止める]
 黒ぴぐま「全然起きないッピ･･････」
+[BGM:BGM_KuropigumaKomaru.mp3]
 [BG:viewDesk]
 [黒ぴぐまの立ち絵]
 黒ぴぐま「困ったッピ･･････」
@@ -180,7 +202,7 @@
  */
 [StoryPart == 6]
 [BG：部屋で話している3人]
-[BGM:BGM_bo-tto_hidamari.mp3] // 仮。操作パートと曲が変わらないと変なので。
+[BGM:BGM_Talking.mp3]
 //[BGM:部屋で楽しそうな音楽]
 [キャラが話しているところで立ち絵が表示される]
 [ここの黒ぴぐまは、目をサングラスで隠してる状態]
@@ -218,15 +240,20 @@
 */
 [StoryPart == 7]
 [BG：黒背景]
-[SE:モニターが映る音]
+[SE:SE_TurnON.mp3]
 [BG:bg_storyStream]
-[BGM:BGM_The Dark Eternal Night]
+[BGM:BGM_Stream_Noise.mp3] // [BGM:BGM_Streaming]と一緒にすごく小さい音で鳴らす
+[BGM:BGM_Streaming]
 黒ぴぐま「今から君には脱出ゲームをしてもらう！ 」
-[音楽：ハッピーな音楽] // BGMのHAPPY(素材待ち)として扱う
+[音楽：BGM_Happy.mp3] //
 [BG：目を覚ますぴつじ]
+[SE：SE_TambourineRoll.mp3] //
+[SE：SE_MaracasRoll.mp3] //
 黒ぴぐま「･･････」
 ぴつじ「･･････」
 [BG:bg_pitsujiRoom1]
+[SE：SE_TambourineRoll.mp3] //
+[SE：SE_MaracasRoll.mp3] //
 ぴつじ「･･････楽しそうな音が聞こえるっぴ？」
 黒ぴぐま「起きたっぴ！！？」
 [キャラ：踊り出すぴつじ]
@@ -242,10 +269,13 @@
 */
 
 [StoryPart==8]
+[音楽：BGM_Happy.mp3] //
 [SE：Se_DoorOpen1]
 [BG：部屋から顔を出すぴつじ]
 ぴつじ「パーティーっぴー！」
+[SE：SE_MaracasRoll.mp3] //
 ぴぐま「いっぇえっぴぃぃぇぇい！」
+[SE：SE_TambourineRoll.mp3] //
 ぴさぎ「やっぴー！！！」
 [BG：ノリノリで踊り出すぴつじとぴぐまとぴさぎ]
 ぴつじ「はっぴー！」
@@ -259,12 +289,15 @@
 黒ぴぐま「･･････踊るッピ？」
 ぴつじ「パーティーは皆で楽しむっぴ！」
 ぴさぎ「楽しいっぴ！」
+[SE：SE_MaracasRoll.mp3] //
 ぴぐま「これ使うっぴ！！」
 [BG：マラカスを片方渡されるぴぐま]
 黒ぴぐま「踊るっぴー！！」
-ぴつじ「いぇぇぇっぴー！！」
+ぴさぎ「いぇぇぇっぴー！！」
+[SE：SE_MaracasRoll.mp3] //
 黒ぴぐま「楽しいっぴー！」
 ぴつじ「これならゲームも楽しいっぴ！」
+[SE：SE_MaracasRoll.mp3] //
 黒ぴぐま・ぴつじ「いぇぇぇっぴー！！」
 [BG:のりのりで踊る4人]
 //ストーリー8ここまで

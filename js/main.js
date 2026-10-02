@@ -55,6 +55,7 @@ async function loadAllData() {
   data.transitions = await fetchJson("data/transitions.json");
   data.audio = await fetchJson("data/audio.json");
   data.credits = await fetchJson("data/credits.json");
+  data.portraitLayouts = await fetchJson("data/portraitLayouts.json");
   return data;
 }
 
@@ -200,8 +201,12 @@ async function main() {
         storyBgmOverride = true;
         refreshBgm();
       }
-      if (line && line.se) AudioManager.playSE(line.se);
-      drawStoryLine(line);
+      // se: 1つ(文字列)または同時に鳴らす複数(配列。タンバリンとマラカス等)
+      if (line && line.se) [].concat(line.se).forEach((key) => AudioManager.playSE(key));
+      // ffStop: 早送り中にこの行まで来たら早送りを止める（配信を切った後の場面転換等）
+      if (line && line.ffStop) stopFastForward();
+      drawStoryLine(line, storyScreenFx(line));
+      prevStoryBg = (line && line.bgImage) || null;
     },
     () => {
       const story = data.storyPartsById[state.storyPart];
@@ -222,12 +227,29 @@ async function main() {
   const FAST_FORWARD_INTERVAL_MS = 150;
   let fastForwardTimer = null;
 
-  function drawStoryLine(line) {
+  // 配信画面をつける/消す演出（ブラウン管風）。SE_TurnON / SE_TurnOFF が鳴る行で行う。
+  // 早送り中は1行が短く演出が途中で切れるため行わない。消す演出は直前の行の背景を縮めて消す。
+  const SCREEN_ON_SE = "SE_TurnON";
+  const SCREEN_OFF_SE = "SE_TurnOFF";
+  let prevStoryBg = null;
+
+  function storyScreenFx(line) {
+    if (!line || fastForwardTimer !== null) return null;
+    const ses = [].concat(line.se || []);
+    if (ses.includes(SCREEN_OFF_SE) && prevStoryBg) return { type: "off", fromBg: prevStoryBg };
+    if (ses.includes(SCREEN_ON_SE) && line.bgImage) return { type: "on" };
+    return null;
+  }
+
+  // screenFx は行が初めて表示される時だけ渡す（早送りの切替等で描き直す時は演出しない）
+  function drawStoryLine(line, screenFx = null) {
     Renderer.renderStory(root, line, {
       title: gameTitle(),
       onIconTap,
       fastForwarding: fastForwardTimer !== null,
-      onFastForward: toggleFastForward
+      onFastForward: toggleFastForward,
+      screenFx,
+      portraitLayouts: data.portraitLayouts
     });
   }
 
@@ -468,16 +490,9 @@ async function main() {
 
     // 画像部分。実画像(image)が無い間は placeholder の文言(無ければアイテム名)で代用する。
     let imageEl = null;
-    function drawImage(image, placeholderText) {
+    function drawImage(image, placeholderText, note) {
       const placeholder = createModalImagePlaceholder(placeholderText || `${item.name}\n（拡大画像 仮）`);
-      let el = placeholder;
-      if (image) {
-        el = document.createElement("img");
-        el.className = "item-zoom-image";
-        el.src = image;
-        el.alt = item.name;
-        el.addEventListener("error", () => el.replaceWith(placeholder));
-      }
+      const el = image ? createItemImage("item-zoom-image", image, item.name, note, placeholder) : placeholder;
       if (imageEl && imageEl.isConnected) imageEl.replaceWith(el);
       else box.appendChild(el);
       imageEl = el;
@@ -499,7 +514,7 @@ async function main() {
       });
       const showPage = () => {
         const page = item.zoomPages[pageIndex];
-        drawImage(page.image, page.placeholder);
+        drawImage(page.image, page.placeholder, page.imageNote);
         pageMsgEl.textContent = page.text || "";
         if (page.text) logMessage(page.text);
         box.append(pageMsgEl, pageCloseBtn);
@@ -515,7 +530,7 @@ async function main() {
       return;
     }
 
-    drawImage(item.image, (resolveMessage(item.placeholder, state, ctx) || [])[0]);
+    drawImage(item.image, (resolveMessage(item.placeholder, state, ctx) || [])[0], item.imageNote);
 
     const lines = resolveMessage(item.description, state, ctx) || [];
     lines.forEach((t) => logMessage(t));
@@ -693,8 +708,9 @@ async function main() {
     if (!item) return;
     const firstPage = Array.isArray(item.zoomPages) && item.zoomPages.length > 0 ? item.zoomPages[0] : null;
     const image = firstPage ? firstPage.image : item.image;
+    const note = firstPage ? firstPage.imageNote : item.imageNote;
     const placeholder = firstPage ? firstPage.placeholder : (resolveMessage(item.placeholder, state, ctx) || [])[0];
-    showImageModal({ image: image || null, caption: placeholder || `${item.name}\n（拡大画像 仮）`, title: item.name, obtained: true });
+    showImageModal({ image: image || null, note: note || null, caption: placeholder || `${item.name}\n（拡大画像 仮）`, title: item.name, obtained: true });
   }
 
   // キューの順番が回ってきた画像を表示する。閉じたらキューの次へ進む。
@@ -711,14 +727,7 @@ async function main() {
       box.appendChild(titleEl);
     }
     if (opts.image) {
-      const img = document.createElement("img");
-      img.className = "modal-image";
-      img.src = opts.image;
-      img.alt = opts.caption || "";
-      img.addEventListener("error", () => {
-        img.replaceWith(createModalImagePlaceholder(opts.caption));
-      });
-      box.appendChild(img);
+      box.appendChild(createItemImage("modal-image", opts.image, opts.caption || "", opts.note, createModalImagePlaceholder(opts.caption)));
     } else {
       box.appendChild(createModalImagePlaceholder(opts.caption));
     }
@@ -755,6 +764,27 @@ async function main() {
         finish();
       }
     }).observe(modalRoot, { childList: true });
+  }
+
+  // 拡大画像。note(imageNote)があれば画像の下に手がかりの文字を添える（仮画像に謎解きの
+  // 手がかりが描かれていない間の代用）。読み込みに失敗したら fallback(プレースホルダー)に差し替える。
+  function createItemImage(className, image, alt, note, fallback) {
+    const img = document.createElement("img");
+    img.className = className;
+    img.src = image;
+    img.alt = alt;
+    if (!note) {
+      img.addEventListener("error", () => img.replaceWith(fallback));
+      return img;
+    }
+    const wrap = document.createElement("div");
+    wrap.className = "item-image-wrap";
+    const noteEl = document.createElement("div");
+    noteEl.className = "item-image-note";
+    noteEl.textContent = note;
+    wrap.append(img, noteEl);
+    img.addEventListener("error", () => wrap.replaceWith(fallback));
+    return wrap;
   }
 
   function createModalImagePlaceholder(caption) {
@@ -977,6 +1007,7 @@ async function main() {
       return;
     }
     storyQueue.clear();
+    prevStoryBg = null;
     // ストーリー開始時点では直前の操作パートのBGMを流し続ける（行に bgm があればそこで切り替わる）
     imageBgmTrack = null;
     storyBgmOverride = false;

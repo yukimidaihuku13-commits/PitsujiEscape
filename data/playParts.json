@@ -1,11 +1,12 @@
 [
   {
     "id": 1,
-    "clearSE": "Se_StartStream",
+    "clearSE": "Se_Gimick",
     "startView": "viewDesk",
     "startMessages": ["さて……"],
     "clearCondition": {},
     "notYetMessage": null,
+    "faceIcon": "assets/characters/kuma_charactor_icon_tmp.webp",
     "faceMessage": [
       { "when": {}, "text": "……" }
     ],
@@ -14,7 +15,7 @@
   {
     "id": 2,
     "bgm": "BGM_Candy Crush",
-    "clearSE": "Se_StartStream",
+    "clearSE": "Se_Gimick",
     "startView": "viewDesk",
     "startMessages": [
       "なんで脱出しないッピ……？",
@@ -28,6 +29,7 @@
       { "when": { "everObtained": "itemChocolate" }, "text": "チョコでぴつじのやる気を出すっぴ～" },
       { "when": {}, "text": "ぴつじのやる気を出して脱出させるっぴ～" }
     ],
+    "faceIcon": "assets/characters/kuma_charactor_icon_tmp.webp",
     "faceMessage": [
       { "when": { "usedOn": { "item": "itemChocolate", "spot": "spotPitsujiDoorGap" } }, "text": "今度こそ脱出ゲームして貰うっぴ！やり直しっぴ！！" },
       { "when": { "everObtained": "itemChocolate" }, "text": "ぴつじにこのチョコを渡すっぴ～" },
@@ -38,12 +40,13 @@
   {
     "id": 3,
     "bgm": "BGM_Candy Crush",
-    "clearSE": "Se_StartStream",
+    "clearSE": "Se_Gimick",
     "startView": "viewDesk",
     "startMessages": ["ドアの鍵を開けるっぴ！"],
     "clearCondition": { "flag": { "doorBUnlocked": true } },
     "clearMessages": ["今度こそ脱出ゲームっぴ！"],
     "notYetMessage": "ぴつじを脱出させるっぴ～！！",
+    "faceIcon": "assets/characters/kuma_charactor_icon_tmp.webp",
     "faceMessage": [
       { "when": { "flag": { "doorBUnlocked": true } }, "text": "今度こそ脱出して貰うっぴ！三度目の正直っぴ！" },
       { "when": {}, "cycle": ["ドアの鍵開けるっぴ～", "暗証番号忘れたッピ", "この部屋にヒントがあるはずっぴ！"] }
@@ -53,7 +56,7 @@
   {
     "id": 4,
     "bgm": "BGM_tie no wa",
-    "clearSE": "Se_StartStream",
+    "clearSE": "Se_Gimick",
     "startView": "viewDesk",
     "startMessages": [
       "こうなったら玄関のドアを開けてやるっぴ！！",
@@ -63,6 +66,7 @@
     "clearCondition": { "flag": { "doorEntranceUnlocked": true } },
     "clearMessages": ["ぴつじ脱出やるっぴ！！"],
     "notYetMessage": ["ぴつじとの勝負っぴ！", "部屋から絶対出してみせるっぴ！！！"],
+    "faceIcon": "assets/characters/kuma_charactor_icon_tmp.webp",
     "faceMessage": [
       { "when": { "flag": { "doorEntranceUnlocked": true } }, "text": "今度こそ脱出っぴ！やるっぴよー！！" },
       { "when": {}, "cycle": ["玄関の鍵開けるっぴ～", "チョコレートは無くてもどうにかなるはずっぴ", "がんばるっぴ～！"] }
@@ -72,7 +76,7 @@
   {
     "id": 5,
     "bgm": "BGM_tie no wa",
-    "clearSE": "Se_StartStream",
+    "clearSE": "Se_Gimick",
     "startView": "viewDesk",
     "startMessages": ["ぴつじは落ち込んでるッピ？", "また元気出そうなもの渡してやる気出すっぴ！", "負けないっぴ！！"],
     "clearCondition": {
@@ -83,6 +87,7 @@
     },
     "clearMessages": ["嫌な予感がするッピ……"],
     "notYetMessage": "なかなか手強いッピね……",
+    "faceIcon": "assets/characters/kuma_charactor_icon_tmp.webp",
     "faceMessage": [
       {
         "when": {
@@ -100,7 +105,7 @@
   {
     "id": 6,
     "bgm": "BGM_dotabatare-su slow",
-    "clearSE": "Se_StartStream",
+    "clearSE": "Se_Gimick",
     "startView": "viewDesk",
     "startMessages": ["仕方ないッピ～", "ぴつじに詳しい人を呼びだすっぴ！！"],
     "clearCondition": {
@@ -111,6 +116,7 @@
     },
     "autoClear": true,
     "notYetMessage": "ぴつじが寝てるから無理ッピ……",
+    "faceIcon": "assets/characters/kuma_charactor_icon_tmp.webp",
     "faceMessage": [
       { "when": {}, "cycle": ["ぴつじの友達を呼び出してやるっぴ！", "友達のことは調査済みっぴ～"] }
     ],
@@ -118,12 +124,13 @@
   },
   {
     "id": 7,
-    "clearSE": "Se_StartStream",
+    "clearSE": "Se_Gimick",
     "startView": "viewDesk",
     "startMessages": ["ぴつじの目が覚めるようなパーティーを開くっぴ！！"],
     "clearCondition": { "bgmTrack": "happy" },
     "clearMessages": ["最後の勝負っぴー！！"],
     "notYetMessage": "最後の勝負っぴ。ぴつじを部屋から脱出させるっぴ！",
+    "faceIcon": "assets/characters/kuma_charactor_icon_tmp.webp",
     "faceMessage": [
       { "when": { "bgmTrack": "happy" }, "cycle": ["これなら賑やかでぴつじも目を覚ますっぴ！", "ぴつじの脱出ゲームが始まるっぴ！"] },
       { "when": { "bgmUnlocked": "happy" }, "cycle": ["さっきの音楽最高だったっぴ～！", "パーティーには楽しい音楽が欠かせないっぴ！"] },
@@ -138,6 +145,7 @@
     "clearCondition": {},
     "notYetMessage": null,
     "faceCharacter": "ぴつじ",
+    "faceIcon": "assets/characters/pitsuji_charactor_icon_tmp.webp",
     "faceMessage": [
       { "when": {}, "text": "楽しそうな音が聞こえてくるっぴ" }
     ],

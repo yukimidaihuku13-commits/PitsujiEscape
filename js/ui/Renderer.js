@@ -93,6 +93,7 @@ export function renderPlay(root, opts) {
   const view = data.viewsById[state.currentView];
   const part = data.playPartsById[state.playPart];
   const faceCharacter = (part && part.faceCharacter) || "黒ぴぐま";
+  const faceIcon = (part && part.faceIcon) || null;
 
   const header = document.createElement("div");
   header.className = "header-icons";
@@ -127,7 +128,21 @@ export function renderPlay(root, opts) {
     const item = data.itemsById[itemId];
     const btn = document.createElement("button");
     btn.className = "inventory-item" + (ctx.selectedItemId === itemId ? " selected" : "");
-    btn.textContent = item ? item.name : itemId;
+    const label = item ? item.name : itemId;
+    // アイコン画像(icon)があれば画像で表示し、無い/読み込み失敗時はアイテム名の文字で代用する。
+    if (item && item.icon) {
+      btn.classList.add("inventory-item--icon");
+      btn.title = label;
+      btn.setAttribute("aria-label", label);
+      const img = createImageLayer("inventory-item-icon", item.icon, () => {
+        btn.classList.remove("inventory-item--icon");
+        img.remove();
+        btn.textContent = label;
+      });
+      btn.appendChild(img);
+    } else {
+      btn.textContent = label;
+    }
     btn.addEventListener("click", () => onItemTap(itemId));
     inv.appendChild(btn);
   });
@@ -136,7 +151,7 @@ export function renderPlay(root, opts) {
   if (view && view.layoutType === "note") {
     renderNote(main, view, state, onNotePageTap, onNoteClose);
     root.appendChild(main);
-    root.appendChild(createFooter(currentMessage, onFaceTap, faceCharacter));
+    root.appendChild(createFooter(currentMessage, onFaceTap, faceCharacter, faceIcon));
     return;
   }
 
@@ -146,8 +161,9 @@ export function renderPlay(root, opts) {
   sceneLabel.className = "scene-label";
   sceneLabel.textContent = view ? `[${view.label}]${background ? "" : "（背景仮）"}` : "";
 
+  let bgImg = null;
   if (background) {
-    const bgImg = createImageLayer("scene-bg-img", background, () => {
+    bgImg = createImageLayer("scene-bg-img", background, () => {
       sceneLabel.textContent = `[${view.label}]（背景画像の読み込みに失敗しました）`;
     });
     main.appendChild(bgImg);
@@ -161,6 +177,7 @@ export function renderPlay(root, opts) {
     tint.className = "scene-tint scene-tint--red";
     main.appendChild(tint);
   }
+  if (bgImg) extendBackgroundBelow(main, bgImg);
 
   // 座標(position)が指定されているspotは画像上にホットスポットとして配置し、
   // 指定が無いspotはこれまで通り下に縦一覧で表示する（両方混在してもよい＝
@@ -219,7 +236,41 @@ export function renderPlay(root, opts) {
     console.log(`[座標メモ] x: ${xPct}%, y: ${yPct}%`);
   });
 
-  root.appendChild(createFooter(currentMessage, onFaceTap, faceCharacter));
+  root.appendChild(createFooter(currentMessage, onFaceTap, faceCharacter, faceIcon));
+}
+
+// 背景画像を、下のメッセージ欄(吹き出し)の後ろまで続けて描く。
+// scene-main の中で見える範囲は今まで(object-fit: cover)と全く同じにし、cover で切り取られていた
+// 画像の下側をそのままはみ出させて見せる（クリックポイントの位置(scene-main に対する%)は変わらない）。
+// 部屋の色の演出(scene-tint)も同じ範囲に広げる。
+function extendBackgroundBelow(main, bgImg) {
+  main.classList.add("scene-main--extend-bg");
+  const fit = () => {
+    const w = main.clientWidth;
+    const h = main.clientHeight;
+    const nw = bgImg.naturalWidth;
+    const nh = bgImg.naturalHeight;
+    if (!w || !h || !nw || !nh) return;
+    const scale = Math.max(w / nw, h / nh);
+    const box = { width: `${nw * scale}px`, height: `${nh * scale}px`, left: `${(w - nw * scale) / 2}px`, top: `${(h - nh * scale) / 2}px` };
+    for (const el of [bgImg, ...main.querySelectorAll(".scene-tint")]) {
+      el.classList.add("scene-layer--fitted");
+      Object.assign(el.style, box);
+    }
+  };
+  if (bgImg.complete) fit();
+  else bgImg.addEventListener("load", fit, { once: true });
+  // 画面サイズが変わった時に合わせ直す。画面を描き直して古い main が外れたら監視をやめる。
+  if (typeof ResizeObserver !== "undefined") {
+    const observer = new ResizeObserver(() => {
+      if (!main.isConnected) {
+        observer.disconnect();
+        return;
+      }
+      fit();
+    });
+    observer.observe(main);
+  }
 }
 
 // ヘッダー左側のゲームタイトル（プロローグ終了後に変わる。文言は呼び出し側で決める）
@@ -231,12 +282,24 @@ function createHeaderTitle(title) {
 }
 
 // 表情アイコン。画像未用意の間はキャラ名を表示する（操作パート8はぴつじ）。
-function createFooter(currentMessage, onFaceTap, faceCharacter) {
+// 操作画面のフッター: 左にキャラクターのアイコン(playParts.json の faceIcon。タップで表情メッセージ)、
+// 右にメッセージの吹き出し。メッセージが無い時の吹き出しは半透明(css の .footer-message:empty)。
+function createFooter(currentMessage, onFaceTap, faceCharacter, faceIcon) {
   const footer = document.createElement("div");
   footer.className = "footer-row";
   const face = document.createElement("button");
   face.className = "face-box";
-  face.textContent = `${faceCharacter}\n(表情TBD)`;
+  face.setAttribute("aria-label", faceCharacter);
+  const showFaceText = () => {
+    face.classList.remove("face-box--icon");
+    face.textContent = `${faceCharacter}\n(表情TBD)`;
+  };
+  if (faceIcon) {
+    face.classList.add("face-box--icon");
+    face.appendChild(createImageLayer("face-icon", faceIcon, showFaceText));
+  } else {
+    showFaceText();
+  }
   face.addEventListener("click", () => onFaceTap && onFaceTap());
   footer.appendChild(face);
   const msg = document.createElement("div");
@@ -282,6 +345,89 @@ function renderNote(main, view, state, onNotePageTap, onNoteClose) {
   main.appendChild(closeBtn);
 }
 
+// ストーリーの立ち絵の位置・大きさ（data/portraitLayouts.json）。
+// 行の portraitLayout があればその配置、無ければ rules を上から確かめて最初に当てはまった配置を使う。
+const FALLBACK_LAYOUT = { height: 62, vertical: "bottom", bottom: 2, align: "center", left: 0, right: 0, maxWidth: 55 };
+const ALIGN_TO_JUSTIFY = { left: "flex-start", center: "center", right: "flex-end" };
+
+function matchesPortraitRule(when, line, portraits) {
+  if (!when) return true;
+  if (when.background != null && !(line.bgImage || "").includes(when.background)) return false;
+  if (when.allPortraits != null && !(portraits.length > 0 && portraits.every((p) => p.includes(when.allPortraits)))) return false;
+  if (when.minCount != null && portraits.length < when.minCount) return false;
+  return true;
+}
+
+function resolvePortraitLayout(line, portraits, config) {
+  const layouts = (config && config.layouts) || {};
+  if (line.portraitLayout) {
+    if (layouts[line.portraitLayout]) return layouts[line.portraitLayout];
+    console.warn(`[Renderer] portraitLayouts.json に無い配置: ${line.portraitLayout}`);
+  }
+  const rule = ((config && config.rules) || []).find((r) => matchesPortraitRule(r.when, line, portraits));
+  return (rule && layouts[rule.layout]) || layouts.default || FALLBACK_LAYOUT;
+}
+
+function applyPortraitLayout(wrap, layout) {
+  const pct = (v, def = 0) => `${typeof v === "number" ? v : def}%`;
+  wrap.style.justifyContent = ALIGN_TO_JUSTIFY[layout.align] || "center";
+  wrap.style.paddingLeft = pct(layout.left);
+  wrap.style.paddingRight = pct(layout.right);
+  if (layout.vertical === "middle") {
+    wrap.style.top = "0";
+    wrap.style.bottom = "0";
+    wrap.style.height = "auto";
+    wrap.style.alignItems = "center";
+  } else {
+    wrap.style.bottom = pct(layout.bottom);
+    wrap.style.height = pct(layout.height, FALLBACK_LAYOUT.height);
+  }
+}
+
+function applyPortraitImageLayout(img, path, layout) {
+  img.style.maxWidth = `${typeof layout.maxWidth === "number" ? layout.maxWidth : FALLBACK_LAYOUT.maxWidth}%`;
+  // middle は枠が画面全体なので、高さの指定を画像側に掛ける
+  img.style.maxHeight = layout.vertical === "middle" ? `${layout.height ?? FALLBACK_LAYOUT.height}%` : "100%";
+  const shifts = layout.shiftDown || {};
+  const key = Object.keys(shifts).find((k) => k !== "*" && path.includes(k));
+  const shift = key ? shifts[key] : shifts["*"];
+  if (typeof shift === "number" && shift !== 0) img.style.transform = `translateY(${shift}%)`;
+}
+
+// 配信画面をつける/消す演出（ブラウン管風。css の fx-crt-on / fx-crt-off）。
+//   on : この行の背景を、中央の光る点 → 横線 → 上下に広げて出す
+//   off: 直前の行の背景(fx.fromBg)を上下に縮めて横線 → 点 → 消し、黒画面にする。
+//        縮んでいく画面の手前に立ち絵が出ないよう、消え終わるまで立ち絵を隠す
+// 端末で「視差効果を減らす」を設定している場合は演出しない。
+const SCREEN_FX_OFF_MS = 500;
+
+function applyScreenFx(main, bgImg, fx) {
+  if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  if (fx.type === "on" && bgImg) {
+    main.classList.add("story-main--black");
+    bgImg.classList.add("fx-crt-on");
+    return;
+  }
+  if (fx.type === "off" && fx.fromBg) {
+    main.classList.add("story-main--black");
+    const oldBg = createImageLayer("scene-bg-img", fx.fromBg);
+    oldBg.classList.add("fx-crt-off");
+    main.insertBefore(oldBg, main.firstChild);
+    const portraits = main.querySelector(".story-portraits");
+    if (portraits) portraits.classList.add("story-portraits--hidden");
+    let done = false;
+    const finish = () => {
+      if (done) return;
+      done = true;
+      oldBg.remove();
+      if (portraits) portraits.classList.remove("story-portraits--hidden");
+    };
+    oldBg.addEventListener("animationend", finish, { once: true });
+    // タブが裏に回った等で animationend が来ない場合の保険
+    setTimeout(finish, SCREEN_FX_OFF_MS + 300);
+  }
+}
+
 export function renderStory(root, line, opts = {}) {
   root.innerHTML = "";
 
@@ -309,8 +455,9 @@ export function renderStory(root, line, opts = {}) {
   bgLabel.className = "scene-label";
   bgLabel.textContent = line && line.bg && !isBlack ? `[BG]${line.bgImage ? "" : "（背景仮）"}${line.bg}` : "";
 
+  let bgImg = null;
   if (line && line.bgImage) {
-    const bgImg = createImageLayer("scene-bg-img", line.bgImage, () => {
+    bgImg = createImageLayer("scene-bg-img", line.bgImage, () => {
       bgLabel.textContent = `[BG]（背景画像の読み込みに失敗しました）${line.bg || ""}`;
     });
     main.appendChild(bgImg);
@@ -323,17 +470,21 @@ export function renderStory(root, line, opts = {}) {
   const portraits = line && !line.noPortrait ? [].concat(line.portraitImage || []) : [];
   if (portraits.length > 0 || (line && line.speaker && !line.noPortrait)) {
     const wrap = document.createElement("div");
-    wrap.className = "story-portraits" + (portraits.length > 1 ? " story-portraits--multi" : "");
+    wrap.className = "story-portraits";
+    const layout = resolvePortraitLayout(line, portraits, opts.portraitLayouts);
+    applyPortraitLayout(wrap, layout);
     if (portraits.length === 0) wrap.appendChild(createPortraitPlaceholder(line.speaker));
     portraits.forEach((path) => {
       const img = createImageLayer("portrait-img", path, () => {
         img.replaceWith(createPortraitPlaceholder(line.speaker || ""));
       });
       img.alt = line.speaker || "";
+      applyPortraitImageLayout(img, path, layout);
       wrap.appendChild(img);
     });
     main.appendChild(wrap);
   }
+  if (opts.screenFx) applyScreenFx(main, bgImg, opts.screenFx);
   root.appendChild(main);
 
   const footer = document.createElement("div");
